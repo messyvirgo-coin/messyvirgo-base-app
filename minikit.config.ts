@@ -15,9 +15,9 @@ export const minikitConfig = {
   },
   miniapp: {
     version: "1",
-    name: "Cubey", 
-    subtitle: "Your AI Ad Companion", 
-    description: "Ads",
+    name: "$MESSY App", 
+    subtitle: "Macro & token intelligence", 
+    description: "Fast, shareable inputs for crypto decision-making: macro regime, technical signals, and token risk checks—served as bite-sized cards with optional deep-dive reports.",
     screenshotUrls: [`${ROOT_URL}/screenshot-portrait.png`],
     iconUrl: `${ROOT_URL}/blue-icon.png`,
     splashImageUrl: `${ROOT_URL}/blue-hero.png`,
