@@ -119,27 +119,25 @@
   font-weight: 700;
   letter-spacing: -0.02em;
   margin-bottom: 2rem;
-  background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  text-shadow: 0 0 30px rgba(76, 175, 80, 0.3);
+  color: #4CAF50;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
 }
 
 .subtitle {
-  font-size: 1.2rem;
-  line-height: 1.6;
+  font-size: clamp(1rem, 2.5vw, 1.25rem);
+  line-height: 1.7;
   margin-bottom: 3rem;
-  color: rgba(255, 255, 255, 0.8);
-  font-weight: 300;
+  color: #ffffff;
+  font-weight: 400;
+  text-shadow: 0 1px 5px rgba(0, 0, 0, 0.5);
 }
 
 .shareButton {
   background: #f7d954;
   color: #000;
   border: none;
-  padding: 1rem 3rem;
-  font-size: 1rem;
+  padding: 1.2rem 3rem;
+  font-size: 1.1rem;
   font-weight: 700;
   border-radius: 12px;
   cursor: pointer;
@@ -147,7 +145,8 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-top: 1rem;
-  box-shadow: 0 4px 20px rgba(247, 217, 84, 0.3);
+  box-shadow: 0 4px 20px rgba(247, 217, 84, 0.4);
+  min-width: 200px;
 }
 
 .shareButton:hover {
