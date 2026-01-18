@@ -95,7 +95,26 @@ export function getStoredProfileId(
 ): ProfileId | null {
   if (!isBrowser()) return null;
   try {
-    return parseProfileId(window.localStorage.getItem(getStorageKey(fid)));
+    // First check FID-specific key (or anonymous if no FID)
+    const primaryKey = getStorageKey(fid);
+    const primaryValue = parseProfileId(window.localStorage.getItem(primaryKey));
+    if (primaryValue) return primaryValue;
+
+    // If FID is available but no FID-specific profile found, check anonymous key as fallback
+    if (fid) {
+      const anonymousKey = getStorageKey(null);
+      const anonymousValue = parseProfileId(
+        window.localStorage.getItem(anonymousKey)
+      );
+      if (anonymousValue) {
+        // Migrate anonymous profile to FID-specific key
+        window.localStorage.setItem(primaryKey, anonymousValue);
+        window.dispatchEvent(new Event(EVENT_NAME));
+        return anonymousValue;
+      }
+    }
+
+    return null;
   } catch {
     return null;
   }
