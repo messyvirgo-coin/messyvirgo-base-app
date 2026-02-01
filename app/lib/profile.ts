@@ -140,6 +140,21 @@ export function setStoredProfileId(
   }
 }
 
+export function clearStoredProfileId(fid: number | null | undefined): boolean {
+  if (!isBrowser()) return false;
+  try {
+    window.localStorage.removeItem(getStorageKey(fid));
+    // If a user explicitly clears their profile, clear the anonymous fallback too.
+    if (fid) {
+      window.localStorage.removeItem(getStorageKey(null));
+    }
+    window.dispatchEvent(new Event(EVENT_NAME));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function subscribe(callback: () => void): () => void {
   if (!isBrowser()) return () => {};
   const onEvent = () => callback();
@@ -173,5 +188,8 @@ export function useHasStoredProfile(fid: number | null | undefined): boolean {
 }
 
 export function profileById(id: ProfileId): ProfileDefinition {
-  return PROFILE_DEFINITIONS.find((profile) => profile.id === id) ?? PROFILE_DEFINITIONS[0];
+  return (
+    PROFILE_DEFINITIONS.find((profile) => profile.id === id) ??
+    PROFILE_DEFINITIONS[0]
+  );
 }

@@ -1,9 +1,24 @@
 "use client";
-import { useState, useEffect } from "react";
-import { useQuickAuth,useMiniKit } from "@coinbase/onchainkit/minikit";
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  type ChangeEvent,
+  type FormEvent,
+} from "react";
+import { useQuickAuth, useMiniKit } from "@coinbase/onchainkit/minikit";
 import { useRouter } from "next/navigation";
 import { minikitConfig } from "../minikit.config";
 import styles from "./page.module.css";
+import {
+  PROFILE_DEFINITIONS,
+  clearStoredProfileId,
+  setStoredProfileId,
+  useHasStoredProfile,
+  useProfileId,
+  type ProfileId,
+} from "@/app/lib/profile";
 
 interface AuthResponse {
   success: boolean;
@@ -15,12 +30,25 @@ interface AuthResponse {
   message?: string; // Error messages come as 'message' not 'error'
 }
 
+type MacroStatus = "idle" | "loading" | "success" | "error";
+
+function isProfileId(value: string | null): value is ProfileId {
+  return value === "degen" || value === "trader" || value === "allocator";
+}
 
 export default function Home() {
   const { isFrameReady, setFrameReady, context } = useMiniKit();
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
+  const [macroStatus, setMacroStatus] = useState<MacroStatus>("idle");
+  const [macroError, setMacroError] = useState("");
+  const [macroReport, setMacroReport] = useState<unknown | null>(null);
   const router = useRouter();
+  const abortRef = useRef<AbortController | null>(null);
+
+  const fid = context?.user?.fid ?? null;
+  const profileId = useProfileId(fid);
+  const hasStoredProfile = useHasStoredProfile(fid);
 
   // Initialize the  miniapp
   useEffect(() => {
@@ -28,8 +56,77 @@ export default function Home() {
       setFrameReady();
     }
   }, [setFrameReady, isFrameReady]);
- 
-  
+
+  const fetchMacroReport = useCallback(async (profile: ProfileId) => {
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    setMacroStatus("loading");
+    setMacroError("");
+    setMacroReport(null);
+
+    try {
+      const url = new URL("/api/macro/latest", window.location.origin);
+      url.searchParams.set("profile", profile);
+      const response = await fetch(url.toString(), { signal: controller.signal });
+      
+      // Check if this request was aborted before processing response
+      if (abortRef.current !== controller) {
+        return;
+      }
+      
+      if (!response.ok) {
+        const errorBody = await response.json().catch(() => ({}));
+        const detail =
+          typeof errorBody?.error === "string"
+            ? errorBody.error
+            : "Unknown error";
+        throw new Error(detail);
+      }
+
+      const report = await response.json();
+      
+      // Check again before updating state - another request may have started
+      if (abortRef.current !== controller) {
+        return;
+      }
+      
+      setMacroReport(report);
+      setMacroStatus("success");
+    } catch (fetchError) {
+      // Check if this request was aborted before updating error state
+      if (abortRef.current !== controller) {
+        return;
+      }
+      
+      if (fetchError instanceof DOMException && fetchError.name === "AbortError") {
+        return;
+      }
+      const message =
+        fetchError instanceof Error ? fetchError.message : "Unknown error";
+      setMacroError(message);
+      setMacroStatus("error");
+    } finally {
+      if (abortRef.current === controller) {
+        abortRef.current = null;
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!hasStoredProfile) {
+      setMacroStatus("idle");
+      setMacroError("");
+      setMacroReport(null);
+      return;
+    }
+
+    void fetchMacroReport(profileId);
+    return () => {
+      abortRef.current?.abort();
+    };
+  }, [fetchMacroReport, hasStoredProfile, profileId]);
 
   // If you need to verify the user's identity, you can use the useQuickAuth hook.
   // This hook will verify the user's signature and return the user's FID. You can update
@@ -40,17 +137,18 @@ export default function Home() {
   //   userFid: string;
   // }>("/api/auth");
 
-  const { data: authData, isLoading: isAuthLoading, error: authError } = useQuickAuth<AuthResponse>(
-    "/api/auth",
-    { method: "GET" }
-  );
+  const {
+    data: authData,
+    isLoading: isAuthLoading,
+    error: authError,
+  } = useQuickAuth<AuthResponse>("/api/auth", { method: "GET" });
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     setError("");
 
@@ -83,6 +181,18 @@ export default function Home() {
     router.push("/success");
   };
 
+  const handleProfileChange = (
+    event: ChangeEvent<HTMLSelectElement>
+  ) => {
+    const selected = event.target.value;
+    if (!isProfileId(selected)) {
+      clearStoredProfileId(fid);
+      return;
+    }
+
+    setStoredProfileId(selected, fid);
+  };
+
   return (
     <div className={styles.container}>
       <button className={styles.closeButton} type="button">
@@ -97,6 +207,42 @@ export default function Home() {
              Hey {context?.user?.displayName || "there"}, Get early access and be the first to experience the future of<br />
             crypto marketing strategy.
           </p>
+
+          <div style={{ margin: "16px 0" }}>
+            <label htmlFor="macro-profile-select">Macro profile</label>
+            <div>
+              <select
+                id="macro-profile-select"
+                value={hasStoredProfile ? profileId : ""}
+                onChange={handleProfileChange}
+                disabled={macroStatus === "loading"}
+              >
+                <option value="">Select a profile</option>
+                {PROFILE_DEFINITIONS.map((profile) => (
+                  <option key={profile.id} value={profile.id}>
+                    {profile.shortLabel}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {macroStatus === "idle" && (
+              <p>Select a profile to load the latest macro report.</p>
+            )}
+            {macroStatus === "loading" && <p>Loading macro report…</p>}
+            {macroStatus === "error" && (
+              <p style={{ color: "var(--error, #d54c4c)" }}>
+                Failed to load report: {macroError}
+              </p>
+            )}
+            {macroStatus === "success" && (
+              <>
+                <p>success</p>
+                <pre style={{ whiteSpace: "pre-wrap" }}>
+                  {JSON.stringify(macroReport, null, 2)}
+                </pre>
+              </>
+            )}
+          </div>
 
           <form onSubmit={handleSubmit} className={styles.form}>
             <input
