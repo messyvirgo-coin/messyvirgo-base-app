@@ -3,13 +3,8 @@
 @layer base {
   :root {
     /* MessyVirgo theme - aligned to messyvirgo.com tokens */
-    --mv-bg-dark: #111827;
-    --mv-text-primary: #e5e7eb;
-    --mv-text-secondary: #b3b3b3;
-    --mv-text-muted: #9ca3af;
     --mv-accent-pink: #ff69b4;
     --mv-accent-gold: #ffd700;
-    --mv-accent-yellow: #fbbf24;
 
     /* Glassmorphism tokens */
     --mv-glass-bg: rgba(255, 255, 255, 0.05);
@@ -93,13 +88,6 @@
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-  }
-
-  .glassmorphism {
-    background: var(--mv-glass-bg);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid var(--mv-glass-border);
   }
 
   .aurora-bg {

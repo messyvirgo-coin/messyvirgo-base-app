@@ -33,16 +33,3 @@ export interface MarkdownContent {
   footer: string;
   data?: Record<string, unknown> | null;
 }
-
-export interface ScoreEntry {
-  id?: string | null;
-  name: string;
-  category?: string | null;
-  kind?: "pillar" | "final" | "gate" | "aux" | string;
-  weight?: number | null;
-  value?: number | null;
-  status?: string;
-  reason?: string | null;
-  confidence?: "high" | "low" | string | null;
-  meta?: Record<string, unknown> | null;
-}
