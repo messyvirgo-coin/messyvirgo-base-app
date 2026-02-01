@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Source_Code_Pro } from "next/font/google";
+import { Inter, Source_Code_Pro, Playfair_Display } from "next/font/google";
 import { SafeArea } from "@coinbase/onchainkit/minikit";
 import { minikitConfig } from "../minikit.config";
 import { RootProvider } from "./rootProvider";
@@ -52,6 +52,11 @@ const sourceCodePro = Source_Code_Pro({
   subsets: ["latin"],
 });
 
+const playfairDisplay = Playfair_Display({
+  variable: "--font-playfair-display",
+  subsets: ["latin"],
+});
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -59,8 +64,10 @@ export default function RootLayout({
 }>) {
   return (
     <RootProvider>
-      <html lang="en">
-        <body className={`${inter.variable} ${sourceCodePro.variable}`}>
+      <html lang="en" className="dark">
+        <body
+          className={`${inter.variable} ${sourceCodePro.variable} ${playfairDisplay.variable}`}
+        >
           <SafeArea>{children}</SafeArea>
         </body>
       </html>

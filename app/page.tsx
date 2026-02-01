@@ -1,34 +1,22 @@
 "use client";
-import {
-  useState,
-  useEffect,
-  useCallback,
-  useRef,
-  type ChangeEvent,
-  type FormEvent,
-} from "react";
-import { useQuickAuth, useMiniKit } from "@coinbase/onchainkit/minikit";
-import { useRouter } from "next/navigation";
-import { minikitConfig } from "../minikit.config";
-import styles from "./page.module.css";
+
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useMiniKit } from "@coinbase/onchainkit/minikit";
+import { PageHeader } from "@/app/components/PageHeader";
+import { PageShell } from "@/app/components/PageShell";
+import { ErrorDisplay } from "@/app/components/ErrorDisplay";
+import { MacroReportRenderer } from "@/app/components/macro/MacroReportRenderer";
+import { ProfileOnboardingGate } from "@/app/components/ProfileOnboardingGate";
 import {
   PROFILE_DEFINITIONS,
   clearStoredProfileId,
+  profileById,
   setStoredProfileId,
   useHasStoredProfile,
   useProfileId,
   type ProfileId,
 } from "@/app/lib/profile";
-
-interface AuthResponse {
-  success: boolean;
-  user?: {
-    fid: number; // FID is the unique identifier for the user
-    issuedAt?: number;
-    expiresAt?: number;
-  };
-  message?: string; // Error messages come as 'message' not 'error'
-}
+import type { PublishedMacroReportResponse } from "@/app/lib/report-types";
 
 type MacroStatus = "idle" | "loading" | "success" | "error";
 
@@ -36,46 +24,57 @@ function isProfileId(value: string | null): value is ProfileId {
   return value === "degen" || value === "trader" || value === "allocator";
 }
 
+function StatusMessage({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="w-full max-w-4xl">
+      <div
+        className="mv-card !rounded-lg border border-input bg-black/40 backdrop-blur-sm overflow-hidden p-6 sm:p-8 text-center text-muted-foreground"
+        role="status"
+        aria-live="polite"
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
   const { isFrameReady, setFrameReady, context } = useMiniKit();
-  const [email, setEmail] = useState("");
-  const [error, setError] = useState("");
   const [macroStatus, setMacroStatus] = useState<MacroStatus>("idle");
-  const [macroError, setMacroError] = useState("");
-  const [macroReport, setMacroReport] = useState<unknown | null>(null);
-  const router = useRouter();
+  const [macroError, setMacroError] = useState<Error | null>(null);
+  const [macroReport, setMacroReport] =
+    useState<PublishedMacroReportResponse | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
   const fid = context?.user?.fid ?? null;
   const profileId = useProfileId(fid);
   const hasStoredProfile = useHasStoredProfile(fid);
+  const profile = profileById(profileId);
 
-  // Initialize the  miniapp
   useEffect(() => {
     if (!isFrameReady) {
       setFrameReady();
     }
   }, [setFrameReady, isFrameReady]);
 
-  const fetchMacroReport = useCallback(async (profile: ProfileId) => {
+  const fetchMacroReport = useCallback(async (profileValue: ProfileId) => {
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
 
     setMacroStatus("loading");
-    setMacroError("");
+    setMacroError(null);
     setMacroReport(null);
 
     try {
       const url = new URL("/api/macro/latest", window.location.origin);
-      url.searchParams.set("profile", profile);
-      const response = await fetch(url.toString(), { signal: controller.signal });
-      
-      // Check if this request was aborted before processing response
+      url.searchParams.set("profile", profileValue);
+      const response = await fetch(url.toString(), {
+        signal: controller.signal,
+      });
       if (abortRef.current !== controller) {
         return;
       }
-      
       if (!response.ok) {
         const errorBody = await response.json().catch(() => ({}));
         const detail =
@@ -85,27 +84,22 @@ export default function Home() {
         throw new Error(detail);
       }
 
-      const report = await response.json();
-      
-      // Check again before updating state - another request may have started
+      const report = (await response.json()) as PublishedMacroReportResponse;
       if (abortRef.current !== controller) {
         return;
       }
-      
       setMacroReport(report);
       setMacroStatus("success");
     } catch (fetchError) {
-      // Check if this request was aborted before updating error state
-      if (abortRef.current !== controller) {
-        return;
-      }
-      
       if (fetchError instanceof DOMException && fetchError.name === "AbortError") {
         return;
       }
-      const message =
-        fetchError instanceof Error ? fetchError.message : "Unknown error";
-      setMacroError(message);
+      if (abortRef.current !== controller) {
+        return;
+      }
+      setMacroError(
+        fetchError instanceof Error ? fetchError : new Error("Unknown error")
+      );
       setMacroStatus("error");
     } finally {
       if (abortRef.current === controller) {
@@ -117,7 +111,7 @@ export default function Home() {
   useEffect(() => {
     if (!hasStoredProfile) {
       setMacroStatus("idle");
-      setMacroError("");
+      setMacroError(null);
       setMacroReport(null);
       return;
     }
@@ -128,62 +122,7 @@ export default function Home() {
     };
   }, [fetchMacroReport, hasStoredProfile, profileId]);
 
-  // If you need to verify the user's identity, you can use the useQuickAuth hook.
-  // This hook will verify the user's signature and return the user's FID. You can update
-  // this to meet your needs. See the /app/api/auth/route.ts file for more details.
-  // Note: If you don't need to verify the user's identity, you can get their FID and other user data
-  // via `context.user.fid`.
-  // const { data, isLoading, error } = useQuickAuth<{
-  //   userFid: string;
-  // }>("/api/auth");
-
-  const {
-    data: authData,
-    isLoading: isAuthLoading,
-    error: authError,
-  } = useQuickAuth<AuthResponse>("/api/auth", { method: "GET" });
-
-  const validateEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
-    setError("");
-
-    // Check authentication first
-    if (isAuthLoading) {
-      setError("Please wait while we verify your identity...");
-      return;
-    }
-
-    if (authError || !authData?.success) {
-      setError("Please authenticate to join the waitlist");
-      return;
-    }
-
-    if (!email) {
-      setError("Please enter your email address");
-      return;
-    }
-
-    if (!validateEmail(email)) {
-      setError("Please enter a valid email address");
-      return;
-    }
-
-    // TODO: Save email to database/API with user FID
-    console.log("Valid email submitted:", email);
-    console.log("User authenticated:", authData.user);
-    
-    // Navigate to success page
-    router.push("/success");
-  };
-
-  const handleProfileChange = (
-    event: ChangeEvent<HTMLSelectElement>
-  ) => {
+  const handleProfileChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selected = event.target.value;
     if (!isProfileId(selected)) {
       clearStoredProfileId(fid);
@@ -193,74 +132,78 @@ export default function Home() {
     setStoredProfileId(selected, fid);
   };
 
-  return (
-    <div className={styles.container}>
-      <button className={styles.closeButton} type="button">
-        ✕
-      </button>
-      
-      <div className={styles.content}>
-        <div className={styles.waitlistForm}>
-          <h1 className={styles.title}>Join {minikitConfig.miniapp.name.toUpperCase()}</h1>
-          
-          <p className={styles.subtitle}>
-             Hey {context?.user?.displayName || "there"}, Get early access and be the first to experience the future of<br />
-            crypto marketing strategy.
-          </p>
+  const reportVariantCode = useMemo(
+    () => `${profileId}_daily`,
+    [profileId]
+  );
 
-          <div style={{ margin: "16px 0" }}>
-            <label htmlFor="macro-profile-select">Macro profile</label>
-            <div>
-              <select
-                id="macro-profile-select"
-                value={hasStoredProfile ? profileId : ""}
-                onChange={handleProfileChange}
-                disabled={macroStatus === "loading"}
-              >
-                <option value="">Select a profile</option>
-                {PROFILE_DEFINITIONS.map((profile) => (
-                  <option key={profile.id} value={profile.id}>
-                    {profile.shortLabel}
-                  </option>
-                ))}
-              </select>
-            </div>
-            {macroStatus === "idle" && (
-              <p>Select a profile to load the latest macro report.</p>
-            )}
-            {macroStatus === "loading" && <p>Loading macro report…</p>}
-            {macroStatus === "error" && (
-              <p style={{ color: "var(--error, #d54c4c)" }}>
-                Failed to load report: {macroError}
-              </p>
-            )}
-            {macroStatus === "success" && (
+  return (
+    <PageShell mainClassName="gap-8">
+      <ProfileOnboardingGate />
+      <PageHeader
+        title="Macro Economics"
+        subtitle="Your daily briefing, personalized to your profile."
+      />
+
+      <div className="w-full max-w-4xl space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="text-sm text-muted-foreground">
+            {hasStoredProfile ? (
               <>
-                <p>success</p>
-                <pre style={{ whiteSpace: "pre-wrap" }}>
-                  {JSON.stringify(macroReport, null, 2)}
-                </pre>
+                Profile:{" "}
+                <span className="text-foreground">{profile.shortLabel}</span>
               </>
+            ) : (
+              <>Profile: Select a profile</>
             )}
           </div>
-
-          <form onSubmit={handleSubmit} className={styles.form}>
-            <input
-              type="email"
-              placeholder="Your amazing email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className={styles.emailInput}
-            />
-            
-            {error && <p className={styles.error}>{error}</p>}
-            
-            <button type="submit" className={styles.joinButton}>
-              JOIN WAITLIST
-            </button>
-          </form>
+          <select
+            className="h-10 rounded-md border border-input bg-background/50 px-3 text-sm text-foreground shadow-sm"
+            value={hasStoredProfile ? profileId : ""}
+            onChange={handleProfileChange}
+            disabled={macroStatus === "loading"}
+          >
+            <option value="">Select a profile</option>
+            {PROFILE_DEFINITIONS.map((profileOption) => (
+              <option key={profileOption.id} value={profileOption.id}>
+                {profileOption.shortLabel}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
-    </div>
+
+      {macroStatus === "idle" && (
+        <StatusMessage>
+          Choose a profile to personalize your Macro report.
+        </StatusMessage>
+      )}
+
+      {macroStatus === "loading" && (
+        <StatusMessage>Loading report...</StatusMessage>
+      )}
+
+      {macroStatus === "error" && (
+        <div className="w-full max-w-4xl">
+          <ErrorDisplay error={macroError} />
+        </div>
+      )}
+
+      {macroStatus === "success" && macroReport?.outputs && (
+        <MacroReportRenderer
+          outputs={macroReport.outputs}
+          variantCode={reportVariantCode}
+          macroProfileShortLabel={profile.shortLabel}
+          macroCadence="daily"
+          macroCadenceDisabled={true}
+        />
+      )}
+
+      {macroStatus === "success" && !macroReport?.outputs && (
+        <StatusMessage>
+          Report loaded, but no outputs were returned.
+        </StatusMessage>
+      )}
+    </PageShell>
   );
 }
