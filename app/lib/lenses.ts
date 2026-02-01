@@ -1,4 +1,4 @@
-export const MACRO_REPORT_VARIANTS = [
+const MACRO_REPORT_VARIANTS = [
   { code: "default", label: "Full Macros Report" },
   { code: "allocator_daily", label: "Allocator's Daily Macros" },
   { code: "trader_daily", label: "Trader's Daily Macros" },

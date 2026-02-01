@@ -24,6 +24,20 @@ function isProfileId(value: string | null): value is ProfileId {
   return value === "degen" || value === "trader" || value === "allocator";
 }
 
+function StatusMessage({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="w-full max-w-4xl">
+      <div
+        className="mv-card !rounded-lg border border-input bg-black/40 backdrop-blur-sm overflow-hidden p-6 sm:p-8 text-center text-muted-foreground"
+        role="status"
+        aria-live="polite"
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
   const { isFrameReady, setFrameReady, context } = useMiniKit();
   const [macroStatus, setMacroStatus] = useState<MacroStatus>("idle");
@@ -134,7 +148,14 @@ export default function Home() {
       <div className="w-full max-w-4xl space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="text-sm text-muted-foreground">
-            Profile: <span className="text-foreground">{profile.shortLabel}</span>
+            {hasStoredProfile ? (
+              <>
+                Profile:{" "}
+                <span className="text-foreground">{profile.shortLabel}</span>
+              </>
+            ) : (
+              <>Profile: Select a profile</>
+            )}
           </div>
           <select
             className="h-10 rounded-md border border-input bg-background/50 px-3 text-sm text-foreground shadow-sm"
@@ -153,27 +174,13 @@ export default function Home() {
       </div>
 
       {macroStatus === "idle" && (
-        <div className="w-full max-w-4xl">
-          <div
-            className="mv-card !rounded-lg border border-input bg-black/40 backdrop-blur-sm overflow-hidden p-6 sm:p-8 text-center text-muted-foreground"
-            role="status"
-            aria-live="polite"
-          >
-            Choose a profile to personalize your Macro report.
-          </div>
-        </div>
+        <StatusMessage>
+          Choose a profile to personalize your Macro report.
+        </StatusMessage>
       )}
 
       {macroStatus === "loading" && (
-        <div className="w-full max-w-4xl">
-          <div
-            className="mv-card !rounded-lg border border-input bg-black/40 backdrop-blur-sm overflow-hidden p-6 sm:p-8 text-center text-muted-foreground"
-            role="status"
-            aria-live="polite"
-          >
-            Loading report...
-          </div>
-        </div>
+        <StatusMessage>Loading report...</StatusMessage>
       )}
 
       {macroStatus === "error" && (
@@ -193,15 +200,9 @@ export default function Home() {
       )}
 
       {macroStatus === "success" && !macroReport?.outputs && (
-        <div className="w-full max-w-4xl">
-          <div
-            className="mv-card !rounded-lg border border-input bg-black/40 backdrop-blur-sm overflow-hidden p-6 sm:p-8 text-center text-muted-foreground"
-            role="status"
-            aria-live="polite"
-          >
-            Report loaded, but no outputs were returned.
-          </div>
-        </div>
+        <StatusMessage>
+          Report loaded, but no outputs were returned.
+        </StatusMessage>
       )}
     </PageShell>
   );
