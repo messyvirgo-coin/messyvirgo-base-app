@@ -70,6 +70,12 @@ export default function Home() {
       const url = new URL("/api/macro/latest", window.location.origin);
       url.searchParams.set("profile", profile);
       const response = await fetch(url.toString(), { signal: controller.signal });
+      
+      // Check if this request was aborted before processing response
+      if (abortRef.current !== controller) {
+        return;
+      }
+      
       if (!response.ok) {
         const errorBody = await response.json().catch(() => ({}));
         const detail =
@@ -80,9 +86,20 @@ export default function Home() {
       }
 
       const report = await response.json();
+      
+      // Check again before updating state - another request may have started
+      if (abortRef.current !== controller) {
+        return;
+      }
+      
       setMacroReport(report);
       setMacroStatus("success");
     } catch (fetchError) {
+      // Check if this request was aborted before updating error state
+      if (abortRef.current !== controller) {
+        return;
+      }
+      
       if (fetchError instanceof DOMException && fetchError.name === "AbortError") {
         return;
       }
