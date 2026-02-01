@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, type ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Card, CardContent } from "@/app/components/ui/card";
@@ -16,6 +16,19 @@ import {
   getReportMarkdownArtifact,
 } from "@/app/lib/lens-outputs";
 import type { LensOutputArtifact } from "@/app/lib/report-types";
+
+const PROSE_CLASSNAME =
+  "prose prose-sm max-w-none dark:prose-invert prose-headings:font-semibold prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-code:text-foreground prose-code:bg-muted prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-muted prose-pre:text-foreground prose-table:w-full prose-table:border prose-table:border-collapse prose-table:border-white/15 prose-th:border prose-th:border-white/15 prose-th:bg-white/5 prose-th:p-2 prose-th:text-left prose-th:font-semibold prose-td:border prose-td:border-white/15 prose-td:p-2 prose-td:text-left prose-ul:text-foreground prose-ol:text-foreground prose-li:text-foreground";
+
+const MARKDOWN_COMPONENTS = {
+  table: ({ children }: { children?: ReactNode }) => (
+    <div className="overflow-x-auto my-4 mv-scrollbar">
+      <table className="w-full border-collapse">{children}</table>
+    </div>
+  ),
+};
+
+const FOOTER_PROSE_CLASSNAME = `${PROSE_CLASSNAME} text-xs text-muted-foreground mt-6 pt-6`;
 
 function removeHeaderSection(markdown: string): string {
   const lines = markdown.split("\n");
@@ -130,10 +143,6 @@ export function MacroReportRenderer({
     typeof qualitativeAdjustment === "number"
       ? `${qualitativeAdjustment >= 0 ? "+" : ""}${qualitativeAdjustment.toFixed(2)} (QA)`
       : "—";
-  const effectiveNote =
-    typeof effectiveScore === "number"
-      ? `${effectiveScore >= 0 ? "+" : ""}${effectiveScore.toFixed(2)} (ES) • Range +/- 1.0`
-      : "—";
 
   return (
     <div className="w-full max-w-4xl mx-auto space-y-4">
@@ -156,7 +165,6 @@ export function MacroReportRenderer({
               }
               baseNote={baseNote}
               adjNote={adjNote}
-              effectiveNote={effectiveNote}
               verdictTitle={verdictTitle}
               macroCadence={macroCadence}
               onMacroCadenceChange={onMacroCadenceChange}
@@ -166,19 +174,11 @@ export function MacroReportRenderer({
 
             <Card className="mv-card !rounded-lg">
               <CardContent className="pt-9">
-                <div className="prose prose-sm max-w-none dark:prose-invert prose-headings:font-semibold prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-code:text-foreground prose-code:bg-muted prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-muted prose-pre:text-foreground prose-table:w-full prose-table:border prose-table:border-collapse prose-table:border-white/15 prose-th:border prose-th:border-white/15 prose-th:bg-white/5 prose-th:p-2 prose-th:text-left prose-th:font-semibold prose-td:border prose-td:border-white/15 prose-td:p-2 prose-td:text-left prose-ul:text-foreground prose-ol:text-foreground prose-li:text-foreground">
+                <div className={PROSE_CLASSNAME}>
                   {bodyMarkdown && (
                     <ReactMarkdown
                       remarkPlugins={[remarkGfm]}
-                      components={{
-                        table: ({ children }) => (
-                          <div className="overflow-x-auto my-4 mv-scrollbar">
-                            <table className="w-full border-collapse">
-                              {children}
-                            </table>
-                          </div>
-                        ),
-                      }}
+                      components={MARKDOWN_COMPONENTS}
                     >
                       {bodyMarkdown}
                     </ReactMarkdown>
@@ -187,15 +187,7 @@ export function MacroReportRenderer({
                   {annexesMarkdown && (
                     <ReactMarkdown
                       remarkPlugins={[remarkGfm]}
-                      components={{
-                        table: ({ children }) => (
-                          <div className="overflow-x-auto my-4 mv-scrollbar">
-                            <table className="w-full border-collapse">
-                              {children}
-                            </table>
-                          </div>
-                        ),
-                      }}
+                      components={MARKDOWN_COMPONENTS}
                     >
                       {annexesMarkdown}
                     </ReactMarkdown>
@@ -203,7 +195,7 @@ export function MacroReportRenderer({
                 </div>
 
                 {footerMarkdown && (
-                  <div className="prose prose-sm max-w-none dark:prose-invert prose-headings:font-semibold prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-code:text-foreground prose-code:bg-muted prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-muted prose-pre:text-foreground prose-table:w-full prose-table:border prose-table:border-collapse prose-table:border-white/15 prose-th:border prose-th:border-white/15 prose-th:bg-white/5 prose-th:p-2 prose-th:text-left prose-th:font-semibold prose-td:border prose-td:border-white/15 prose-td:p-2 prose-td:text-left prose-ul:text-foreground prose-ol:text-foreground prose-li:text-foreground text-xs text-muted-foreground mt-6 pt-6">
+                  <div className={FOOTER_PROSE_CLASSNAME}>
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
                       {footerMarkdown}
                     </ReactMarkdown>

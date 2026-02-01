@@ -15,7 +15,6 @@ export function MacroReportHeaderCard(props: {
   qualitativeAdjustment: number | null;
   baseNote: string;
   adjNote: string;
-  effectiveNote?: string;
   verdictTitle: string;
   macroCadence?: "daily" | "weekly";
   onMacroCadenceChange?: (cadence: "daily" | "weekly") => void;

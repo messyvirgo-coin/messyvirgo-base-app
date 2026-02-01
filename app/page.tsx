@@ -58,6 +58,9 @@ export default function Home() {
       const response = await fetch(url.toString(), {
         signal: controller.signal,
       });
+      if (abortRef.current !== controller) {
+        return;
+      }
       if (!response.ok) {
         const errorBody = await response.json().catch(() => ({}));
         const detail =
@@ -68,10 +71,16 @@ export default function Home() {
       }
 
       const report = (await response.json()) as PublishedMacroReportResponse;
+      if (abortRef.current !== controller) {
+        return;
+      }
       setMacroReport(report);
       setMacroStatus("success");
     } catch (fetchError) {
       if (fetchError instanceof DOMException && fetchError.name === "AbortError") {
+        return;
+      }
+      if (abortRef.current !== controller) {
         return;
       }
       setMacroError(
@@ -181,6 +190,18 @@ export default function Home() {
           macroCadence="daily"
           macroCadenceDisabled={true}
         />
+      )}
+
+      {macroStatus === "success" && !macroReport?.outputs && (
+        <div className="w-full max-w-4xl">
+          <div
+            className="mv-card !rounded-lg border border-input bg-black/40 backdrop-blur-sm overflow-hidden p-6 sm:p-8 text-center text-muted-foreground"
+            role="status"
+            aria-live="polite"
+          >
+            Report loaded, but no outputs were returned.
+          </div>
+        </div>
       )}
     </PageShell>
   );
