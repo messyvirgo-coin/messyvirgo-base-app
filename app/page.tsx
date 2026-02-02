@@ -2,33 +2,26 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useMiniKit } from "@coinbase/onchainkit/minikit";
-import { PageHeader } from "@/app/components/PageHeader";
 import { PageShell } from "@/app/components/PageShell";
 import { ErrorDisplay } from "@/app/components/ErrorDisplay";
 import { MacroReportRenderer } from "@/app/components/macro/MacroReportRenderer";
 import { ProfileOnboardingGate } from "@/app/components/ProfileOnboardingGate";
 import {
-  PROFILE_DEFINITIONS,
-  clearStoredProfileId,
   profileById,
-  setStoredProfileId,
   useHasStoredProfile,
   useProfileId,
   type ProfileId,
 } from "@/app/lib/profile";
+import { getMacroVariantLabel } from "@/app/lib/lenses";
 import type { PublishedMacroReportResponse } from "@/app/lib/report-types";
 
 type MacroStatus = "idle" | "loading" | "success" | "error";
-
-function isProfileId(value: string | null): value is ProfileId {
-  return value === "degen" || value === "trader" || value === "allocator";
-}
 
 function StatusMessage({ children }: { children: React.ReactNode }) {
   return (
     <div className="w-full max-w-4xl">
       <div
-        className="mv-card !rounded-lg border border-input bg-black/40 backdrop-blur-sm overflow-hidden p-6 sm:p-8 text-center text-muted-foreground"
+        className="mv-card rounded-lg border border-input bg-black/40 backdrop-blur-sm overflow-hidden p-6 sm:p-8 text-center text-muted-foreground"
         role="status"
         aria-live="polite"
       >
@@ -122,56 +115,30 @@ export default function Home() {
     };
   }, [fetchMacroReport, hasStoredProfile, profileId]);
 
-  const handleProfileChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const selected = event.target.value;
-    if (!isProfileId(selected)) {
-      clearStoredProfileId(fid);
-      return;
-    }
-
-    setStoredProfileId(selected, fid);
-  };
-
   const reportVariantCode = useMemo(
     () => `${profileId}_daily`,
     [profileId]
   );
 
+  const dashboardTitle = useMemo(() => {
+    if (!hasStoredProfile) return null;
+    const variantLabel = getMacroVariantLabel(reportVariantCode);
+    if (variantLabel) return variantLabel;
+    if (profile.shortLabel) {
+      return `${profile.shortLabel}'s Daily Macros`;
+    }
+    return "Daily Macros";
+  }, [hasStoredProfile, reportVariantCode, profile.shortLabel]);
+
   return (
     <PageShell mainClassName="gap-8">
       <ProfileOnboardingGate />
-      <PageHeader
-        title="Macro Economics"
-        subtitle="Your daily briefing, personalized to your profile."
-      />
 
-      <div className="w-full max-w-4xl space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div className="text-sm text-muted-foreground">
-            {hasStoredProfile ? (
-              <>
-                Profile:{" "}
-                <span className="text-foreground">{profile.shortLabel}</span>
-              </>
-            ) : (
-              <>Profile: Select a profile</>
-            )}
-          </div>
-          <select
-            className="h-10 rounded-md border border-input bg-background/50 px-3 text-sm text-foreground shadow-sm"
-            value={hasStoredProfile ? profileId : ""}
-            onChange={handleProfileChange}
-            disabled={macroStatus === "loading"}
-          >
-            <option value="">Select a profile</option>
-            {PROFILE_DEFINITIONS.map((profileOption) => (
-              <option key={profileOption.id} value={profileOption.id}>
-                {profileOption.shortLabel}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
+      {dashboardTitle && (
+        <h1 className="text-5xl font-bold font-serif text-gradient leading-[1.15] text-center -mt-4 md:mt-0">
+          {dashboardTitle}
+        </h1>
+      )}
 
       {macroStatus === "idle" && (
         <StatusMessage>
@@ -180,7 +147,7 @@ export default function Home() {
       )}
 
       {macroStatus === "loading" && (
-        <StatusMessage>Loading report...</StatusMessage>
+        <StatusMessage>Crunching macro data...</StatusMessage>
       )}
 
       {macroStatus === "error" && (

@@ -29,28 +29,28 @@ export function SignedRangeBar({
   return (
     <div className={cn("space-y-1", className)}>
       {showLabelRow && (
-        <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1 sm:gap-3">
-          <div className="text-xs font-semibold text-foreground whitespace-nowrap">
+        <div className="flex items-baseline justify-between gap-3">
+          <div className="text-sm font-semibold text-foreground whitespace-nowrap">
             {label}
           </div>
-          <div className="text-xs text-muted-foreground whitespace-nowrap">
+          <div className="text-sm text-foreground whitespace-nowrap">
             {note ?? "—"}
           </div>
         </div>
       )}
       {!showLabelRow && note && (
-        <div className="text-xs text-muted-foreground whitespace-nowrap text-right">
+        <div className="text-sm text-foreground whitespace-nowrap text-right">
           {note}
         </div>
       )}
 
-      <div className="relative h-2 rounded-full bg-white/10 overflow-hidden border border-white/10">
+      <div className="relative h-2 rounded-full bg-muted overflow-hidden border border-border">
         <div
-          className="absolute inset-y-0 left-1/2 w-px bg-white/25"
+          className="absolute inset-y-0 left-1/2 w-px bg-border"
           aria-hidden="true"
         />
         <div
-          className="absolute inset-y-0 rounded-full bg-gradient-to-r from-pink-400 via-fuchsia-400 to-violet-400"
+          className="absolute inset-y-0 rounded-full bg-linear-to-r from-pink-400 via-fuchsia-400 to-violet-400"
           style={fillStyle}
           aria-hidden="true"
         />

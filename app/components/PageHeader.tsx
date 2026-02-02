@@ -17,12 +17,12 @@ const headerVariants: Record<
 > = {
   default: {
     title: "text-5xl font-bold font-serif text-gradient leading-[1.15]",
-    subtitle: "text-lg text-muted-foreground max-w-2xl",
+    subtitle: "text-lg text-muted-foreground max-w-2xl mx-auto",
   },
   compact: {
     title:
       "text-4xl sm:text-5xl font-bold font-serif text-gradient leading-[1.15]",
-    subtitle: "text-sm sm:text-base text-muted-foreground max-w-2xl",
+    subtitle: "text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto",
   },
 };
 

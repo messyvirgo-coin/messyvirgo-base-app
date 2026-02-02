@@ -1,9 +1,8 @@
+import Image from "next/image";
 import { ChevronLeft, ChevronRight, ExternalLink } from "lucide-react";
-import { Card, CardHeader } from "@/app/components/ui/card";
 import { SignedRangeBar } from "@/app/components/SignedRangeBar";
 import { cn, imageUrl } from "@/app/lib/utils";
 import { formatTimestamp } from "@/app/lib/format";
-import { getMacroVariantLabel } from "@/app/lib/lenses";
 
 export function MacroReportHeaderCard(props: {
   variantCode: string | null;
@@ -38,7 +37,7 @@ export function MacroReportHeaderCard(props: {
     verdictTitle,
     executedAt,
     variantCode,
-    macroProfileShortLabel,
+    macroProfileShortLabel: _macroProfileShortLabel,
     fullReportHref,
     onOpenFullReport,
     onBackToBriefing,
@@ -52,20 +51,6 @@ export function MacroReportHeaderCard(props: {
   const inferredCadence =
     macroCadence ??
     ((variantCode ?? "").toLowerCase().includes("weekly") ? "weekly" : "daily");
-
-  const dashboardTitle = (() => {
-    if (!isLandingPage) {
-      const variantLabel = getMacroVariantLabel(variantCode);
-      if (variantLabel) return variantLabel;
-    }
-    if (macroProfileShortLabel) {
-      const possessive = `${macroProfileShortLabel}'s`;
-      return inferredCadence === "weekly"
-        ? `${possessive} Weekly Macros`
-        : `${possessive} Daily Macros`;
-    }
-    return inferredCadence === "weekly" ? "Weekly Macros" : "Daily Macros";
-  })();
 
   const dateSubtitle = (() => {
     if (!executedAt) return "";
@@ -101,9 +86,9 @@ export function MacroReportHeaderCard(props: {
   })();
 
   return (
-    <Card className="mv-card !rounded-lg">
-      <CardHeader className="!pb-9">
-        <div className="space-y-8">
+    <div>
+      <div className="pb-9">
+        <div className="space-y-8 -mt-6">
           {showCadenceToggle && (
             <div className="flex items-center justify-center gap-2 sm:gap-4 -mt-2">
               <button
@@ -133,10 +118,12 @@ export function MacroReportHeaderCard(props: {
                 aria-label="Daily report"
                 aria-pressed={macroCadence === "daily"}
               >
-                <img
+                <Image
                   src={imageUrl("/icons/daily-icon.png")}
                   alt="Daily"
-                  className="w-full h-full object-cover"
+                  fill
+                  sizes="56px"
+                  className="object-cover"
                 />
               </button>
 
@@ -154,10 +141,12 @@ export function MacroReportHeaderCard(props: {
                 aria-label="Weekly report"
                 aria-pressed={macroCadence === "weekly"}
               >
-                <img
+                <Image
                   src={imageUrl("/icons/weekly-icon.png")}
                   alt="Weekly"
-                  className="w-full h-full object-cover"
+                  fill
+                  sizes="56px"
+                  className="object-cover"
                 />
               </button>
 
@@ -176,7 +165,7 @@ export function MacroReportHeaderCard(props: {
             </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 items-stretch">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-12 items-stretch">
             <div className="flex justify-center order-1 md:order-0">
               <div
                 className={cn(
@@ -186,25 +175,23 @@ export function MacroReportHeaderCard(props: {
                 )}
                 style={{ aspectRatio: "3/2" }}
               >
-                <img
+                <Image
                   src={regimeImgSrc}
                   alt={
                     regimeLabel
                       ? `Macro risk regime ${regimeLabel}`
                       : "Macro risk regime"
                   }
-                  className="w-full h-full object-cover"
-                  loading="lazy"
+                  fill
+                  sizes="(min-width: 768px) 520px, 100vw"
+                  className="object-cover"
+                  priority
                 />
               </div>
             </div>
 
-            <div className="space-y-6 order-0 md:order-1">
-              <div className="space-y-3 text-center md:text-left">
-                <h3 className="text-2xl md:text-3xl font-bold font-serif text-pink-400 leading-tight">
-                  {dashboardTitle}
-                </h3>
-
+            <div className="space-y-6 order-0 md:order-1 mb-4 md:mb-0">
+              <div className="space-y-2 text-center md:text-left">
                 {dateSubtitle && (
                   <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
                     {dateSubtitle}
@@ -259,19 +246,19 @@ export function MacroReportHeaderCard(props: {
                   note={adjNote}
                   maxAbs={1}
                 />
-                <div className="rounded-lg border border-pink-400/30 bg-pink-400/5 p-3 space-y-2">
-                  <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1 sm:gap-3">
+                <div className="rounded-lg border border-pink-400/30 bg-pink-400/5 p-3 space-y-2 mb-3 md:mb-0">
+                  <div className="flex items-baseline justify-between gap-3">
                     <div className="text-sm font-semibold text-foreground whitespace-nowrap">
                       Effective Score
                     </div>
-                    <div className="text-sm font-semibold text-pink-200 flex flex-wrap items-center gap-1.5">
+                    <div className="text-sm font-semibold text-foreground flex flex-wrap items-center gap-1.5">
                       {typeof effectiveScore === "number"
                         ? `${effectiveScore.toFixed(2)} (ES)`
                         : "—"}
                       {typeof effectiveScore === "number" && (
                         <>
                           <span className="text-muted-foreground">•</span>
-                          <span className="inline-flex items-center rounded-md border border-pink-400/60 bg-pink-400/15 px-2 py-0.5 font-mono text-[11px] text-pink-100 whitespace-nowrap">
+                          <span className="inline-flex items-center rounded-md border border-pink-400/60 bg-pink-400/15 px-2 py-0.5 font-mono text-[11px] text-foreground whitespace-nowrap">
                             {regimeLabel ?? "—"}
                           </span>
                           <span className="text-foreground whitespace-nowrap">
@@ -292,7 +279,7 @@ export function MacroReportHeaderCard(props: {
             </div>
           </div>
         </div>
-      </CardHeader>
-    </Card>
+      </div>
+    </div>
   );
 }

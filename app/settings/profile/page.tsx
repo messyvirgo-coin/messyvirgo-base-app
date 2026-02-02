@@ -1,6 +1,9 @@
 "use client";
 
 import { useMiniKit } from "@coinbase/onchainkit/minikit";
+import { PageHeader } from "@/app/components/PageHeader";
+import { PageShell } from "@/app/components/PageShell";
+import { Card, CardContent } from "@/app/components/ui/card";
 import {
   useProfileId,
   setStoredProfileId,
@@ -18,38 +21,30 @@ export default function ProfileSettingsPage() {
     setStoredProfileId(id, fid);
   };
 
+  const profile = profileById(profileId);
+
   return (
-    <div style={{ padding: "32px 20px", display: "flex", justifyContent: "center" }}>
-      <div style={{ width: "100%", maxWidth: 960 }}>
-        <h1 style={{ margin: "0 0 8px", fontSize: 28 }}>Profile Settings</h1>
-        <p style={{ margin: "0 0 24px", color: "#9aa4c7" }}>
-          Choose how Messy presents reports, variants, and defaults.
-        </p>
+    <PageShell mainClassName="gap-8">
+      <PageHeader
+        title="Profile Settings"
+        subtitle={
+          <>
+            Choose how Messy presents reports, variants, and defaults. Current
+            profile: <span className="text-foreground">{profile.shortLabel}</span>.
+          </>
+        }
+      />
 
-        <div
-          style={{
-            borderRadius: 16,
-            padding: 24,
-            border: "1px solid rgba(255, 255, 255, 0.08)",
-            background: "#0b0b12",
-          }}
-        >
-          <ProfileChooser
-            selectedProfileId={profileId}
-            onSelectProfile={handleSelectProfile}
-          />
-        </div>
-
-        <div
-          style={{
-            marginTop: 16,
-            color: "#7b86a8",
-            fontSize: 12,
-          }}
-        >
-          Current profile: {profileById(profileId).shortLabel}
-        </div>
+      <div className="w-full max-w-4xl space-y-4">
+        <Card className="mv-card !rounded-lg">
+          <CardContent className="pt-9">
+            <ProfileChooser
+              selectedProfileId={profileId}
+              onSelectProfile={handleSelectProfile}
+            />
+          </CardContent>
+        </Card>
       </div>
-    </div>
+    </PageShell>
   );
 }
