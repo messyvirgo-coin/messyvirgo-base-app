@@ -22,7 +22,7 @@ export function PageShell({
         {showNav ? <SidebarNav /> : null}
         <div
           className={cn(
-            "container mx-auto px-4 py-10 max-w-6xl",
+            "container mx-auto px-4 pt-6 md:pt-10 pb-10 max-w-6xl",
             showNav ? "pb-24" : null,
             containerClassName
           )}

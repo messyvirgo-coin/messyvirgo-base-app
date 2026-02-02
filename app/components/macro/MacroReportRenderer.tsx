@@ -3,7 +3,6 @@
 import { useMemo, type ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Card, CardContent } from "@/app/components/ui/card";
 import { MacroReportHeaderCard } from "@/app/components/report/MacroReportHeaderCard";
 import {
   extractMacroRegimeDetails,
@@ -144,12 +143,22 @@ export function MacroReportRenderer({
       ? `${qualitativeAdjustment >= 0 ? "+" : ""}${qualitativeAdjustment.toFixed(2)} (QA)`
       : "—";
 
+  const showCadenceToggle =
+    typeof macroCadence === "string" &&
+    typeof onMacroCadenceChange === "function";
+  const isLandingPage = showCadenceToggle;
+
+  const inferredCadence =
+    macroCadence ??
+    ((variantCode ?? "").toLowerCase().includes("weekly") ? "weekly" : "daily");
+
   return (
     <div className="w-full max-w-4xl mx-auto space-y-4">
       <div className="space-y-4">
         {bodyMarkdown || annexesMarkdown || footerMarkdown ? (
           <>
-            <MacroReportHeaderCard
+            <div className="-mt-4 md:mt-8">
+              <MacroReportHeaderCard
               variantCode={variantCode}
               executedAt={executedAt}
               regimeLabel={regimeLabel}
@@ -171,45 +180,42 @@ export function MacroReportRenderer({
               macroCadenceDisabled={macroCadenceDisabled}
               macroProfileShortLabel={macroProfileShortLabel ?? null}
             />
+            </div>
 
-            <Card className="mv-card !rounded-lg">
-              <CardContent className="pt-9">
-                <div className={PROSE_CLASSNAME}>
-                  {bodyMarkdown && (
-                    <ReactMarkdown
-                      remarkPlugins={[remarkGfm]}
-                      components={MARKDOWN_COMPONENTS}
-                    >
-                      {bodyMarkdown}
-                    </ReactMarkdown>
-                  )}
-
-                  {annexesMarkdown && (
-                    <ReactMarkdown
-                      remarkPlugins={[remarkGfm]}
-                      components={MARKDOWN_COMPONENTS}
-                    >
-                      {annexesMarkdown}
-                    </ReactMarkdown>
-                  )}
-                </div>
-
-                {footerMarkdown && (
-                  <div className={FOOTER_PROSE_CLASSNAME}>
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                      {footerMarkdown}
-                    </ReactMarkdown>
-                  </div>
+            <div>
+              <div className={PROSE_CLASSNAME}>
+                {bodyMarkdown && (
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    components={MARKDOWN_COMPONENTS}
+                  >
+                    {bodyMarkdown}
+                  </ReactMarkdown>
                 )}
-              </CardContent>
-            </Card>
+
+                {annexesMarkdown && (
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    components={MARKDOWN_COMPONENTS}
+                  >
+                    {annexesMarkdown}
+                  </ReactMarkdown>
+                )}
+              </div>
+
+              {footerMarkdown && (
+                <div className={FOOTER_PROSE_CLASSNAME}>
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {footerMarkdown}
+                  </ReactMarkdown>
+                </div>
+              )}
+            </div>
           </>
         ) : (
-          <Card>
-            <CardContent className="text-center text-muted-foreground">
-              Markdown artifact not available.
-            </CardContent>
-          </Card>
+          <div className="text-center text-muted-foreground">
+            Markdown artifact not available.
+          </div>
         )}
       </div>
     </div>
