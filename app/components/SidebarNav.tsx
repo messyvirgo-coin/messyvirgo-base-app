@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -55,6 +55,9 @@ const THEME_OPTIONS = [
 export function SidebarNav() {
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const menuButtonRef = useRef<HTMLButtonElement | null>(null);
+  const closeButtonRef = useRef<HTMLButtonElement | null>(null);
+  const drawerRef = useRef<HTMLDivElement | null>(null);
   const pathname = usePathname();
   const { context } = useMiniKit();
   const fid = context?.user?.fid;
@@ -92,6 +95,24 @@ export function SidebarNav() {
     };
   }, [isOpen]);
 
+  useEffect(() => {
+    // Keep the off-canvas drawer inert when closed (a11y + prevents accidental focus).
+    const el = drawerRef.current;
+    if (el && "inert" in el) {
+      // `inert` is not in TypeScript's standard DOM typings everywhere.
+      (el as unknown as { inert: boolean }).inert = !isOpen;
+    }
+
+    if (isOpen) {
+      // Focus the close button when opening.
+      requestAnimationFrame(() => closeButtonRef.current?.focus());
+      return;
+    }
+
+    // Restore focus to the menu button when closing.
+    requestAnimationFrame(() => menuButtonRef.current?.focus());
+  }, [isOpen]);
+
   if (!mounted) {
     return null;
   }
@@ -101,6 +122,7 @@ export function SidebarNav() {
       <button
         type="button"
         onClick={() => setIsOpen(true)}
+        ref={menuButtonRef}
         className={cn(
           "fixed left-4 z-40 inline-flex h-11 items-center gap-2 rounded-full",
           "border border-border bg-card/80 px-4 text-sm font-medium text-foreground",
@@ -125,15 +147,17 @@ export function SidebarNav() {
       ) : null}
 
       <div
+        ref={drawerRef}
         role="dialog"
-        aria-modal="true"
+        aria-modal={isOpen ? "true" : undefined}
+        aria-hidden={isOpen ? undefined : "true"}
         aria-label="Navigation drawer"
         className={cn(
           "fixed left-0 top-0 z-50 h-dvh w-[min(85vw,320px)] overflow-hidden",
           "bg-background shadow-2xl dark:bg-background/95 dark:backdrop-blur-xl",
           "border-r border-border",
           "transform transition-transform duration-300 ease-out",
-          isOpen ? "translate-x-0" : "-translate-x-full"
+          isOpen ? "translate-x-0" : "-translate-x-full pointer-events-none"
         )}
       >
         <div className="flex h-full flex-col">
@@ -160,6 +184,7 @@ export function SidebarNav() {
             <button
               type="button"
               onClick={() => setIsOpen(false)}
+              ref={closeButtonRef}
               className={cn(
                 "inline-flex h-11 w-11 items-center justify-center rounded-md",
                 "border border-border bg-card text-foreground dark:bg-background/60",

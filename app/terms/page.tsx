@@ -14,7 +14,7 @@ export default function TermsPage() {
       />
 
       <div className="w-full max-w-4xl space-y-4">
-        <Card className="mv-card rounded-lg!">
+        <Card className="mv-card !rounded-lg">
           <CardContent className="space-y-4 text-sm text-foreground/90">
             <section className="space-y-2">
               <h3 className="font-semibold text-foreground">1. Acceptance of Terms</h3>

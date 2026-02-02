@@ -146,15 +146,6 @@ export function MacroReportRenderer({
       ? `${qualitativeAdjustment >= 0 ? "+" : ""}${qualitativeAdjustment.toFixed(2)} (QA)`
       : "—";
 
-  const showCadenceToggle =
-    typeof macroCadence === "string" &&
-    typeof onMacroCadenceChange === "function";
-  const isLandingPage = showCadenceToggle;
-
-  const inferredCadence =
-    macroCadence ??
-    ((variantCode ?? "").toLowerCase().includes("weekly") ? "weekly" : "daily");
-
   return (
     <div className="w-full max-w-4xl mx-auto space-y-4">
       <div className="space-y-4">

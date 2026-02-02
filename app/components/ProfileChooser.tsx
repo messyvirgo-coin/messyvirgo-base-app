@@ -62,9 +62,9 @@ export function ProfileChooser({
     touchStartRef.current = null;
     if (Math.abs(deltaX) < 40 || Math.abs(deltaX) < Math.abs(deltaY)) return;
     if (deltaX > 0) {
-      handleNext();
-    } else {
       handlePrev();
+    } else {
+      handleNext();
     }
   };
 

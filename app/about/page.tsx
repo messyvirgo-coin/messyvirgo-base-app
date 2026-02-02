@@ -27,8 +27,8 @@ export default function AboutPage() {
       />
 
       <div className="w-full max-w-4xl space-y-4">
-        <Card className="mv-card rounded-lg!">
-          <CardHeader className="pb-4!">
+        <Card className="mv-card !rounded-lg">
+          <CardHeader className="!pb-4">
             <div className="text-sm font-semibold text-foreground">
               What you’re seeing
             </div>

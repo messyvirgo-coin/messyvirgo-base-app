@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { ChevronLeft, ChevronRight, ExternalLink } from "lucide-react";
 import { SignedRangeBar } from "@/app/components/SignedRangeBar";
 import { cn, imageUrl } from "@/app/lib/utils";
@@ -36,7 +37,7 @@ export function MacroReportHeaderCard(props: {
     verdictTitle,
     executedAt,
     variantCode,
-    macroProfileShortLabel,
+    macroProfileShortLabel: _macroProfileShortLabel,
     fullReportHref,
     onOpenFullReport,
     onBackToBriefing,
@@ -117,10 +118,12 @@ export function MacroReportHeaderCard(props: {
                 aria-label="Daily report"
                 aria-pressed={macroCadence === "daily"}
               >
-                <img
+                <Image
                   src={imageUrl("/icons/daily-icon.png")}
                   alt="Daily"
-                  className="w-full h-full object-cover"
+                  fill
+                  sizes="56px"
+                  className="object-cover"
                 />
               </button>
 
@@ -138,10 +141,12 @@ export function MacroReportHeaderCard(props: {
                 aria-label="Weekly report"
                 aria-pressed={macroCadence === "weekly"}
               >
-                <img
+                <Image
                   src={imageUrl("/icons/weekly-icon.png")}
                   alt="Weekly"
-                  className="w-full h-full object-cover"
+                  fill
+                  sizes="56px"
+                  className="object-cover"
                 />
               </button>
 
@@ -170,15 +175,17 @@ export function MacroReportHeaderCard(props: {
                 )}
                 style={{ aspectRatio: "3/2" }}
               >
-                <img
+                <Image
                   src={regimeImgSrc}
                   alt={
                     regimeLabel
                       ? `Macro risk regime ${regimeLabel}`
                       : "Macro risk regime"
                   }
-                  className="w-full h-full object-cover"
-                  loading="lazy"
+                  fill
+                  sizes="(min-width: 768px) 520px, 100vw"
+                  className="object-cover"
+                  priority
                 />
               </div>
             </div>
@@ -265,7 +272,7 @@ export function MacroReportHeaderCard(props: {
                     label=""
                     value={effectiveScore}
                     maxAbs={1}
-                    className="space-y-0!"
+                    className="!space-y-0"
                   />
                 </div>
               </div>
