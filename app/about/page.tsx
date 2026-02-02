@@ -9,7 +9,7 @@ export default function AboutPage() {
 
   return (
     <PageShell mainClassName="gap-8">
-      <div className="w-full max-w-4xl mx-auto space-y-8">
+      <div className="w-full max-w-4xl mx-auto space-y-12">
         <Link
           href="/"
           className="inline-flex items-center gap-2 text-sm text-[rgb(255,105,180)] hover:text-[rgb(255,105,180)]/80 transition-colors"
@@ -30,12 +30,12 @@ export default function AboutPage() {
             </>
           }
         />
-        <div className="space-y-4">
-          <div className="text-center">
-            <h2 className="text-2xl font-semibold text-[rgb(255,105,180)] mb-2">
+        <div className="space-y-6">
+          <div className="text-center space-y-4">
+            <h2 className="text-2xl font-semibold text-[rgb(255,105,180)]">
               About the report
             </h2>
-            <p className="text-sm text-muted-foreground mb-4">
+            <p className="text-base font-medium text-foreground max-w-2xl mx-auto">
               A quantitative framework for translating macro & liquidity into
               clear crypto positioning guidance.
             </p>
@@ -72,12 +72,12 @@ export default function AboutPage() {
           </div>
         </div>
 
-        <div className="space-y-4">
-          <div className="text-center">
-            <h2 className="text-2xl font-semibold text-[rgb(255,105,180)] mb-2">
+        <div className="space-y-6">
+          <div className="text-center space-y-4">
+            <h2 className="text-2xl font-semibold text-[rgb(255,105,180)]">
               About Messy Virgo
             </h2>
-            <p className="text-sm text-muted-foreground mb-4">
+            <p className="text-base font-medium text-foreground max-w-2xl mx-auto">
               Building your friendly AI fund agent for small- and mid-cap crypto. Powered by $MESSY on Base.
             </p>
           </div>
