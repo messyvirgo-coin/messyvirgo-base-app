@@ -87,15 +87,18 @@ export function SidebarNav() {
   }, [pathname]);
 
   const handleBack = () => {
-    // Prefer browser history back (most "app-like" when it works).
-    try {
-      router.back();
-    } catch {
-      // ignore
-    }
-
-    // If history is not reliable (common in embeds), fall back to last in-app route.
     if (typeof window !== "undefined") {
+      // Prefer browser history back (most "app-like" when it works).
+      const idx = (window.history.state as { idx?: number } | null)?.idx;
+      const canGoBack =
+        typeof idx === "number" ? idx > 0 : window.history.length > 1;
+
+      if (canGoBack) {
+        router.back();
+        return;
+      }
+
+      // If history is not reliable (common in embeds), fall back to last in-app route.
       const last = window.sessionStorage.getItem("mv:lastPath");
       if (last && last !== pathname) {
         router.push(last);
