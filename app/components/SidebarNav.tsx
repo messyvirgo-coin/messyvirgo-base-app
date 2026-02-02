@@ -63,9 +63,10 @@ export function SidebarNav() {
   const fid = context?.user?.fid;
   const profileId = useProfileId(fid);
   const profile = profileById(profileId);
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, resolvedTheme } = useTheme();
 
   const activeTheme = useMemo(() => theme ?? "system", [theme]);
+  const isDarkMode = resolvedTheme === "dark";
 
   useEffect(() => {
     setMounted(true);
@@ -213,9 +214,16 @@ export function SidebarNav() {
                     className={cn(
                       "flex min-h-11 items-center rounded-lg px-4 text-sm font-medium transition-colors",
                       isActive
-                        ? "bg-primary/10 text-black dark:bg-pink-500/15 dark:text-white"
+                        ? "bg-primary/10 dark:bg-pink-500/15"
                         : "text-foreground hover:bg-accent/60 hover:text-foreground dark:text-muted-foreground dark:hover:text-foreground"
                     )}
+                    style={
+                      isActive && !isDarkMode
+                        ? { color: "rgb(0, 0, 0)" }
+                        : isActive && isDarkMode
+                        ? { color: "rgb(255, 255, 255)" }
+                        : undefined
+                    }
                   >
                     {item.label}
                   </Link>
