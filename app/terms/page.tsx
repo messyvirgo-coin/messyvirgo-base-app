@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { PageHeader } from "@/app/components/PageHeader";
 import { PageShell } from "@/app/components/PageShell";
 import { Card, CardContent } from "@/app/components/ui/card";
@@ -87,15 +86,6 @@ export default function TermsPage() {
                 of the courts located in that location.
               </p>
             </section>
-
-            <div className="pt-4">
-              <Link
-                href="/"
-                className="text-pink-200 underline underline-offset-4 decoration-pink-400/30 hover:decoration-pink-300/60"
-              >
-                ← Back to Dashboard
-              </Link>
-            </div>
           </CardContent>
         </Card>
       </div>

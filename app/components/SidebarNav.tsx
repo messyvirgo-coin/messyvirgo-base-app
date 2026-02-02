@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import {
   Menu,
@@ -13,6 +13,7 @@ import {
   Moon,
   Sun,
   Laptop,
+  ChevronLeft,
   ChevronRight,
 } from "lucide-react";
 import { useMiniKit } from "@coinbase/onchainkit/minikit";
@@ -59,6 +60,8 @@ export function SidebarNav() {
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const drawerRef = useRef<HTMLDivElement | null>(null);
   const pathname = usePathname();
+  const router = useRouter();
+  const pathnameRef = useRef<string | null>(null);
   const { context } = useMiniKit();
   const fid = context?.user?.fid;
   const profileId = useProfileId(fid);
@@ -67,6 +70,42 @@ export function SidebarNav() {
 
   const activeTheme = useMemo(() => theme ?? "system", [theme]);
   const isDarkMode = resolvedTheme === "dark";
+  const showBack = (pathname || "/") !== "/";
+
+  // Track an in-app "previous route" as a reliable fallback for webviews where
+  // history.back() may be unavailable or cleared.
+  useEffect(() => {
+    if (!pathname) return;
+    const prev = pathnameRef.current;
+    pathnameRef.current = pathname;
+
+    if (typeof window === "undefined") return;
+    if (prev && prev !== pathname) {
+      window.sessionStorage.setItem("mv:lastPath", prev);
+    }
+    window.sessionStorage.setItem("mv:currentPath", pathname);
+  }, [pathname]);
+
+  const handleBack = () => {
+    // Prefer browser history back (most "app-like" when it works).
+    try {
+      router.back();
+    } catch {
+      // ignore
+    }
+
+    // If history is not reliable (common in embeds), fall back to last in-app route.
+    if (typeof window !== "undefined") {
+      const last = window.sessionStorage.getItem("mv:lastPath");
+      if (last && last !== pathname) {
+        router.push(last);
+        return;
+      }
+    }
+
+    // Last resort: dashboard.
+    router.push("/");
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -120,24 +159,49 @@ export function SidebarNav() {
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setIsOpen(true)}
-        ref={menuButtonRef}
+      <div
         className={cn(
-          "fixed left-4 z-40 inline-flex h-11 items-center gap-2 rounded-full",
-          "border border-border bg-card/80 px-4 text-sm font-medium text-foreground",
-          "shadow-lg backdrop-blur-md transition-colors",
-          "hover:border-pink-400/40 hover:bg-accent/70"
+          "fixed left-4 z-40 inline-flex overflow-hidden rounded-full",
+          // Make the floating control more solid in light mode.
+          "border border-border bg-card/95 shadow-lg backdrop-blur-md transition-colors dark:bg-card/80",
+          "hover:border-pink-400/40"
         )}
         style={{
           bottom: "calc(1rem + env(safe-area-inset-bottom))",
         }}
-        aria-label="Open navigation menu"
       >
-        <Menu className="h-5 w-5" />
-        <span>Menu</span>
-      </button>
+        {showBack ? (
+          <>
+            <button
+              type="button"
+              onClick={handleBack}
+              className={cn(
+                "inline-flex h-11 w-11 items-center justify-center",
+                "text-foreground transition-colors hover:bg-accent/70"
+              )}
+              aria-label="Go back"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+
+            <div className="my-2 w-[0.5px] bg-border/30" aria-hidden="true" />
+          </>
+        ) : null}
+
+        <button
+          type="button"
+          onClick={() => setIsOpen(true)}
+          ref={menuButtonRef}
+          className={cn(
+            "inline-flex h-11 items-center gap-2 px-4",
+            "text-sm font-medium text-foreground transition-colors hover:bg-accent/70"
+          )}
+          aria-label="Open navigation menu"
+        >
+          <Menu className="h-5 w-5" />
+          <span>Menu</span>
+        </button>
+      </div>
 
       {isOpen ? (
         <div
@@ -155,7 +219,9 @@ export function SidebarNav() {
         aria-label="Navigation drawer"
         className={cn(
           "fixed left-0 top-0 z-50 h-dvh w-[min(85vw,320px)] overflow-hidden",
-          "bg-background shadow-2xl dark:bg-background/95 dark:backdrop-blur-xl",
+          // In light mode keep the drawer more opaque/solid.
+          // In dark mode allow subtle translucency + blur.
+          "bg-background backdrop-blur-none shadow-2xl dark:bg-background/95 dark:backdrop-blur-xl",
           "border-r border-border",
           "transform transition-transform duration-300 ease-out",
           isOpen ? "translate-x-0" : "-translate-x-full pointer-events-none"
@@ -272,9 +338,16 @@ export function SidebarNav() {
                       "flex min-h-11 items-center gap-3 rounded-lg px-4 text-sm font-medium",
                       "transition-colors",
                       isActive
-                        ? "bg-primary/10 text-black dark:bg-pink-500/15 dark:text-white"
+                        ? "bg-primary/10 dark:bg-pink-500/15"
                         : "text-foreground hover:bg-accent/60 hover:text-foreground dark:text-muted-foreground dark:hover:text-foreground"
                     )}
+                    style={
+                      isActive && !isDarkMode
+                        ? { color: "rgb(0, 0, 0)" }
+                        : isActive && isDarkMode
+                          ? { color: "rgb(255, 255, 255)" }
+                          : undefined
+                    }
                     aria-pressed={isActive}
                   >
                     <Icon className="h-5 w-5" />

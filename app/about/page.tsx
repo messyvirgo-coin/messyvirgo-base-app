@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { ChevronLeft, Globe, Twitter, MessageCircle, ExternalLink } from "lucide-react";
+import { Globe, Twitter, MessageCircle, ExternalLink } from "lucide-react";
 import { PageHeader } from "@/app/components/PageHeader";
 import { PageShell } from "@/app/components/PageShell";
 
@@ -10,15 +9,6 @@ export default function AboutPage() {
   return (
     <PageShell mainClassName="gap-8">
       <div className="w-full max-w-4xl mx-auto space-y-12">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 text-sm text-[rgb(255,105,180)] hover:text-[rgb(255,105,180)]/80 transition-colors"
-          aria-label="Back to Dashboard"
-        >
-          <ChevronLeft className="h-4 w-4" />
-          <span>Dashboard</span>
-        </Link>
-
         <PageHeader
           title="About"
           subtitle={
