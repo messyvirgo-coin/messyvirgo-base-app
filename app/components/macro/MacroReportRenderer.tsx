@@ -60,14 +60,12 @@ function removeHeaderSection(markdown: string): string {
 export function MacroReportRenderer({
   outputs,
   variantCode,
-  macroProfileShortLabel,
   macroCadence,
   onMacroCadenceChange,
   macroCadenceDisabled,
 }: {
   outputs: LensOutputArtifact[];
   variantCode: string | null;
-  macroProfileShortLabel?: string | null;
   macroCadence?: "daily" | "weekly";
   onMacroCadenceChange?: (cadence: "daily" | "weekly") => void;
   macroCadenceDisabled?: boolean;
@@ -172,7 +170,6 @@ export function MacroReportRenderer({
               macroCadence={macroCadence}
               onMacroCadenceChange={onMacroCadenceChange}
               macroCadenceDisabled={macroCadenceDisabled}
-              macroProfileShortLabel={macroProfileShortLabel ?? null}
             />
             </div>
 

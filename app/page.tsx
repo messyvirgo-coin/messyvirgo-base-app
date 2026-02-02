@@ -160,7 +160,6 @@ export default function Home() {
         <MacroReportRenderer
           outputs={macroReport.outputs}
           variantCode={reportVariantCode}
-          macroProfileShortLabel={profile.shortLabel}
           macroCadence="daily"
           macroCadenceDisabled={true}
         />

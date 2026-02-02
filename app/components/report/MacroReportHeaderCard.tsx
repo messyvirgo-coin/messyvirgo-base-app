@@ -18,7 +18,6 @@ export function MacroReportHeaderCard(props: {
   macroCadence?: "daily" | "weekly";
   onMacroCadenceChange?: (cadence: "daily" | "weekly") => void;
   macroCadenceDisabled?: boolean;
-  macroProfileShortLabel?: string | null;
   fullReportHref?: string | null;
   onOpenFullReport?: () => void;
   onBackToBriefing?: () => void;
@@ -37,7 +36,6 @@ export function MacroReportHeaderCard(props: {
     verdictTitle,
     executedAt,
     variantCode,
-    macroProfileShortLabel: _macroProfileShortLabel,
     fullReportHref,
     onOpenFullReport,
     onBackToBriefing,
