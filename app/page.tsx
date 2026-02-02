@@ -147,7 +147,7 @@ export default function Home() {
       )}
 
       {macroStatus === "loading" && (
-        <StatusMessage>Loading report...</StatusMessage>
+        <StatusMessage>Crunching macro data...</StatusMessage>
       )}
 
       {macroStatus === "error" && (

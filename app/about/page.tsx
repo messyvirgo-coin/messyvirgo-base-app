@@ -1,76 +1,164 @@
 "use client";
 
 import Link from "next/link";
-import { useMiniKit } from "@coinbase/onchainkit/minikit";
+import { ChevronLeft, Globe, Twitter, MessageCircle, ExternalLink } from "lucide-react";
 import { PageHeader } from "@/app/components/PageHeader";
 import { PageShell } from "@/app/components/PageShell";
-import { Card, CardContent, CardHeader } from "@/app/components/ui/card";
-import { profileById, useProfileId } from "@/app/lib/profile";
 
 export default function AboutPage() {
-  const { context } = useMiniKit();
-  const fid = context?.user?.fid;
-  const profileId = useProfileId(fid);
-  const profile = profileById(profileId);
 
   return (
     <PageShell mainClassName="gap-8">
-      <PageHeader
-        title="About"
-        subtitle={
-          <>
-            Messy Virgo is a lightweight market context mini-app. Your experience
-            is personalized to the <span className="text-foreground">{profile.shortLabel}</span>{" "}
-            profile.
-          </>
-        }
-      />
+      <div className="w-full max-w-4xl mx-auto space-y-8">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-sm text-[rgb(255,105,180)] hover:text-[rgb(255,105,180)]/80 transition-colors"
+          aria-label="Back to Dashboard"
+        >
+          <ChevronLeft className="h-4 w-4" />
+          <span>Dashboard</span>
+        </Link>
 
-      <div className="w-full max-w-4xl space-y-4">
-        <Card className="mv-card !rounded-lg">
-          <CardHeader className="!pb-4">
-            <div className="text-sm font-semibold text-foreground">
-              What you’re seeing
-            </div>
-            <div className="text-sm text-muted-foreground">
-              A daily macro regime briefing with clear “risk-on / risk-off”
-              framing.
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-3 text-sm text-foreground/90">
-            <p>
-              The goal is to reduce context-switching: you open the app, pick
-              your profile once, and get a concise daily macro read.
+        <PageHeader
+          title="About"
+          subtitle={
+            <>
+              We believe in a world where the most powerful financial tools aren&apos;t
+              reserved for insiders, but are transparent, AI‑driven, and simple enough
+              for anyone to use—governed on‑chain by the very people whose future they
+              help shape.
+            </>
+          }
+        />
+        <div className="space-y-4">
+          <div className="text-center">
+            <h2 className="text-2xl font-semibold text-[rgb(255,105,180)] mb-2">
+              About the report
+            </h2>
+            <p className="text-sm text-muted-foreground mb-4">
+              A quantitative framework for translating macro & liquidity into
+              clear crypto positioning guidance.
             </p>
-            <p className="text-muted-foreground">
-              Not financial advice. For informational purposes only.
-            </p>
-            <div className="pt-2 flex flex-wrap gap-3 text-xs">
-              <Link
-                href="/me"
-                className="text-pink-200 underline underline-offset-4 decoration-pink-400/30 hover:decoration-pink-300/60"
-              >
-                Profile Settings
-              </Link>
-              <span className="text-muted-foreground">•</span>
-              <Link
-                href="/privacy"
-                className="text-pink-200 underline underline-offset-4 decoration-pink-400/30 hover:decoration-pink-300/60"
-              >
-                Privacy
-              </Link>
-              <span className="text-muted-foreground">•</span>
-              <Link
-                href="/terms"
-                className="text-pink-200 underline underline-offset-4 decoration-pink-400/30 hover:decoration-pink-300/60"
-              >
-                Terms
-              </Link>
+          </div>
+          <div className="mv-card rounded-lg p-6 sm:p-8">
+            <div className="space-y-3 text-sm text-foreground/90">
+              <p>
+                The Crypto Macro Economics Report ingests 13 macro and liquidity
+                indicators from trusted sources (including BIS, FRED, DeFiLlama,
+                and SoSoValue), normalizes each into a comparable signal, and
+                aggregates them into a weighted base score to summarize the
+                current regime.
+              </p>
+              <p>
+                It then applies a structured current-events overlay to produce an
+                effective score and regime label (from strong risk-on to
+                defensive), and translates that into actionable sizing guidance
+                across four buckets: stablecoins, majors (BTC/ETH), high-beta
+                alts, and micro/long-tail assets. Reports refresh daily, are
+                shareable, and are for educational research—not financial advice.
+              </p>
+              <div className="pt-1">
+                <a
+                  href="https://www.messyvirgo.com/crypto-macro-economics-report.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-[rgb(255,105,180)] hover:text-[rgb(255,105,180)]/80 transition-colors"
+                >
+                  <span>Read the full methodology</span>
+                  <ExternalLink className="h-4 w-4" />
+                </a>
+              </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <div className="text-center">
+            <h2 className="text-2xl font-semibold text-[rgb(255,105,180)] mb-2">
+              About Messy Virgo
+            </h2>
+            <p className="text-sm text-muted-foreground mb-4">
+              Building your friendly AI fund agent for small- and mid-cap crypto. Powered by $MESSY on Base.
+            </p>
+          </div>
+          <div className="mv-card rounded-lg p-6 sm:p-8">
+            <div className="space-y-4 text-sm text-foreground/90">
+              <p>
+                She appears as a playful anime mascot, but &quot;Messy&quot; is actually an AI strategist that learns
+                from data, tests theories, and publishes results.
+              </p>
+              <p>
+                She starts as a research assistant with dashboards and evolves
+                into an on-chain AI fund agent, with $MESSY as the token linking
+                you to her tools and future.
+              </p>
+
+              <section className="space-y-2">
+                <h3 className="font-semibold text-foreground">$MESSY Token</h3>
+                <p>
+                  Base-native token powering the ecosystem—audited (CertiK
+                  templates, Bitbond Token Tool, SOLIDProof) and team‑KYC&apos;d
+                  for a secure foundation.
+                </p>
+              </section>
+
+              <section className="space-y-2">
+                <h3 className="font-semibold text-foreground">What we&apos;re building</h3>
+                <ul className="list-disc list-inside space-y-1 ml-2">
+                  <li>
+                    <span className="font-medium">Due Diligence Engine:</span>{" "}
+                    Real-time signal detection across social, news, and on-chain
+                    data—plus automated AI project analysis and fundamentals
+                    scoring to surface real opportunities.
+                  </li>
+                  <li>
+                    <span className="font-medium">AI Fund Agent:</span> Portfolio
+                    construction and optimization algorithms that manage positions
+                    end-to-end—balancing risk and execution with a smooth user
+                    experience.
+                  </li>
+                  <li>
+                    <span className="font-medium">Messy Virgo DAO:</span> A Swiss
+                    association structure gives the Messy Virgo DAO a kind of
+                    Swiss &quot;passport&quot;—recognized governance, clearer compliance
+                    paths, and easier partnerships.
+                  </li>
+                </ul>
+              </section>
+
+              <div className="pt-4 flex flex-wrap gap-4 text-sm">
+                <a
+                  href="https://www.messyvirgo.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-[rgb(255,105,180)] hover:text-[rgb(255,105,180)]/80 transition-colors"
+                >
+                  <Globe className="h-4 w-4" />
+                  <span>Homepage</span>
+                </a>
+                <a
+                  href="https://x.com/messyvirgo"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-[rgb(255,105,180)] hover:text-[rgb(255,105,180)]/80 transition-colors"
+                >
+                  <Twitter className="h-4 w-4" />
+                  <span>Twitter / X</span>
+                </a>
+                <a
+                  href="https://t.me/messyvirgo"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-[rgb(255,105,180)] hover:text-[rgb(255,105,180)]/80 transition-colors"
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  <span>Telegram</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </PageShell>
   );
 }
-
