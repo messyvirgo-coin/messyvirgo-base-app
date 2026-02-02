@@ -188,7 +188,7 @@ export function SidebarNav() {
                     className={cn(
                       "flex min-h-11 items-center rounded-lg px-4 text-sm font-medium transition-colors",
                       isActive
-                        ? "bg-primary/10 text-black dark:bg-pink-500/15 dark:text-foreground"
+                        ? "bg-primary/10 text-black dark:bg-pink-500/15 dark:text-white"
                         : "text-foreground hover:bg-accent/60 hover:text-foreground dark:text-muted-foreground dark:hover:text-foreground"
                     )}
                   >
@@ -239,7 +239,7 @@ export function SidebarNav() {
                       "flex min-h-11 items-center gap-3 rounded-lg px-4 text-sm font-medium",
                       "transition-colors",
                       isActive
-                        ? "bg-primary/10 text-black dark:bg-pink-500/15 dark:text-foreground"
+                        ? "bg-primary/10 text-black dark:bg-pink-500/15 dark:text-white"
                         : "text-foreground hover:bg-accent/60 hover:text-foreground dark:text-muted-foreground dark:hover:text-foreground"
                     )}
                     aria-pressed={isActive}
