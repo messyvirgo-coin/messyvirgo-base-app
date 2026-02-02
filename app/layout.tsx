@@ -3,6 +3,7 @@ import { Inter, Source_Code_Pro, Playfair_Display } from "next/font/google";
 import { SafeArea } from "@coinbase/onchainkit/minikit";
 import { minikitConfig } from "../minikit.config";
 import { RootProvider } from "./rootProvider";
+import { ThemeProvider } from "./components/ThemeProvider";
 import "./globals.css";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -63,14 +64,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <RootProvider>
-      <html lang="en" className="dark">
-        <body
-          className={`${inter.variable} ${sourceCodePro.variable} ${playfairDisplay.variable}`}
-        >
-          <SafeArea>{children}</SafeArea>
-        </body>
-      </html>
-    </RootProvider>
+    <html lang="en" suppressHydrationWarning>
+      <body
+        className={`${inter.variable} ${sourceCodePro.variable} ${playfairDisplay.variable}`}
+      >
+        <RootProvider>
+          <ThemeProvider>
+            <SafeArea>{children}</SafeArea>
+          </ThemeProvider>
+        </RootProvider>
+      </body>
+    </html>
   );
 }

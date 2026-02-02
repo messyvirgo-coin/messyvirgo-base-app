@@ -141,8 +141,8 @@ export default function Home() {
     <PageShell mainClassName="gap-8">
       <ProfileOnboardingGate />
       <PageHeader
-        title="Macro Economics"
-        subtitle="Your daily briefing, personalized to your profile."
+        title="Dashboard"
+        subtitle="Your daily macro briefing, personalized to your profile."
       />
 
       <div className="w-full max-w-4xl space-y-4">
