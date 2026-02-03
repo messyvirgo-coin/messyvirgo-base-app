@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from "react";
+import { isBrowser, normalizeWalletAddress } from "@/app/lib/utils";
 
 export type ProfileId = "degen" | "trader" | "allocator";
 
@@ -68,20 +69,6 @@ export const PROFILE_DEFINITIONS: readonly ProfileDefinition[] = [
     ],
   },
 ] as const;
-
-function isBrowser(): boolean {
-  return typeof window !== "undefined" && typeof document !== "undefined";
-}
-
-function normalizeWalletAddress(
-  address: string | null | undefined
-): string | null {
-  if (!address) return null;
-  const trimmed = address.trim();
-  // Keep this permissive: just normalize case when it looks like an EVM address.
-  if (/^0x[a-fA-F0-9]{40}$/.test(trimmed)) return trimmed.toLowerCase();
-  return trimmed;
-}
 
 function getStorageKey(walletAddress: string | null | undefined): string {
   const normalized = normalizeWalletAddress(walletAddress);

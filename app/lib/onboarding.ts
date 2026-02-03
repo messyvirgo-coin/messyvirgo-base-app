@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from "react";
+import { isBrowser, normalizeWalletAddress } from "@/app/lib/utils";
 
 type LegalAcceptance = {
   termsVersion: string;
@@ -12,19 +13,6 @@ const EVENT_NAME = "mv_legal_changed";
 // Bump these when you materially change legal docs and want to re-prompt.
 export const TERMS_VERSION = "v1";
 export const PRIVACY_VERSION = "v1";
-
-function isBrowser(): boolean {
-  return typeof window !== "undefined" && typeof document !== "undefined";
-}
-
-function normalizeWalletAddress(
-  address: string | null | undefined
-): string | null {
-  if (!address) return null;
-  const trimmed = address.trim();
-  if (/^0x[a-fA-F0-9]{40}$/.test(trimmed)) return trimmed.toLowerCase();
-  return trimmed;
-}
 
 function getStorageKey(walletAddress: string | null | undefined): string {
   const normalized = normalizeWalletAddress(walletAddress);
@@ -101,22 +89,6 @@ export function setAcceptedCurrentLegal(
       acceptedAt: new Date().toISOString(),
     };
     window.localStorage.setItem(getStorageKey(walletAddress), JSON.stringify(payload));
-    window.dispatchEvent(new Event(EVENT_NAME));
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-export function clearLegalAcceptance(
-  walletAddress: string | null | undefined
-): boolean {
-  if (!isBrowser()) return false;
-  try {
-    window.localStorage.removeItem(getStorageKey(walletAddress));
-    if (walletAddress) {
-      window.localStorage.removeItem(getStorageKey(null));
-    }
     window.dispatchEvent(new Event(EVENT_NAME));
     return true;
   } catch {

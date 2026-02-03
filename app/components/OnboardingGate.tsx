@@ -15,6 +15,26 @@ function isExemptPath(pathname: string): boolean {
   return false;
 }
 
+function LoadingScreen() {
+  return (
+    <div
+      className="min-h-screen flex flex-col items-center justify-center gap-3 py-10 text-muted-foreground"
+      role="status"
+      aria-live="polite"
+    >
+      <Image
+        src="/logo.svg"
+        alt="Messy logo"
+        width={56}
+        height={56}
+        priority
+        style={{ objectFit: "contain" }}
+      />
+      <div>Loading...</div>
+    </div>
+  );
+}
+
 export function OnboardingGate({ children }: Props) {
   const pathname = usePathname() ?? "/";
   const router = useRouter();
@@ -42,44 +62,12 @@ export function OnboardingGate({ children }: Props) {
   }, [pathname, router, targetPath]);
 
   if (!mounted) {
-    return (
-      <div
-        className="min-h-screen flex flex-col items-center justify-center gap-3 py-10 text-muted-foreground"
-        role="status"
-        aria-live="polite"
-      >
-        <Image
-          src="/logo.svg"
-          alt="Messy logo"
-          width={56}
-          height={56}
-          priority
-          style={{ objectFit: "contain" }}
-        />
-        <div>Loading...</div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   // If we need to redirect, suppress app content to avoid flashes behind the redirect.
   if (targetPath) {
-    return (
-      <div
-        className="min-h-screen flex flex-col items-center justify-center gap-3 py-10 text-muted-foreground"
-        role="status"
-        aria-live="polite"
-      >
-        <Image
-          src="/logo.svg"
-          alt="Messy logo"
-          width={56}
-          height={56}
-          priority
-          style={{ objectFit: "contain" }}
-        />
-        <div>Loading...</div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   return <>{children}</>;

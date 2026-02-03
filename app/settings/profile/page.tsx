@@ -35,7 +35,7 @@ export default function ProfileSettingsPage() {
       />
 
       <div className="w-full max-w-4xl space-y-4">
-        <Card className="mv-card rounded-lg!">
+        <Card className="mv-card rounded-lg">
           <CardContent className="pt-9">
             <ProfileChooser
               selectedProfileId={profileId}
