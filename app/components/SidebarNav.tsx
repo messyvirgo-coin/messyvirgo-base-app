@@ -454,36 +454,41 @@ export function SidebarNav() {
             <div className="pt-6 text-xs font-semibold uppercase tracking-wider text-foreground/60 dark:text-muted-foreground">
               Theme
             </div>
-            <div className="grid gap-2">
-              {THEME_OPTIONS.map((option) => {
-                const Icon = option.icon;
-                const isActive = activeTheme === option.value;
-                return (
-                  <button
-                    key={option.value}
-                    type="button"
-                    onClick={() => setTheme(option.value)}
-                    className={cn(
-                      "flex min-h-11 items-center gap-3 rounded-lg px-4 text-sm font-medium",
-                      "transition-colors",
-                      isActive
-                        ? "bg-primary/10 dark:bg-pink-500/15"
-                        : "text-foreground hover:bg-accent/60 hover:text-foreground dark:text-muted-foreground dark:hover:text-foreground"
-                    )}
-                    style={
-                      isActive && !isDarkMode
-                        ? { color: "rgb(0, 0, 0)" }
-                        : isActive && isDarkMode
-                          ? { color: "rgb(255, 255, 255)" }
-                          : undefined
-                    }
-                    aria-pressed={isActive}
-                  >
-                    <Icon className="h-5 w-5" />
-                    <span>{option.label}</span>
-                  </button>
-                );
-              })}
+            <div
+              className={cn(
+                "mt-3 rounded-lg border border-border p-1",
+                "bg-background/60 dark:bg-background/30"
+              )}
+              role="radiogroup"
+              aria-label="Theme"
+            >
+              <div className="grid grid-cols-3 gap-1">
+                {THEME_OPTIONS.map((option) => {
+                  const Icon = option.icon;
+                  const isActive = activeTheme === option.value;
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => setTheme(option.value)}
+                      className={cn(
+                        "inline-flex h-11 items-center justify-center gap-2 rounded-md px-2 text-xs font-semibold",
+                        "transition-colors touch-manipulation",
+                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                        isActive
+                          ? "bg-primary/15 text-foreground dark:bg-pink-500/20"
+                          : "text-foreground/70 hover:bg-accent/60 hover:text-foreground dark:text-muted-foreground dark:hover:text-foreground"
+                      )}
+                      role="radio"
+                      aria-checked={isActive}
+                      title={option.label}
+                    >
+                      <Icon className="h-4 w-4" />
+                      <span>{option.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </nav>
         </div>
