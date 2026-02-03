@@ -44,6 +44,8 @@ NEXT_PUBLIC_PROJECT_NAME="Your App Name"
 NEXT_PUBLIC_ONCHAINKIT_API_KEY=<Replace-WITH-YOUR-CDP-API-KEY>
 NEXT_PUBLIC_URL=
 ```
+> [!IMPORTANT]
+> Set `NEXT_PUBLIC_URL` to your **canonical production URL**. Best practice for Mini Apps is to set the same value in **both Vercel Production and Preview** environments so your manifest remains domain-consistent with `accountAssociation` (this avoids Base preview "Ready call" failures caused by domain mismatches).
 
 ### 4. Run locally:
 
@@ -90,6 +92,7 @@ vercel env add NEXT_PUBLIC_PROJECT_NAME production
 vercel env add NEXT_PUBLIC_ONCHAINKIT_API_KEY production
 vercel env add NEXT_PUBLIC_URL production
 ```
+If you use Vercel Preview deployments, also set `NEXT_PUBLIC_URL` for the preview environment to the same canonical production URL.
 
 ## Account Association
 
