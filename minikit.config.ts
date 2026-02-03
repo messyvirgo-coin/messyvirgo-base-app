@@ -39,10 +39,10 @@ export const minikitConfig = {
   miniapp: {
     version: "1",
     // Short display name (used in manifests / small UI surfaces)
-    name: "Crypto Macro Daily — Messy Virgo",
-    subtitle: "Crypto macro + liquidity dashboard",
+    name: "Crypto Macro & Liquidity Daily",
+    subtitle: "by Messy Virgo / $MESSY",
     description:
-      "Daily crypto macro + liquidity dashboard and shareable summary. We track 13 indicators, score the current market regime (risk-on → defensive), and translate it into clear positioning guidance across stables, BTC/ETH, high-beta alts, and long-tail—plus a link to the full report. Powered by Messy Virgo / $MESSY on Base. Educational research, not financial advice.",
+      "Daily updated macro dashboard with detailed report featuring 13+ KPIs for crypto enthusiasts. Includes general trading scenarios. Educational content, not financial advice.",
     screenshotUrls: [`${ROOT_URL}/screenshot-portrait.png`],
     iconUrl: `${ROOT_URL}/messy-icon.png`,
     splashImageUrl: `${ROOT_URL}/messy-splash.png`,
@@ -54,20 +54,15 @@ export const minikitConfig = {
       "macro",
       "liquidity",
       "indicators",
-      "regime",
-      "positioning",
-      "bitcoin",
-      "ethereum",
-      "alts",
-      "research",
-      "base",
+      "economics",
+      "report"
     ],
     heroImageUrl: `${ROOT_URL}/messy-hero.png`,
-    tagline: "Daily macro + liquidity. Clear positioning.",
+    tagline: "The Future is $MESSY.",
     // Long-form title/description for rich previews
-    ogTitle: "Crypto Macro & Liquidity Daily (by Messy Virgo)",
+    ogTitle: "Crypto Macro & Liquidity Daily",
     ogDescription:
-      "Daily crypto macro + liquidity dashboard and shareable summary. We track 13 indicators and translate the current regime into clear positioning guidance.",
+      "Daily updated macro dashboard with detailed report featuring 13+ KPIs for crypto enthusiasts.",  
     ogImageUrl: `${ROOT_URL}/messy-hero.png`,
   },
 } as const;
