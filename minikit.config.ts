@@ -100,11 +100,10 @@ export const minikitConfig = {
   accountAssociation: ACCOUNT_ASSOCIATION,
   miniapp: {
     version: "1",
-    // Short display name (used in manifests / small UI surfaces)
-    name: "Crypto Macro Economics Daily",
+    name: "Market Vibe Daily",
     subtitle: "by Messy Virgo / MESSY",
-    description:
-      "Daily updated dashboard with detailed report for crypto enthusiasts. Includes general trading scenarios. Educational content, not financial advice.",
+    description: 
+      "Daily crypto market intel. Get todays regime and risk context, plus what traders typically do, summarized in 2 minutes. Full report included. No advice, education only.",
     screenshotUrls: [`${ROOT_URL}/screenshot-portrait.png`],
     iconUrl: `${ROOT_URL}/messy-icon.png`,
     splashImageUrl: `${ROOT_URL}/messy-splash.png`,
@@ -113,18 +112,17 @@ export const minikitConfig = {
     webhookUrl: `${ROOT_URL}/api/webhook`,
     primaryCategory: "finance",
     tags: [
-      "macro",
-      "liquidity",
-      "indicators",
-      "economics",
-      "report"
+      "vibe",
+      "intel",
+      "signals",
+      "daily",
+      "regime"
     ],
     heroImageUrl: `${ROOT_URL}/messy-hero.png`,
-    tagline: "The Future is MESSY.",
-    // Long-form title/description for rich previews
-    ogTitle: "Crypto Macro Economics Daily",
-    ogDescription:
-      "Daily updated macro dashboard with detailed report for crypto enthusiasts.",  
+    tagline: "Know the vibe. Trade smarter.",
+    ogTitle: "Market Vibe Daily",
+    ogDescription: 
+      "Daily crypto market intel. Check the vibe, see the risk, and get the 2-minute summary.",
     ogImageUrl: `${ROOT_URL}/messy-hero.png`,
   },
 } as const;
