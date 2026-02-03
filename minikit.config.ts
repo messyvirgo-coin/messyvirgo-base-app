@@ -8,18 +8,20 @@ const ROOT_URL = (() => {
   const explicit = process.env.NEXT_PUBLIC_URL;
   if (explicit) return normalizeRootUrl(explicit);
 
+  // For mini-apps, we need consistent URLs that match the accountAssociation domain.
+  // Prioritize production URL over preview URLs to ensure consistency.
+  const productionUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL;
+  if (productionUrl) return normalizeRootUrl(productionUrl);
+
   // Vercel provides this as a hostname (no protocol), e.g. "my-app.vercel.app".
   const vercelUrl = process.env.VERCEL_URL;
   if (vercelUrl) return normalizeRootUrl(vercelUrl);
-
-  const productionUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL;
-  if (productionUrl) return normalizeRootUrl(productionUrl);
 
   // Last resort fallback. This keeps local/CI builds from failing hard, but it
   // will produce incorrect absolute URLs for manifest assets if deployed.
   if (process.env.NODE_ENV === "production") {
     console.warn(
-      "[minikit.config] Missing NEXT_PUBLIC_URL/VERCEL_URL; falling back to http://localhost:3000. Set NEXT_PUBLIC_URL to fix manifest asset URLs."
+      "[minikit.config] Missing NEXT_PUBLIC_URL/VERCEL_PROJECT_PRODUCTION_URL; falling back to http://localhost:3000. Set NEXT_PUBLIC_URL to fix manifest asset URLs."
     );
   }
   return "http://localhost:3000";
