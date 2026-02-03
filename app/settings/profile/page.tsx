@@ -1,6 +1,6 @@
 "use client";
 
-import { useMiniKit } from "@coinbase/onchainkit/minikit";
+import { useAccount } from "wagmi";
 import { PageHeader } from "@/app/components/PageHeader";
 import { PageShell } from "@/app/components/PageShell";
 import { Card, CardContent } from "@/app/components/ui/card";
@@ -13,12 +13,11 @@ import {
 import { ProfileChooser } from "../../components/ProfileChooser";
 
 export default function ProfileSettingsPage() {
-  const { context } = useMiniKit();
-  const fid = context?.user?.fid;
-  const profileId = useProfileId(fid);
+  const { address } = useAccount();
+  const profileId = useProfileId(address);
 
   const handleSelectProfile = (id: ProfileId) => {
-    setStoredProfileId(id, fid);
+    setStoredProfileId(id, address);
   };
 
   const profile = profileById(profileId);
@@ -36,7 +35,7 @@ export default function ProfileSettingsPage() {
       />
 
       <div className="w-full max-w-4xl space-y-4">
-        <Card className="mv-card !rounded-lg">
+        <Card className="mv-card rounded-lg!">
           <CardContent className="pt-9">
             <ProfileChooser
               selectedProfileId={profileId}
