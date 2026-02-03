@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
 import {
   Menu,
@@ -13,10 +13,11 @@ import {
   Moon,
   Sun,
   Laptop,
-  ChevronLeft,
   ChevronRight,
+  Share2,
+  Download,
 } from "lucide-react";
-import { useMiniKit } from "@coinbase/onchainkit/minikit";
+import { useAccount } from "wagmi";
 import { cn } from "@/app/lib/utils";
 import { profileById, useProfileId } from "@/app/lib/profile";
 
@@ -56,59 +57,43 @@ const THEME_OPTIONS = [
 export function SidebarNav() {
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [dragOffsetX, setDragOffsetX] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const drawerRef = useRef<HTMLDivElement | null>(null);
+  const wasOpenRef = useRef(false);
   const pathname = usePathname();
-  const router = useRouter();
-  const pathnameRef = useRef<string | null>(null);
-  const { context } = useMiniKit();
-  const fid = context?.user?.fid;
-  const profileId = useProfileId(fid);
+  const swipeStateRef = useRef<{
+    pointerId: number | null;
+    pointerType: string | null;
+    startX: number;
+    startY: number;
+    startTime: number;
+    lastX: number;
+    lastTime: number;
+    dragging: boolean;
+  }>({
+    pointerId: null,
+    pointerType: null,
+    startX: 0,
+    startY: 0,
+    startTime: 0,
+    lastX: 0,
+    lastTime: 0,
+    dragging: false,
+  });
+  const dragOffsetXRef = useRef(0);
+  const dragRafRef = useRef<number | null>(null);
+  const { address } = useAccount();
+  const profileId = useProfileId(address);
   const profile = profileById(profileId);
   const { theme, setTheme, resolvedTheme } = useTheme();
 
   const activeTheme = useMemo(() => theme ?? "system", [theme]);
   const isDarkMode = resolvedTheme === "dark";
-  const showBack = (pathname || "/") !== "/";
-
-  // Track an in-app "previous route" as a reliable fallback for webviews where
-  // history.back() may be unavailable or cleared.
-  useEffect(() => {
-    if (!pathname) return;
-    const prev = pathnameRef.current;
-    pathnameRef.current = pathname;
-
-    if (typeof window === "undefined") return;
-    if (prev && prev !== pathname) {
-      window.sessionStorage.setItem("mv:lastPath", prev);
-    }
-    window.sessionStorage.setItem("mv:currentPath", pathname);
-  }, [pathname]);
-
-  const handleBack = () => {
-    if (typeof window !== "undefined") {
-      // Prefer browser history back (most "app-like" when it works).
-      const idx = (window.history.state as { idx?: number } | null)?.idx;
-      const canGoBack =
-        typeof idx === "number" ? idx > 0 : window.history.length > 1;
-
-      if (canGoBack) {
-        router.back();
-        return;
-      }
-
-      // If history is not reliable (common in embeds), fall back to last in-app route.
-      const last = window.sessionStorage.getItem("mv:lastPath");
-      if (last && last !== pathname) {
-        router.push(last);
-        return;
-      }
-    }
-
-    // Last resort: dashboard.
-    router.push("/");
-  };
+  const showShare = (pathname || "/") === "/";
+  const showDownload = showShare;
 
   useEffect(() => {
     setMounted(true);
@@ -117,6 +102,16 @@ export function SidebarNav() {
   useEffect(() => {
     setIsOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setDragOffsetX(0);
+      setIsDragging(false);
+      dragOffsetXRef.current = 0;
+      swipeStateRef.current.pointerId = null;
+      swipeStateRef.current.dragging = false;
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -149,12 +144,113 @@ export function SidebarNav() {
     if (isOpen) {
       // Focus the close button when opening.
       requestAnimationFrame(() => closeButtonRef.current?.focus());
+      wasOpenRef.current = true;
       return;
     }
 
-    // Restore focus to the menu button when closing.
-    requestAnimationFrame(() => menuButtonRef.current?.focus());
+    // Restore focus to the menu button only when we *just* closed the drawer.
+    // Avoid auto-focusing on initial mount (can cause "weird borders"/outlines).
+    if (wasOpenRef.current) {
+      requestAnimationFrame(() => menuButtonRef.current?.focus());
+    }
+    wasOpenRef.current = false;
   }, [isOpen]);
+
+  const scheduleDragOffsetUpdate = (nextX: number) => {
+    dragOffsetXRef.current = nextX;
+    if (dragRafRef.current != null) return;
+    dragRafRef.current = window.requestAnimationFrame(() => {
+      dragRafRef.current = null;
+      setDragOffsetX(dragOffsetXRef.current);
+    });
+  };
+
+  const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (!isOpen) return;
+    // Only enable swipe-to-close for touch/pen to avoid odd desktop interactions.
+    if (event.pointerType === "mouse") return;
+
+    const el = drawerRef.current;
+    if (!el) return;
+
+    swipeStateRef.current = {
+      pointerId: event.pointerId,
+      pointerType: event.pointerType,
+      startX: event.clientX,
+      startY: event.clientY,
+      startTime: performance.now(),
+      lastX: event.clientX,
+      lastTime: performance.now(),
+      dragging: false,
+    };
+
+    setIsDragging(false);
+    scheduleDragOffsetUpdate(0);
+
+    try {
+      el.setPointerCapture(event.pointerId);
+    } catch {
+      // No-op: pointer capture can fail in some embedded webviews.
+    }
+  };
+
+  const handlePointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (!isOpen) return;
+    const state = swipeStateRef.current;
+    if (state.pointerId !== event.pointerId) return;
+
+    const dx = event.clientX - state.startX;
+    const dy = event.clientY - state.startY;
+
+    if (!state.dragging) {
+      // Only start a swipe when movement is clearly horizontal.
+      const HORIZONTAL_START_PX = 8;
+      if (Math.abs(dx) < HORIZONTAL_START_PX) return;
+      if (Math.abs(dx) < Math.abs(dy) * 1.2) return;
+      // Drawer opens from the left, so closing is a swipe LEFT.
+      if (dx >= 0) return;
+
+      state.dragging = true;
+      setIsDragging(true);
+    }
+
+    // Once dragging, follow the finger and prevent scroll-jank.
+    if (state.dragging) {
+      const width = drawerRef.current?.getBoundingClientRect().width ?? 320;
+      const clamped = Math.max(dx, -width);
+      event.preventDefault();
+
+      state.lastX = event.clientX;
+      state.lastTime = performance.now();
+      scheduleDragOffsetUpdate(clamped);
+    }
+  };
+
+  const finishSwipe = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (!isOpen) return;
+    const state = swipeStateRef.current;
+    if (state.pointerId !== event.pointerId) return;
+
+    const dx = event.clientX - state.startX;
+    const now = performance.now();
+    const dt = Math.max(1, now - state.startTime);
+    const velocityX = dx / dt; // px/ms (negative is left)
+    const width = drawerRef.current?.getBoundingClientRect().width ?? 320;
+
+    const closeByDistance = dx < -width * 0.3;
+    const closeByVelocity = velocityX < -0.5 && dx < -30;
+
+    const shouldClose = state.dragging && (closeByDistance || closeByVelocity);
+
+    swipeStateRef.current.pointerId = null;
+    swipeStateRef.current.dragging = false;
+    setIsDragging(false);
+    scheduleDragOffsetUpdate(0);
+
+    if (shouldClose) {
+      setIsOpen(false);
+    }
+  };
 
   if (!mounted) {
     return null;
@@ -163,8 +259,12 @@ export function SidebarNav() {
   return (
     <>
       <div
+        role="toolbar"
+        aria-label="Primary actions"
         className={cn(
-          "fixed left-4 z-40 inline-flex overflow-hidden rounded-full",
+          // Bottom "toolbar" pill (best practice for 2–3 actions on mobile).
+          "fixed left-1/2 z-40 inline-flex items-center -translate-x-1/2 overflow-hidden rounded-full",
+          "max-w-[calc(100vw-2rem)]",
           // Make the floating control more solid in light mode.
           "border border-border bg-card/95 shadow-lg backdrop-blur-md transition-colors dark:bg-card/80",
           "hover:border-pink-400/40"
@@ -173,22 +273,21 @@ export function SidebarNav() {
           bottom: "calc(1rem + env(safe-area-inset-bottom))",
         }}
       >
-        {showBack ? (
-          <>
-            <button
-              type="button"
-              onClick={handleBack}
-              className={cn(
-                "inline-flex h-11 w-11 items-center justify-center",
-                "text-foreground transition-colors hover:bg-accent/70"
-              )}
-              aria-label="Go back"
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </button>
-
-            <div className="my-2 w-[0.5px] bg-border/30" aria-hidden="true" />
-          </>
+        {showShare ? (
+          <button
+            type="button"
+            onClick={() => undefined}
+            className={cn(
+              "inline-flex h-11 items-center gap-2 px-4",
+              "text-sm font-medium text-foreground transition-colors hover:bg-accent/70",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            )}
+            aria-label="Share (coming soon)"
+            title="Share (coming soon)"
+          >
+            <Share2 className="h-5 w-5" />
+            <span>Share</span>
+          </button>
         ) : null}
 
         <button
@@ -197,13 +296,31 @@ export function SidebarNav() {
           ref={menuButtonRef}
           className={cn(
             "inline-flex h-11 items-center gap-2 px-4",
-            "text-sm font-medium text-foreground transition-colors hover:bg-accent/70"
+            "text-sm font-medium text-foreground transition-colors hover:bg-accent/70",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           )}
           aria-label="Open navigation menu"
         >
           <Menu className="h-5 w-5" />
           <span>Menu</span>
         </button>
+
+        {showDownload ? (
+          <button
+            type="button"
+            onClick={() => undefined}
+            className={cn(
+              "inline-flex h-11 items-center gap-2 px-4",
+              "text-sm font-medium text-foreground transition-colors hover:bg-accent/70",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            )}
+            aria-label="Save (coming soon)"
+            title="Save (coming soon)"
+          >
+            <Download className="h-5 w-5" />
+            <span>Save</span>
+          </button>
+        ) : null}
       </div>
 
       {isOpen ? (
@@ -226,9 +343,20 @@ export function SidebarNav() {
           // In dark mode allow subtle translucency + blur.
           "bg-background backdrop-blur-none shadow-2xl dark:bg-background/95 dark:backdrop-blur-xl",
           "border-r border-border",
-          "transform transition-transform duration-300 ease-out",
-          isOpen ? "translate-x-0" : "-translate-x-full pointer-events-none"
+          "transform ease-out",
+          isDragging ? "transition-none" : "transition-transform duration-300",
+          isOpen ? "pointer-events-auto" : "pointer-events-none"
         )}
+        style={{
+          transform: isOpen ? `translateX(${Math.min(0, dragOffsetX)}px)` : "translateX(-100%)",
+          willChange: "transform",
+          // Allow vertical scrolling while still letting us detect horizontal swipes.
+          touchAction: "pan-y",
+        }}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={finishSwipe}
+        onPointerCancel={finishSwipe}
       >
         <div className="flex h-full flex-col">
           <div className="flex items-center justify-between px-5 py-5">

@@ -1,13 +1,19 @@
 "use client";
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { base } from "wagmi/chains";
 import { OnchainKitProvider } from "@coinbase/onchainkit";
 import "@coinbase/onchainkit/styles.css";
 
 export function RootProvider({ children }: { children: ReactNode }) {
   const apiKey = process.env.NEXT_PUBLIC_ONCHAINKIT_API_KEY;
+  const [isMounted, setIsMounted] = useState(false);
 
-  if (!apiKey) {
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Only check for API key in the browser, not during build
+  if (isMounted && !apiKey) {
     return (
       <div className="min-h-screen flex items-center justify-center p-6">
         <div className="w-full max-w-xl rounded-lg border border-destructive/40 bg-destructive/10 p-5 text-sm text-foreground">
@@ -21,9 +27,11 @@ export function RootProvider({ children }: { children: ReactNode }) {
     );
   }
 
+  // During build, if API key is missing, use empty string to allow build to proceed
+  // At runtime, if API key is missing, the error UI above will be shown
   return (
     <OnchainKitProvider
-      apiKey={apiKey}
+      apiKey={apiKey || ""}
       chain={base}
       config={{
         appearance: {

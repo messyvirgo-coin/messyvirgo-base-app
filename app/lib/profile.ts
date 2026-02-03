@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from "react";
+import { isBrowser, normalizeWalletAddress } from "@/app/lib/utils";
 
 export type ProfileId = "degen" | "trader" | "allocator";
 
@@ -69,13 +70,10 @@ export const PROFILE_DEFINITIONS: readonly ProfileDefinition[] = [
   },
 ] as const;
 
-function isBrowser(): boolean {
-  return typeof window !== "undefined" && typeof document !== "undefined";
-}
-
-function getStorageKey(fid: number | null | undefined): string {
-  if (!fid) return `${STORAGE_KEY_PREFIX}anonymous`;
-  return `${STORAGE_KEY_PREFIX}${fid}`;
+function getStorageKey(walletAddress: string | null | undefined): string {
+  const normalized = normalizeWalletAddress(walletAddress);
+  if (!normalized) return `${STORAGE_KEY_PREFIX}anonymous`;
+  return `${STORAGE_KEY_PREFIX}${normalized}`;
 }
 
 function parseProfileId(raw: string | null): ProfileId | null {
@@ -91,23 +89,23 @@ function parseProfileId(raw: string | null): ProfileId | null {
 }
 
 export function getStoredProfileId(
-  fid: number | null | undefined
+  walletAddress: string | null | undefined
 ): ProfileId | null {
   if (!isBrowser()) return null;
   try {
-    // First check FID-specific key (or anonymous if no FID)
-    const primaryKey = getStorageKey(fid);
+    // First check wallet-specific key (or anonymous if no wallet)
+    const primaryKey = getStorageKey(walletAddress);
     const primaryValue = parseProfileId(window.localStorage.getItem(primaryKey));
     if (primaryValue) return primaryValue;
 
-    // If FID is available but no FID-specific profile found, check anonymous key as fallback
-    if (fid) {
+    // If wallet is available but no wallet-specific profile found, check anonymous key as fallback
+    if (walletAddress) {
       const anonymousKey = getStorageKey(null);
       const anonymousValue = parseProfileId(
         window.localStorage.getItem(anonymousKey)
       );
       if (anonymousValue) {
-        // Migrate anonymous profile to FID-specific key
+        // Migrate anonymous profile to wallet-specific key
         window.localStorage.setItem(primaryKey, anonymousValue);
         window.dispatchEvent(new Event(EVENT_NAME));
         return anonymousValue;
@@ -121,18 +119,18 @@ export function getStoredProfileId(
 }
 
 export function getEffectiveProfileId(
-  fid: number | null | undefined
+  walletAddress: string | null | undefined
 ): ProfileId {
-  return getStoredProfileId(fid) ?? DEFAULT_PROFILE;
+  return getStoredProfileId(walletAddress) ?? DEFAULT_PROFILE;
 }
 
 export function setStoredProfileId(
   id: ProfileId,
-  fid: number | null | undefined
+  walletAddress: string | null | undefined
 ): boolean {
   if (!isBrowser()) return false;
   try {
-    window.localStorage.setItem(getStorageKey(fid), id);
+    window.localStorage.setItem(getStorageKey(walletAddress), id);
     window.dispatchEvent(new Event(EVENT_NAME));
     return true;
   } catch {
@@ -140,12 +138,14 @@ export function setStoredProfileId(
   }
 }
 
-export function clearStoredProfileId(fid: number | null | undefined): boolean {
+export function clearStoredProfileId(
+  walletAddress: string | null | undefined
+): boolean {
   if (!isBrowser()) return false;
   try {
-    window.localStorage.removeItem(getStorageKey(fid));
+    window.localStorage.removeItem(getStorageKey(walletAddress));
     // If a user explicitly clears their profile, clear the anonymous fallback too.
-    if (fid) {
+    if (walletAddress) {
       window.localStorage.removeItem(getStorageKey(null));
     }
     window.dispatchEvent(new Event(EVENT_NAME));
@@ -171,18 +171,22 @@ function subscribe(callback: () => void): () => void {
   };
 }
 
-export function useProfileId(fid: number | null | undefined): ProfileId {
+export function useProfileId(
+  walletAddress: string | null | undefined
+): ProfileId {
   return useSyncExternalStore(
     subscribe,
-    () => getEffectiveProfileId(fid),
+    () => getEffectiveProfileId(walletAddress),
     () => DEFAULT_PROFILE
   );
 }
 
-export function useHasStoredProfile(fid: number | null | undefined): boolean {
+export function useHasStoredProfile(
+  walletAddress: string | null | undefined
+): boolean {
   return useSyncExternalStore(
     subscribe,
-    () => getStoredProfileId(fid) !== null,
+    () => getStoredProfileId(walletAddress) !== null,
     () => false
   );
 }

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { useMiniKit } from "@coinbase/onchainkit/minikit";
+import { useAccount } from "wagmi";
 import {
   useProfileId,
   setStoredProfileId,
@@ -23,9 +23,8 @@ export function ProfileChooserModal({
   onClose,
   locked = false,
 }: ProfileChooserModalProps) {
-  const { context } = useMiniKit();
-  const fid = context?.user?.fid;
-  const currentProfileId = useProfileId(fid);
+  const { address } = useAccount();
+  const currentProfileId = useProfileId(address);
   const [draftProfileId, setDraftProfileId] =
     useState<ProfileId>(currentProfileId);
   const [mounted, setMounted] = useState(false);
@@ -36,10 +35,7 @@ export function ProfileChooserModal({
 
   useEffect(() => {
     if (!mounted || typeof document === "undefined") return;
-    const isSmallScreen =
-      typeof window !== "undefined" &&
-      window.matchMedia("(max-width: 640px)").matches;
-    if (isOpen && !isSmallScreen) {
+    if (isOpen) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "";
@@ -57,7 +53,7 @@ export function ProfileChooserModal({
   }, [currentProfileId, isOpen]);
 
   const handleChoose = () => {
-    setStoredProfileId(draftProfileId, fid);
+    setStoredProfileId(draftProfileId, address);
     onClose?.();
   };
 

@@ -4,7 +4,8 @@
   :root {
     /* MessyVirgo theme - aligned to messyvirgo.com tokens */
     --mv-accent-pink: #ff69b4;
-    --mv-accent-gold: #ffd700;
+    /* Shifted from bright gold → purple for better contrast on light backgrounds */
+    --mv-accent-gold: #a855f7;
 
     /* Glassmorphism tokens (light mode) */
     --mv-glass-bg: rgba(17, 24, 39, 0.04);
