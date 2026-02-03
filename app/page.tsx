@@ -105,18 +105,18 @@ export default function Home() {
 
   useEffect(() => {
     if (!mounted) return;
-    if (!hasAcknowledgedLegal) return;
+    // Start loading the report immediately, even while overlay is displayed
     void fetchMacroReport();
     return () => {
       abortRef.current?.abort();
     };
-  }, [fetchMacroReport, hasAcknowledgedLegal, mounted]);
+  }, [fetchMacroReport, mounted]);
 
   const reportVariantCode = useMemo(() => "base_app", []);
 
   const dashboardTitle = useMemo(() => {
     void reportVariantCode;
-    return "Crypto Macro Economics";
+    return "Market Vibe Daily";
   }, [reportVariantCode]);
 
   const isGateOpen = mounted && hasAcknowledgedLegal;
@@ -193,67 +193,58 @@ export default function Home() {
           aria-label="Terms and privacy acknowledgement"
         >
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-          <div className="relative w-full max-w-lg overflow-hidden rounded-xl border border-border bg-background shadow-2xl">
-            <div className="p-6 sm:p-7">
-              <div className="flex items-center gap-3">
-                <div className="relative h-10 w-10 shrink-0">
+          <div className="relative w-full max-w-2xl overflow-hidden rounded-2xl border border-border bg-background shadow-2xl">
+            <div className="bg-gradient-to-br from-fuchsia-500/10 via-transparent to-cyan-500/10 p-6 sm:p-7">
+              <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:gap-6">
+                <div className="relative w-full shrink-0 overflow-hidden rounded-2xl bg-muted/20 shadow-sm aspect-video lg:h-32 lg:w-32 lg:aspect-square">
                   <Image
-                    src="/logo.svg"
-                    alt="Messy Virgo"
+                    src="/messy-create-me.png"
+                    alt="Market Vibe Daily"
                     fill
-                    sizes="40px"
-                    style={{ objectFit: "contain" }}
+                    sizes="(max-width: 1023px) 100vw, 128px"
+                    style={{ objectFit: "cover", objectPosition: "top center" }}
                     priority
                   />
                 </div>
+
                 <div className="min-w-0">
-                  <div className="text-lg font-semibold leading-tight">
-                    Welcome to Messy Virgo
+                  <div className="text-xl font-semibold font-serif text-gradient leading-tight sm:text-2xl">
+                    Welcome to Market Vibe Daily
                   </div>
-                  <div className="text-sm text-muted-foreground">
-                    Your macro dashboard for crypto markets.
+                  <div className="mt-1 text-sm text-foreground/70">
+                    by Messy Virgo / $MESSY
                   </div>
+
+                  <p className="mt-3 text-sm text-foreground/80">
+                    Daily crypto market intel. Get today&apos;s regime and risk
+                    context, plus what traders typically do, summarized in 2 minutes.
+                    Full report included. No advice, education only.
+                  </p>
                 </div>
               </div>
+            </div>
 
-              <p className="mt-4 text-sm text-foreground/80">
-                Before you view the report, please confirm you’ve read and agree to
-                our{" "}
-                <Link
-                  href="/terms"
-                  className="font-medium underline underline-offset-4 hover:opacity-90"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Terms of Service
-                </Link>{" "}
-                and{" "}
-                <Link
-                  href="/privacy"
-                  className="font-medium underline underline-offset-4 hover:opacity-90"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Privacy Policy
-                </Link>
-                .
-              </p>
+            <div className="p-6 sm:p-7 pt-5">
+              <div className="mb-3 text-sm font-semibold text-foreground">
+                Before we start:
+              </div>
 
-              <div className="mt-5 space-y-3">
-                <label className="flex cursor-pointer items-start gap-3 text-sm">
+              <div className="space-y-4">
+                <label className="flex cursor-pointer items-start gap-4 p-2 -m-2 rounded-md touch-manipulation active:bg-accent/50 transition-colors">
                   <input
                     type="checkbox"
-                    className="mt-1 h-4 w-4 accent-primary"
+                    className="mt-0.5 h-6 w-6 shrink-0 accent-primary touch-none"
                     checked={termsChecked}
                     onChange={(e) => setTermsChecked(e.target.checked)}
                   />
-                  <span>
+                  <span className="text-sm leading-relaxed">
                     I agree to the{" "}
                     <Link
                       href="/terms"
                       className="font-medium underline underline-offset-4 hover:opacity-90"
                       target="_blank"
                       rel="noreferrer"
+                      onClick={(e) => e.stopPropagation()}
                     >
                       Terms of Service
                     </Link>
@@ -261,20 +252,21 @@ export default function Home() {
                   </span>
                 </label>
 
-                <label className="flex cursor-pointer items-start gap-3 text-sm">
+                <label className="flex cursor-pointer items-start gap-4 p-2 -m-2 rounded-md touch-manipulation active:bg-accent/50 transition-colors">
                   <input
                     type="checkbox"
-                    className="mt-1 h-4 w-4 accent-primary"
+                    className="mt-0.5 h-6 w-6 shrink-0 accent-primary touch-none"
                     checked={privacyChecked}
                     onChange={(e) => setPrivacyChecked(e.target.checked)}
                   />
-                  <span>
+                  <span className="text-sm leading-relaxed">
                     I agree to the{" "}
                     <Link
                       href="/privacy"
                       className="font-medium underline underline-offset-4 hover:opacity-90"
                       target="_blank"
                       rel="noreferrer"
+                      onClick={(e) => e.stopPropagation()}
                     >
                       Privacy Policy
                     </Link>
@@ -286,7 +278,7 @@ export default function Home() {
               <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-end">
                 <button
                   type="button"
-                  className="inline-flex min-h-11 items-center justify-center rounded-md bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-sm transition-opacity disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex h-11 items-center justify-center rounded-md bg-gradient-to-r from-pink-500 to-fuchsia-500 px-6 text-sm font-semibold text-white shadow-sm transition-all hover:from-pink-600 hover:to-fuchsia-600 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:from-pink-500 disabled:hover:to-fuchsia-500"
                   onClick={acknowledge}
                   disabled={!canAcknowledge}
                 >

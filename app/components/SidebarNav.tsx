@@ -272,9 +272,10 @@ export function SidebarNav() {
             type="button"
             onClick={() => undefined}
             className={cn(
-              "inline-flex h-11 items-center gap-2 px-4",
+              "inline-flex min-h-11 min-w-11 h-11 items-center justify-center gap-2 px-4",
               "text-sm font-medium text-foreground transition-colors hover:bg-accent/70",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+              "touch-manipulation"
             )}
             aria-label="Share (coming soon)"
             title="Share (coming soon)"
@@ -289,9 +290,10 @@ export function SidebarNav() {
           onClick={() => setIsOpen(true)}
           ref={menuButtonRef}
           className={cn(
-            "inline-flex h-11 items-center gap-2 px-4",
+            "inline-flex min-h-11 min-w-11 h-11 items-center justify-center gap-2 px-4",
             "text-sm font-medium text-foreground transition-colors hover:bg-accent/70",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+            "touch-manipulation"
           )}
           aria-label="Open navigation menu"
         >
@@ -304,9 +306,10 @@ export function SidebarNav() {
             type="button"
             onClick={() => undefined}
             className={cn(
-              "inline-flex h-11 items-center gap-2 px-4",
+              "inline-flex min-h-11 min-w-11 h-11 items-center justify-center gap-2 px-4",
               "text-sm font-medium text-foreground transition-colors hover:bg-accent/70",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+              "touch-manipulation"
             )}
             aria-label="Save (coming soon)"
             title="Save (coming soon)"
@@ -380,7 +383,8 @@ export function SidebarNav() {
               className={cn(
                 "inline-flex h-11 w-11 items-center justify-center rounded-md",
                 "border border-border bg-card text-foreground dark:bg-background/60",
-                "transition-colors hover:border-pink-400/40 hover:bg-accent/60"
+                "transition-colors hover:border-pink-400/40 hover:bg-accent/60",
+                "touch-manipulation"
               )}
               aria-label="Close navigation menu"
             >
