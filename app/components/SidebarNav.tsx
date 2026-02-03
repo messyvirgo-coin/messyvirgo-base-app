@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
 import {
   Menu,
@@ -13,8 +13,9 @@ import {
   Moon,
   Sun,
   Laptop,
-  ChevronLeft,
   ChevronRight,
+  Share2,
+  Download,
 } from "lucide-react";
 import { useAccount } from "wagmi";
 import { cn } from "@/app/lib/utils";
@@ -62,8 +63,6 @@ export function SidebarNav() {
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const drawerRef = useRef<HTMLDivElement | null>(null);
   const pathname = usePathname();
-  const router = useRouter();
-  const pathnameRef = useRef<string | null>(null);
   const swipeStateRef = useRef<{
     pointerId: number | null;
     pointerType: string | null;
@@ -92,45 +91,8 @@ export function SidebarNav() {
 
   const activeTheme = useMemo(() => theme ?? "system", [theme]);
   const isDarkMode = resolvedTheme === "dark";
-  const showBack = (pathname || "/") !== "/";
-
-  // Track an in-app "previous route" as a reliable fallback for webviews where
-  // history.back() may be unavailable or cleared.
-  useEffect(() => {
-    if (!pathname) return;
-    const prev = pathnameRef.current;
-    pathnameRef.current = pathname;
-
-    if (typeof window === "undefined") return;
-    if (prev && prev !== pathname) {
-      window.sessionStorage.setItem("mv:lastPath", prev);
-    }
-    window.sessionStorage.setItem("mv:currentPath", pathname);
-  }, [pathname]);
-
-  const handleBack = () => {
-    if (typeof window !== "undefined") {
-      // Prefer browser history back (most "app-like" when it works).
-      const idx = (window.history.state as { idx?: number } | null)?.idx;
-      const canGoBack =
-        typeof idx === "number" ? idx > 0 : window.history.length > 1;
-
-      if (canGoBack) {
-        router.back();
-        return;
-      }
-
-      // If history is not reliable (common in embeds), fall back to last in-app route.
-      const last = window.sessionStorage.getItem("mv:lastPath");
-      if (last && last !== pathname) {
-        router.push(last);
-        return;
-      }
-    }
-
-    // Last resort: dashboard.
-    router.push("/");
-  };
+  const showShare = (pathname || "/") === "/";
+  const showDownload = showShare;
 
   useEffect(() => {
     setMounted(true);
@@ -291,8 +253,12 @@ export function SidebarNav() {
   return (
     <>
       <div
+        role="toolbar"
+        aria-label="Primary actions"
         className={cn(
-          "fixed left-4 z-40 inline-flex overflow-hidden rounded-full",
+          // Bottom "toolbar" pill (best practice for 2–3 actions on mobile).
+          "fixed left-1/2 z-40 inline-flex items-center -translate-x-1/2 overflow-hidden rounded-full",
+          "max-w-[calc(100vw-2rem)]",
           // Make the floating control more solid in light mode.
           "border border-border bg-card/95 shadow-lg backdrop-blur-md transition-colors dark:bg-card/80",
           "hover:border-pink-400/40"
@@ -301,22 +267,20 @@ export function SidebarNav() {
           bottom: "calc(1rem + env(safe-area-inset-bottom))",
         }}
       >
-        {showBack ? (
-          <>
-            <button
-              type="button"
-              onClick={handleBack}
-              className={cn(
-                "inline-flex h-11 w-11 items-center justify-center",
-                "text-foreground transition-colors hover:bg-accent/70"
-              )}
-              aria-label="Go back"
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </button>
-
-            <div className="my-2 w-[0.5px] bg-border/30" aria-hidden="true" />
-          </>
+        {showShare ? (
+          <button
+            type="button"
+            onClick={() => undefined}
+            className={cn(
+              "inline-flex h-11 items-center gap-2 px-4",
+              "text-sm font-medium text-foreground transition-colors hover:bg-accent/70"
+            )}
+            aria-label="Share (coming soon)"
+            title="Share (coming soon)"
+          >
+            <Share2 className="h-5 w-5" />
+            <span>Share</span>
+          </button>
         ) : null}
 
         <button
@@ -332,6 +296,22 @@ export function SidebarNav() {
           <Menu className="h-5 w-5" />
           <span>Menu</span>
         </button>
+
+        {showDownload ? (
+          <button
+            type="button"
+            onClick={() => undefined}
+            className={cn(
+              "inline-flex h-11 items-center gap-2 px-4",
+              "text-sm font-medium text-foreground transition-colors hover:bg-accent/70"
+            )}
+            aria-label="Save (coming soon)"
+            title="Save (coming soon)"
+          >
+            <Download className="h-5 w-5" />
+            <span>Save</span>
+          </button>
+        ) : null}
       </div>
 
       {isOpen ? (
