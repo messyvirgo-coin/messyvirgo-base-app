@@ -95,10 +95,23 @@
 
 @layer components {
   .text-gradient {
+    /* Light mode: pink to purple (current, perfect) */
     background: linear-gradient(
       90deg,
       var(--mv-accent-pink),
       var(--mv-accent-gold)
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .dark .text-gradient {
+    /* Dark mode: original pink to gold gradient */
+    background: linear-gradient(
+      90deg,
+      #ff69b4,
+      #ffd700
     );
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;

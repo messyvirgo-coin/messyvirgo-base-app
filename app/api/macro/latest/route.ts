@@ -1,29 +1,13 @@
 import { NextResponse } from "next/server";
-import {
-  getLatestDailyMacroReport,
-  type MacroProfile,
-} from "@/lib/messyVirgoApiClient";
+import { getLatestDailyMacroReport } from "@/lib/messyVirgoApiClient";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-function isMacroProfile(value: string | null): value is MacroProfile {
-  return value === "degen" || value === "trader" || value === "allocator";
-}
-
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const profile = searchParams.get("profile");
-
-  if (!isMacroProfile(profile)) {
-    return NextResponse.json(
-      { error: "Invalid profile. Use degen, trader, or allocator." },
-      { status: 400 }
-    );
-  }
-
   try {
-    const report = await getLatestDailyMacroReport(profile);
+    void request; // keep signature stable; request is currently unused
+    const report = await getLatestDailyMacroReport();
     return NextResponse.json(report, {
       headers: {
         // Avoid proxy/browser caching surprises for "latest" endpoints.

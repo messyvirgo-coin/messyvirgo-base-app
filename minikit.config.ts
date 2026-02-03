@@ -61,12 +61,15 @@ const ROOT_URL = (() => {
   const productionUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL;
   if (productionUrl?.trim()) return normalizeRootUrl(productionUrl);
 
-  // Local dev fallback only.
-  if (process.env.NODE_ENV !== "production") return "http://localhost:3000";
+  // If we have a domain embedded in the signed accountAssociation, prefer it.
+  // This keeps builds deterministic even before the app is deployed/published.
+  if (ACCOUNT_ASSOCIATION_DOMAIN) {
+    return `https://${ACCOUNT_ASSOCIATION_DOMAIN}`;
+  }
 
-  throw new Error(
-    "[minikit.config] Missing NEXT_PUBLIC_URL in production. Set NEXT_PUBLIC_URL to your canonical production URL so manifest asset URLs and metadataBase are correct."
-  );
+  // Final fallback: local dev origin (even in production build contexts).
+  // Recommended: set NEXT_PUBLIC_URL in real deployments.
+  return "http://localhost:3000";
 })();
 
 // Guardrail: accountAssociation is domain-bound. If the manifest's origin doesn't

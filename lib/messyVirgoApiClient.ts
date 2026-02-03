@@ -1,7 +1,5 @@
 import "server-only";
 
-export type MacroProfile = "degen" | "trader" | "allocator";
-
 type ClientOptions = {
   signal?: AbortSignal;
   timeoutMs?: number;
@@ -10,19 +8,8 @@ type ClientOptions = {
 const API_BASE_URL =
   process.env.MESSY_VIRGO_API_BASE_URL ?? "https://api.messyvirgo.com";
 
-function resolveDailyMacroPath(profile: MacroProfile): string {
-  switch (profile) {
-    case "degen":
-      return "/api/v1/published/macro/report/degen_daily";
-    case "trader":
-      return "/api/v1/published/macro/report/trader_daily";
-    case "allocator":
-      return "/api/v1/published/macro/report/allocator_daily";
-    default: {
-      const exhaustiveCheck: never = profile;
-      return exhaustiveCheck;
-    }
-  }
+function resolveBaseAppMacroPath(): string {
+  return "/api/v1/published/macro/report/base_app";
 }
 
 function buildAuthHeaders(): Record<string, string> {
@@ -42,10 +29,9 @@ function buildAuthHeaders(): Record<string, string> {
 }
 
 export async function getLatestDailyMacroReport(
-  profile: MacroProfile,
   options?: ClientOptions
 ): Promise<unknown> {
-  const url = new URL(resolveDailyMacroPath(profile), API_BASE_URL);
+  const url = new URL(resolveBaseAppMacroPath(), API_BASE_URL);
 
   const timeoutMs = options?.timeoutMs ?? 12_000;
   const controller = new AbortController();

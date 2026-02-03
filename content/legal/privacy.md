@@ -2,15 +2,11 @@
 
 **Data Controller:** Messy Virgo DAO, 8000 Zürich, Switzerland | [legal@messyvirgo.com](mailto:legal@messyvirgo.com)
 
----
-
 ## Overview
 
 We process minimal data to operate services. No marketing, no behavioral profiling, no data sales.
 
 **Geographic Scope:** We don't target EU/EEA users. Access is incidental. You're responsible for local compliance.
-
----
 
 ## What We Collect
 
@@ -32,8 +28,6 @@ We process minimal data to operate services. No marketing, no behavioral profili
 **We don't store:** Private keys, real-world identity (unless you provide), cross-site activity  
 **Retention:** While active; deleted after 24 months inactivity or on request
 
----
-
 ## What We Don't Do
 
 - ❌ No tracking cookies or ads  
@@ -41,16 +35,12 @@ We process minimal data to operate services. No marketing, no behavioral profili
 - ❌ No data sales to third parties  
 - ❌ No email/KYC requirements (unless legally required)
 
----
-
 ## Privacy by Design
 
 - **Dual-salt hashing:** Rate limits and analytics use separate, unlinkable hashes  
 - **Wallet-only auth:** No passwords or emails  
 - **Pseudonymous:** Addresses are pseudonymous unless you link identity  
 - **Client-side first:** Data processed locally where possible
-
----
 
 ## Your Rights
 
@@ -65,15 +55,11 @@ Under Swiss data protection law, you can:
 
 **Limits:** On-chain data cannot be deleted (blockchain immutability). Anonymized hashes cannot be linked back to you.
 
----
-
 ## Third-Party Services
 
 - **Analytics:** Cookie-less tools (Plausible) with server-side aggregation  
 - **Blockchain:** RPC providers (Alchemy, Infura); your transactions are public on-chain  
 - **Data feeds:** Price/metrics providers don't receive your personal info
-
----
 
 ## Security
 
@@ -84,13 +70,9 @@ Under Swiss data protection law, you can:
 
 **You're responsible for:** Wallet and private key security.
 
----
-
 ## Updates
 
 We may update this notice. Check "Last Updated" date. Material changes announced via website/Telegram.
-
----
 
 ## Contact
 
@@ -99,4 +81,4 @@ We may update this notice. Check "Last Updated" date. Material changes announced
 
 ---
 
-*Crypto involves substantial risk. We process data for services, not marketing.*  
+**Crypto involves substantial risk. We process data for services, not marketing.**

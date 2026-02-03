@@ -13,13 +13,10 @@ import {
   Moon,
   Sun,
   Laptop,
-  ChevronRight,
   Share2,
   Download,
 } from "lucide-react";
-import { useAccount } from "wagmi";
 import { cn } from "@/app/lib/utils";
-import { profileById, useProfileId } from "@/app/lib/profile";
 
 const NAV_ITEMS: Array<{ href: string; label: string }> = [
   { href: "/", label: "Dashboard" },
@@ -85,9 +82,6 @@ export function SidebarNav() {
   });
   const dragOffsetXRef = useRef(0);
   const dragRafRef = useRef<number | null>(null);
-  const { address } = useAccount();
-  const profileId = useProfileId(address);
-  const profile = profileById(profileId);
   const { theme, setTheme, resolvedTheme } = useTheme();
 
   const activeTheme = useMemo(() => theme ?? "system", [theme]);
@@ -278,9 +272,10 @@ export function SidebarNav() {
             type="button"
             onClick={() => undefined}
             className={cn(
-              "inline-flex h-11 items-center gap-2 px-4",
+              "inline-flex min-h-11 min-w-11 h-11 items-center justify-center gap-2 px-4",
               "text-sm font-medium text-foreground transition-colors hover:bg-accent/70",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+              "touch-manipulation"
             )}
             aria-label="Share (coming soon)"
             title="Share (coming soon)"
@@ -295,9 +290,10 @@ export function SidebarNav() {
           onClick={() => setIsOpen(true)}
           ref={menuButtonRef}
           className={cn(
-            "inline-flex h-11 items-center gap-2 px-4",
+            "inline-flex min-h-11 min-w-11 h-11 items-center justify-center gap-2 px-4",
             "text-sm font-medium text-foreground transition-colors hover:bg-accent/70",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+            "touch-manipulation"
           )}
           aria-label="Open navigation menu"
         >
@@ -310,9 +306,10 @@ export function SidebarNav() {
             type="button"
             onClick={() => undefined}
             className={cn(
-              "inline-flex h-11 items-center gap-2 px-4",
+              "inline-flex min-h-11 min-w-11 h-11 items-center justify-center gap-2 px-4",
               "text-sm font-medium text-foreground transition-colors hover:bg-accent/70",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+              "touch-manipulation"
             )}
             aria-label="Save (coming soon)"
             title="Save (coming soon)"
@@ -386,7 +383,8 @@ export function SidebarNav() {
               className={cn(
                 "inline-flex h-11 w-11 items-center justify-center rounded-md",
                 "border border-border bg-card text-foreground dark:bg-background/60",
-                "transition-colors hover:border-pink-400/40 hover:bg-accent/60"
+                "transition-colors hover:border-pink-400/40 hover:bg-accent/60",
+                "touch-manipulation"
               )}
               aria-label="Close navigation menu"
             >
@@ -456,75 +454,43 @@ export function SidebarNav() {
             <div className="pt-6 text-xs font-semibold uppercase tracking-wider text-foreground/60 dark:text-muted-foreground">
               Theme
             </div>
-            <div className="grid gap-2">
-              {THEME_OPTIONS.map((option) => {
-                const Icon = option.icon;
-                const isActive = activeTheme === option.value;
-                return (
-                  <button
-                    key={option.value}
-                    type="button"
-                    onClick={() => setTheme(option.value)}
-                    className={cn(
-                      "flex min-h-11 items-center gap-3 rounded-lg px-4 text-sm font-medium",
-                      "transition-colors",
-                      isActive
-                        ? "bg-primary/10 dark:bg-pink-500/15"
-                        : "text-foreground hover:bg-accent/60 hover:text-foreground dark:text-muted-foreground dark:hover:text-foreground"
-                    )}
-                    style={
-                      isActive && !isDarkMode
-                        ? { color: "rgb(0, 0, 0)" }
-                        : isActive && isDarkMode
-                          ? { color: "rgb(255, 255, 255)" }
-                          : undefined
-                    }
-                    aria-pressed={isActive}
-                  >
-                    <Icon className="h-5 w-5" />
-                    <span>{option.label}</span>
-                  </button>
-                );
-              })}
+            <div
+              className={cn(
+                "mt-3 rounded-lg border border-border p-1",
+                "bg-background/60 dark:bg-background/30"
+              )}
+              role="radiogroup"
+              aria-label="Theme"
+            >
+              <div className="grid grid-cols-3 gap-1">
+                {THEME_OPTIONS.map((option) => {
+                  const Icon = option.icon;
+                  const isActive = activeTheme === option.value;
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => setTheme(option.value)}
+                      className={cn(
+                        "inline-flex h-11 items-center justify-center gap-2 rounded-md px-2 text-xs font-semibold",
+                        "transition-colors touch-manipulation",
+                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                        isActive
+                          ? "bg-primary/15 text-foreground dark:bg-pink-500/20"
+                          : "text-foreground/70 hover:bg-accent/60 hover:text-foreground dark:text-muted-foreground dark:hover:text-foreground"
+                      )}
+                      role="radio"
+                      aria-checked={isActive}
+                      title={option.label}
+                    >
+                      <Icon className="h-4 w-4" />
+                      <span>{option.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </nav>
-
-          <div
-            className={cn(
-              "border-t border-border",
-              "sticky bottom-0 bg-background",
-              "dark:bg-background/70 dark:backdrop-blur-xl"
-            )}
-            style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
-          >
-            <Link
-              href="/me"
-              className={cn(
-                "flex min-h-11 w-full items-center gap-3 px-5 py-4",
-                "text-sm font-medium text-foreground",
-                "transition-colors hover:bg-accent/60"
-              )}
-            >
-              <span className="relative h-8 w-8 overflow-hidden rounded-full border border-border">
-                <Image
-                  src={profile.iconSrc}
-                  alt={profile.shortLabel}
-                  fill
-                  sizes="32px"
-                  style={{ objectFit: "cover" }}
-                />
-              </span>
-              <div className="flex flex-1 items-center justify-between gap-3">
-                <div className="flex flex-col leading-tight">
-                  <span className="text-sm font-semibold">{profile.shortLabel}</span>
-                  <span className="text-xs text-foreground/60 dark:text-muted-foreground">
-                    Manage your profile
-                  </span>
-                </div>
-                <ChevronRight className="h-5 w-5 text-foreground/60 dark:text-muted-foreground" />
-              </div>
-            </Link>
-          </div>
         </div>
       </div>
     </>
