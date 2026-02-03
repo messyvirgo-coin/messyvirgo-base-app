@@ -44,7 +44,7 @@ export function SignedRangeBar({
         </div>
       )}
 
-      <div className="relative h-2 rounded-full bg-muted overflow-hidden border border-border">
+      <div className="relative h-2 rounded-full bg-white/90 overflow-hidden border border-border">
         <div
           className="absolute inset-y-0 left-1/2 w-px bg-border"
           aria-hidden="true"
