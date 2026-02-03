@@ -1,51 +1,106 @@
-# Terms of Service
+**Last Updated:** February 3, 2026
 
-## 1. Acceptance of Terms
+By using messyvirgo.com or app.messyvirgo.com, you agree to these Terms.
 
-By accessing and using Messy Virgo, you accept and agree to be bound by the terms
-and provision of this agreement.
+## Our Platform
 
-## 2. Use License
+**Analytical Tools:**
 
-Permission is granted to temporarily download one copy of the materials
-(information or software) on Messy Virgo for personal, non-commercial transitory viewing only.
-This is the grant of a license, not a transfer of title, and under this license you may not:
+- **$MESSY Token** \- Base-native token (trade on DEXes at your risk)  
+- **Due Diligence Engine** \- AI analysis of tokens via social, news, and on-chain data  
+- **Portfolio Tools** \- Optimization algorithms suggesting allocations  
+- **Token Screener** \- Discover and filter tokens by metrics  
+- **Performance Dashboard** \- Track portfolios and our AI agent's Guru.fund performance
 
-- Modify or copy the materials
-- Use the materials for any commercial purpose or for any public display
-- Attempt to decompile or reverse engineer any software contained on Messy Virgo
-- Transmit or store infringing, obscene, or otherwise objectionable material
+**Platform Status:** Under active development. Features may change or be unavailable without notice.
 
-## 3. Disclaimer
+## What We Are NOT
 
-The materials on Messy Virgo are provided on an 'as is' basis. Messy Virgo makes no
-warranties, expressed or implied, and hereby disclaims and negates all other warranties
-including, without limitation, implied warranties or conditions of merchantability,
-fitness for a particular purpose, or non-infringement of intellectual property or other violation of rights.
+We provide **information and analytical tools only**. We are NOT:
 
-**Messy Virgo is not financial advice. For informational purposes only.**
+- An investment platform (no custody, no trade execution)  
+- An investment advisor (no personalized advice)  
+- A broker or financial service provider
 
-## 4. Limitations
+**You make all investment decisions independently.**
 
-In no event shall Messy Virgo or its suppliers be liable for any damages
-(including, without limitation, damages for loss of data or profit, or due to business interruption)
-arising out of the use or inability to use the materials on Messy Virgo.
+## Third-Party Platforms
 
-## 5. Accuracy of Materials
+**Guru.fund:** We operate an AI fund on Guru.fund (separate platform). If you invest, you do so under **Guru.fund's terms** \- they handle custody, execution, and compliance. Your relationship is with them, not us. We're just a fund manager on their platform.
 
-The materials appearing on Messy Virgo could include technical, typographical,
-or photographic errors. Messy Virgo does not warrant that any of the materials
-on our site are accurate, complete, or current.
+**DEXes & Data:** $MESSY trades on third-party DEXes. We aggregate data from RPCs, APIs, and public sources. No guarantees of accuracy or availability.
 
-## 6. Modifications
+## Your Responsibilities
 
-Messy Virgo may revise these terms of service for our application at any time
-without notice. By using this application, you are agreeing to be bound by the
-then current version of these terms of service.
+- **No Advice:** Our tools provide data, not recommendations  
+- **Your Decisions:** You decide all investments independently; DYOR  
+- **Your Risk:** You bear full responsibility for outcomes  
+- **Wallet Security:** You control private keys; we have NO access  
+- **No Custody:** We never hold your assets  
+- **Compliance:** You follow your local laws
 
-## 7. Governing Law
+## Account & Termination
 
-These terms and conditions are governed by and construed in accordance with the laws of the jurisdiction
-in which Messy Virgo operates, and you irrevocably submit to the exclusive jurisdiction
-of the courts located in that location.
+**Security:** You're responsible for account credentials and all activities under your account.
 
+**We May Terminate:** For Terms violations, fraud, inactivity, or service discontinuation. You may delete your account anytime.
+
+**Effect:** Access ceases immediately. We may delete data (subject to legal retention). Liability and dispute provisions survive.
+
+## Data Processing
+
+Swiss/EU hosting, but third-party services (RPCs, data providers, AI models) may process data internationally. You consent to cross-border processing.
+
+## Who Cannot Use This
+
+**Prohibited:** U.S. persons, sanctioned individuals/entities (OFAC, UN, EU, Swiss SECO), crypto-banned jurisdictions.
+
+**EU/EEA:** We don't target EU users. Access only via reverse solicitation. You're responsible for MiCA compliance.
+
+**You confirm:** 18+, not prohibited/sanctioned, understand crypto risks.
+
+## Risks
+
+**Crypto:** Total loss, volatility, smart contract exploits, illiquidity, regulatory changes.
+
+**Tools:** Data may be wrong or outdated. Past performance ≠ future results. Technical failures possible.
+
+**AI:** Suggestions may be incorrect. Experimental algorithms. No performance guarantees.
+
+## No Warranties • No Advice • No Liability
+
+**No Investment Advice:** All content is informational only, not personalized advice or recommendations.
+
+**No Warranties:** Platform provided "AS-IS" with no guarantees of accuracy, uptime, performance, or security.
+
+**No Liability (Maximum Extent of Law):**  
+Messy Virgo DAO is NOT liable for investment losses, inaccurate data, service failures, third-party failures, smart contract exploits, unauthorized access, or any other damages (direct, indirect, consequential, or punitive).
+
+**YOU ASSUME ALL RISKS.**
+
+## Intellectual Property
+
+We own platform code, MESSY branding, and proprietary algorithms. Non-commercial community use allowed with attribution. Commercial use requires permission ([legal@messyvirgo.com](mailto:legal@messyvirgo.com)). Some code may be open-source per repository licenses.
+
+## Wallet Connection
+
+We read your public address/balances only. NO access to private keys or funds. You approve all transactions. All blockchain transactions are irreversible. **Connecting \= accepting these Terms.**
+
+## Prohibited Activities
+
+No illegal use, hacking, data scraping, impersonation, bots, or abuse. We may terminate access for violations.
+
+## Changes & Disputes
+
+**Changes:** We may update Terms anytime. Continued use \= acceptance. Material changes announced via website/Telegram.
+
+**Governing Law:** Swiss law. Disputes via binding arbitration in Zurich (Swiss Rules of International Arbitration). No class actions or jury trials.
+
+## Contact
+
+[legal@messyvirgo.com](mailto:legal@messyvirgo.com) | [https://t.me/messyvirgo](https://t.me/messyvirgo)
+
+---
+
+**BY USING OUR PLATFORM, YOU AGREE TO THESE TERMS.**  
+**WE PROVIDE TOOLS, NOT ADVICE. CRYPTO IS HIGH-RISK. YOU DECIDE. YOU RISK.**  
