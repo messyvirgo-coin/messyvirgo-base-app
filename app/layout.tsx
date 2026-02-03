@@ -8,6 +8,10 @@ import "./globals.css";
 
 export async function generateMetadata(): Promise<Metadata> {
   const baseAppId = process.env.NEXT_PUBLIC_BASE_APP_ID || "6957f29c4d3a403912ed8a58";
+
+  // Web / SEO title (can be longer than the MiniApp name)
+  const titleLong = "Crypto Macro & Liquidity Daily (by Messy Virgo)";
+  const titleShort = "Crypto Macro Daily — Messy Virgo";
   
   // Debug logging (visible in server console)
   if (process.env.NODE_ENV === "development") {
@@ -15,16 +19,47 @@ export async function generateMetadata(): Promise<Metadata> {
   }
   
   return {
-    title: minikitConfig.miniapp.name,
+    metadataBase: new URL(minikitConfig.miniapp.homeUrl),
+    title: {
+      default: titleLong,
+      template: `%s | ${titleShort}`,
+    },
     description: minikitConfig.miniapp.description,
+    applicationName: titleShort,
+    manifest: "/site.webmanifest",
     icons: {
       icon: [
-        { url: "/icon.png", sizes: "32x32", type: "image/png" },
-        { url: "/icon.ico", sizes: "32x32", type: "image/x-icon" },
+        { url: "/favicon.ico", type: "image/x-icon" },
+        { url: "/favicons/favicon.svg", type: "image/svg+xml" },
+        { url: "/favicons/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+        { url: "/favicons/favicon-32x32.png", sizes: "32x32", type: "image/png" },
       ],
       apple: [
-        { url: "/icon.png", sizes: "32x32", type: "image/png" },
+        { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
       ],
+    },
+    openGraph: {
+      type: "website",
+      url: "/",
+      title: titleLong,
+      description: minikitConfig.miniapp.description,
+      siteName: titleShort,
+      images: [
+        {
+          url: minikitConfig.miniapp.ogImageUrl,
+          alt: minikitConfig.miniapp.ogTitle,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: titleLong,
+      description: minikitConfig.miniapp.description,
+      images: [minikitConfig.miniapp.ogImageUrl],
+    },
+    robots: {
+      index: true,
+      follow: true,
     },
     other: {
       "base:app_id": baseAppId,
