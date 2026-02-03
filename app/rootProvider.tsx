@@ -3,6 +3,7 @@ import { ReactNode, useEffect, useState } from "react";
 import { base } from "wagmi/chains";
 import { OnchainKitProvider } from "@coinbase/onchainkit";
 import "@coinbase/onchainkit/styles.css";
+import { MiniKitAutoReady } from "./components/MiniKitAutoReady";
 
 export function RootProvider({ children }: { children: ReactNode }) {
   const apiKey = process.env.NEXT_PUBLIC_ONCHAINKIT_API_KEY;
@@ -48,6 +49,7 @@ export function RootProvider({ children }: { children: ReactNode }) {
         notificationProxyUrl: undefined,
       }}
     >
+      <MiniKitAutoReady />
       {children}
     </OnchainKitProvider>
   );

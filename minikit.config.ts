@@ -98,10 +98,10 @@ export const minikitConfig = {
   miniapp: {
     version: "1",
     // Short display name (used in manifests / small UI surfaces)
-    name: "Crypto Macro & Liquidity Daily",
+    name: "Crypto Macro Economics Daily",
     subtitle: "by Messy Virgo / MESSY",
     description:
-      "Daily updated macro dashboard with detailed report for crypto enthusiasts. Includes general trading scenarios. Educational content, not financial advice.",
+      "Daily updated dashboard with detailed report for crypto enthusiasts. Includes general trading scenarios. Educational content, not financial advice.",
     screenshotUrls: [`${ROOT_URL}/screenshot-portrait.png`],
     iconUrl: `${ROOT_URL}/messy-icon.png`,
     splashImageUrl: `${ROOT_URL}/messy-splash.png`,
@@ -119,7 +119,7 @@ export const minikitConfig = {
     heroImageUrl: `${ROOT_URL}/messy-hero.png`,
     tagline: "The Future is MESSY.",
     // Long-form title/description for rich previews
-    ogTitle: "Crypto Macro & Liquidity Daily",
+    ogTitle: "Crypto Macro Economics Daily",
     ogDescription:
       "Daily updated macro dashboard with detailed report for crypto enthusiasts.",  
     ogImageUrl: `${ROOT_URL}/messy-hero.png`,

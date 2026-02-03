@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useMiniKit } from "@coinbase/onchainkit/minikit";
 import { useAccount } from "wagmi";
 import Image from "next/image";
 import { PageShell } from "@/app/components/PageShell";
@@ -9,7 +8,6 @@ import { ErrorDisplay } from "@/app/components/ErrorDisplay";
 import { MacroReportRenderer } from "@/app/components/macro/MacroReportRenderer";
 import {
   profileById,
-  useHasStoredProfile,
   useProfileId,
   type ProfileId,
 } from "@/app/lib/profile";
@@ -33,7 +31,6 @@ function StatusMessage({ children }: { children: React.ReactNode }) {
 }
 
 export default function Home() {
-  const { isFrameReady, setFrameReady } = useMiniKit();
   const { address } = useAccount();
   const [macroStatus, setMacroStatus] = useState<MacroStatus>("idle");
   const [macroError, setMacroError] = useState<Error | null>(null);
@@ -43,14 +40,7 @@ export default function Home() {
   const [mounted, setMounted] = useState(false);
 
   const profileId = useProfileId(address);
-  const hasStoredProfile = useHasStoredProfile(address);
   const profile = profileById(profileId);
-
-  useEffect(() => {
-    if (!isFrameReady) {
-      setFrameReady();
-    }
-  }, [setFrameReady, isFrameReady]);
 
   useEffect(() => {
     setMounted(true);
@@ -108,18 +98,11 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    if (!hasStoredProfile) {
-      setMacroStatus("idle");
-      setMacroError(null);
-      setMacroReport(null);
-      return;
-    }
-
     void fetchMacroReport(profileId);
     return () => {
       abortRef.current?.abort();
     };
-  }, [fetchMacroReport, hasStoredProfile, profileId]);
+  }, [fetchMacroReport, profileId]);
 
   const reportVariantCode = useMemo(
     () => `${profileId}_daily`,
@@ -127,14 +110,13 @@ export default function Home() {
   );
 
   const dashboardTitle = useMemo(() => {
-    if (!hasStoredProfile) return null;
     const variantLabel = getMacroVariantLabel(reportVariantCode);
     if (variantLabel) return variantLabel;
     if (profile.shortLabel) {
       return `${profile.shortLabel}'s Daily Macros`;
     }
     return "Daily Macros";
-  }, [hasStoredProfile, reportVariantCode, profile.shortLabel]);
+  }, [reportVariantCode, profile.shortLabel]);
 
   return (
     <PageShell mainClassName="gap-8">
