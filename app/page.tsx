@@ -2,10 +2,11 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useMiniKit } from "@coinbase/onchainkit/minikit";
+import { useAccount } from "wagmi";
+import Image from "next/image";
 import { PageShell } from "@/app/components/PageShell";
 import { ErrorDisplay } from "@/app/components/ErrorDisplay";
 import { MacroReportRenderer } from "@/app/components/macro/MacroReportRenderer";
-import { ProfileOnboardingGate } from "@/app/components/ProfileOnboardingGate";
 import {
   profileById,
   useHasStoredProfile,
@@ -32,16 +33,17 @@ function StatusMessage({ children }: { children: React.ReactNode }) {
 }
 
 export default function Home() {
-  const { isFrameReady, setFrameReady, context } = useMiniKit();
+  const { isFrameReady, setFrameReady } = useMiniKit();
+  const { address } = useAccount();
   const [macroStatus, setMacroStatus] = useState<MacroStatus>("idle");
   const [macroError, setMacroError] = useState<Error | null>(null);
   const [macroReport, setMacroReport] =
     useState<PublishedMacroReportResponse | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const [mounted, setMounted] = useState(false);
 
-  const fid = context?.user?.fid ?? null;
-  const profileId = useProfileId(fid);
-  const hasStoredProfile = useHasStoredProfile(fid);
+  const profileId = useProfileId(address);
+  const hasStoredProfile = useHasStoredProfile(address);
   const profile = profileById(profileId);
 
   useEffect(() => {
@@ -49,6 +51,10 @@ export default function Home() {
       setFrameReady();
     }
   }, [setFrameReady, isFrameReady]);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const fetchMacroReport = useCallback(async (profileValue: ProfileId) => {
     abortRef.current?.abort();
@@ -132,31 +138,41 @@ export default function Home() {
 
   return (
     <PageShell mainClassName="gap-8">
-      <ProfileOnboardingGate />
-
       {dashboardTitle && (
         <h1 className="text-5xl font-bold font-serif text-gradient leading-[1.15] text-center -mt-4 md:mt-0">
           {dashboardTitle}
         </h1>
       )}
 
-      {macroStatus === "idle" && (
-        <StatusMessage>
-          Choose a profile to personalize your Macro report.
-        </StatusMessage>
+      {!mounted && (
+        <div
+          className="flex w-full flex-col items-center justify-center gap-3 py-10 text-muted-foreground"
+          role="status"
+          aria-live="polite"
+        >
+          <Image
+            src="/logo.svg"
+            alt="Messy logo"
+            width={64}
+            height={64}
+            priority
+            style={{ objectFit: "contain" }}
+          />
+          <div>Loading...</div>
+        </div>
       )}
 
-      {macroStatus === "loading" && (
+      {mounted && macroStatus === "loading" && (
         <StatusMessage>Crunching macro data...</StatusMessage>
       )}
 
-      {macroStatus === "error" && (
+      {mounted && macroStatus === "error" && (
         <div className="w-full max-w-4xl">
           <ErrorDisplay error={macroError} />
         </div>
       )}
 
-      {macroStatus === "success" && macroReport?.outputs && (
+      {mounted && macroStatus === "success" && macroReport?.outputs && (
         <MacroReportRenderer
           outputs={macroReport.outputs}
           variantCode={reportVariantCode}
@@ -166,7 +182,7 @@ export default function Home() {
         />
       )}
 
-      {macroStatus === "success" && !macroReport?.outputs && (
+      {mounted && macroStatus === "success" && !macroReport?.outputs && (
         <StatusMessage>
           Report loaded, but no outputs were returned.
         </StatusMessage>

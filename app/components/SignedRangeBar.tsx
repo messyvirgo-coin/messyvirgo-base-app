@@ -44,13 +44,13 @@ export function SignedRangeBar({
         </div>
       )}
 
-      <div className="relative h-2 rounded-full bg-muted overflow-hidden border border-border">
+      <div className="relative h-2 rounded-full bg-gray-500 overflow-hidden">
         <div
-          className="absolute inset-y-0 left-1/2 w-px bg-border"
+          className="absolute inset-y-0 left-1/2 w-px bg-border/50"
           aria-hidden="true"
         />
         <div
-          className="absolute inset-y-0 rounded-full bg-linear-to-r from-pink-400 via-fuchsia-400 to-violet-400"
+          className="absolute inset-y-0 rounded-full bg-gradient-to-r from-pink-400 via-fuchsia-400 to-violet-400"
           style={fillStyle}
           aria-hidden="true"
         />

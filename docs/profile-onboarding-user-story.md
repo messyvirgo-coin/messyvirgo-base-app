@@ -1,16 +1,19 @@
-# User Story: Profile Onboarding Gate
+# User Story: Two-step Onboarding (Legal + Profile)
 
 ## User Story
-As a user entering the app for the first time, I want to select a profile
-(Degen, Trader, or Allocator) so that the experience is personalized and I
+As a user entering the app for the first time, I want to understand what the
+app does, accept the Privacy Policy and Terms of Service, and then select a
+profile (Degen, Trader, or Allocator) so the experience is personalized and I
 can update it later from settings.
 
 ## Acceptance Criteria
-- On first launch without a stored profile, a modal forces profile selection.
-- The modal cannot be dismissed (no backdrop click, Esc, or close button).
-- Choosing a profile saves it locally (keyed by user FID when available).
-- After choosing, the modal closes and the app becomes accessible.
-- Users can reopen profile selection from a temporary button on the main page.
-- Users can change their profile on `/settings/profile`.
+- On first launch, the user is gated into a 2-step onboarding flow:
+  - Step 1 (`/onboarding`): welcome/explanation + must accept Privacy Policy and Terms of Service.
+  - Step 2 (`/onboarding/profile`): must choose a profile.
+- Until Step 1 and Step 2 are complete, the rest of the app redirects to onboarding.
+- Privacy Policy (`/privacy`) and Terms (`/terms`) remain accessible during onboarding.
+- Legal acceptance is stored locally (client-side only), keyed by wallet address when available (with anonymous fallback/migration).
+- Profile selection is stored locally (client-side only), keyed by wallet address when available (with anonymous fallback/migration).
+- After choosing a profile, onboarding completes and the app becomes accessible.
+- Users can change their profile later on `/settings/profile`.
 - Swipe left/right changes profiles; swipe direction is intuitive.
-- On small screens, the full page scrolls instead of the modal overlay.
