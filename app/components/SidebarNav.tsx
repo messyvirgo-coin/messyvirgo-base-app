@@ -16,7 +16,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { useMiniKit } from "@coinbase/onchainkit/minikit";
+import { useAccount } from "wagmi";
 import { cn } from "@/app/lib/utils";
 import { profileById, useProfileId } from "@/app/lib/profile";
 
@@ -56,15 +56,37 @@ const THEME_OPTIONS = [
 export function SidebarNav() {
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [dragOffsetX, setDragOffsetX] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const drawerRef = useRef<HTMLDivElement | null>(null);
   const pathname = usePathname();
   const router = useRouter();
   const pathnameRef = useRef<string | null>(null);
-  const { context } = useMiniKit();
-  const fid = context?.user?.fid;
-  const profileId = useProfileId(fid);
+  const swipeStateRef = useRef<{
+    pointerId: number | null;
+    pointerType: string | null;
+    startX: number;
+    startY: number;
+    startTime: number;
+    lastX: number;
+    lastTime: number;
+    dragging: boolean;
+  }>({
+    pointerId: null,
+    pointerType: null,
+    startX: 0,
+    startY: 0,
+    startTime: 0,
+    lastX: 0,
+    lastTime: 0,
+    dragging: false,
+  });
+  const dragOffsetXRef = useRef(0);
+  const dragRafRef = useRef<number | null>(null);
+  const { address } = useAccount();
+  const profileId = useProfileId(address);
   const profile = profileById(profileId);
   const { theme, setTheme, resolvedTheme } = useTheme();
 
@@ -120,6 +142,16 @@ export function SidebarNav() {
 
   useEffect(() => {
     if (!isOpen) {
+      setDragOffsetX(0);
+      setIsDragging(false);
+      dragOffsetXRef.current = 0;
+      swipeStateRef.current.pointerId = null;
+      swipeStateRef.current.dragging = false;
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) {
       return;
     }
 
@@ -155,6 +187,102 @@ export function SidebarNav() {
     // Restore focus to the menu button when closing.
     requestAnimationFrame(() => menuButtonRef.current?.focus());
   }, [isOpen]);
+
+  const scheduleDragOffsetUpdate = (nextX: number) => {
+    dragOffsetXRef.current = nextX;
+    if (dragRafRef.current != null) return;
+    dragRafRef.current = window.requestAnimationFrame(() => {
+      dragRafRef.current = null;
+      setDragOffsetX(dragOffsetXRef.current);
+    });
+  };
+
+  const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (!isOpen) return;
+    // Only enable swipe-to-close for touch/pen to avoid odd desktop interactions.
+    if (event.pointerType === "mouse") return;
+
+    const el = drawerRef.current;
+    if (!el) return;
+
+    swipeStateRef.current = {
+      pointerId: event.pointerId,
+      pointerType: event.pointerType,
+      startX: event.clientX,
+      startY: event.clientY,
+      startTime: performance.now(),
+      lastX: event.clientX,
+      lastTime: performance.now(),
+      dragging: false,
+    };
+
+    setIsDragging(false);
+    scheduleDragOffsetUpdate(0);
+
+    try {
+      el.setPointerCapture(event.pointerId);
+    } catch {
+      // No-op: pointer capture can fail in some embedded webviews.
+    }
+  };
+
+  const handlePointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (!isOpen) return;
+    const state = swipeStateRef.current;
+    if (state.pointerId !== event.pointerId) return;
+
+    const dx = event.clientX - state.startX;
+    const dy = event.clientY - state.startY;
+
+    if (!state.dragging) {
+      // Only start a swipe when movement is clearly horizontal.
+      const HORIZONTAL_START_PX = 8;
+      if (Math.abs(dx) < HORIZONTAL_START_PX) return;
+      if (Math.abs(dx) < Math.abs(dy) * 1.2) return;
+      // Drawer opens from the left, so closing is a swipe LEFT.
+      if (dx >= 0) return;
+
+      state.dragging = true;
+      setIsDragging(true);
+    }
+
+    // Once dragging, follow the finger and prevent scroll-jank.
+    if (state.dragging) {
+      const width = drawerRef.current?.getBoundingClientRect().width ?? 320;
+      const clamped = Math.max(dx, -width);
+      event.preventDefault();
+
+      state.lastX = event.clientX;
+      state.lastTime = performance.now();
+      scheduleDragOffsetUpdate(clamped);
+    }
+  };
+
+  const finishSwipe = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (!isOpen) return;
+    const state = swipeStateRef.current;
+    if (state.pointerId !== event.pointerId) return;
+
+    const dx = event.clientX - state.startX;
+    const now = performance.now();
+    const dt = Math.max(1, now - state.startTime);
+    const velocityX = dx / dt; // px/ms (negative is left)
+    const width = drawerRef.current?.getBoundingClientRect().width ?? 320;
+
+    const closeByDistance = dx < -width * 0.3;
+    const closeByVelocity = velocityX < -0.5 && dx < -30;
+
+    const shouldClose = state.dragging && (closeByDistance || closeByVelocity);
+
+    swipeStateRef.current.pointerId = null;
+    swipeStateRef.current.dragging = false;
+    setIsDragging(false);
+    scheduleDragOffsetUpdate(0);
+
+    if (shouldClose) {
+      setIsOpen(false);
+    }
+  };
 
   if (!mounted) {
     return null;
@@ -226,9 +354,20 @@ export function SidebarNav() {
           // In dark mode allow subtle translucency + blur.
           "bg-background backdrop-blur-none shadow-2xl dark:bg-background/95 dark:backdrop-blur-xl",
           "border-r border-border",
-          "transform transition-transform duration-300 ease-out",
-          isOpen ? "translate-x-0" : "-translate-x-full pointer-events-none"
+          "transform ease-out",
+          isDragging ? "transition-none" : "transition-transform duration-300",
+          isOpen ? "pointer-events-auto" : "pointer-events-none"
         )}
+        style={{
+          transform: isOpen ? `translateX(${Math.min(0, dragOffsetX)}px)` : "translateX(-100%)",
+          willChange: "transform",
+          // Allow vertical scrolling while still letting us detect horizontal swipes.
+          touchAction: "pan-y",
+        }}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={finishSwipe}
+        onPointerCancel={finishSwipe}
       >
         <div className="flex h-full flex-col">
           <div className="flex items-center justify-between px-5 py-5">
