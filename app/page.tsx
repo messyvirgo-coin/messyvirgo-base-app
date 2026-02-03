@@ -1,17 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useAccount } from "wagmi";
 import Image from "next/image";
 import { PageShell } from "@/app/components/PageShell";
 import { ErrorDisplay } from "@/app/components/ErrorDisplay";
 import { MacroReportRenderer } from "@/app/components/macro/MacroReportRenderer";
-import {
-  profileById,
-  useProfileId,
-  type ProfileId,
-} from "@/app/lib/profile";
-import { getMacroVariantLabel } from "@/app/lib/lenses";
 import type { PublishedMacroReportResponse } from "@/app/lib/report-types";
 
 type MacroStatus = "idle" | "loading" | "success" | "error";
@@ -31,7 +24,6 @@ function StatusMessage({ children }: { children: React.ReactNode }) {
 }
 
 export default function Home() {
-  const { address } = useAccount();
   const [macroStatus, setMacroStatus] = useState<MacroStatus>("idle");
   const [macroError, setMacroError] = useState<Error | null>(null);
   const [macroReport, setMacroReport] =
@@ -39,14 +31,11 @@ export default function Home() {
   const abortRef = useRef<AbortController | null>(null);
   const [mounted, setMounted] = useState(false);
 
-  const profileId = useProfileId(address);
-  const profile = profileById(profileId);
-
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  const fetchMacroReport = useCallback(async (profileValue: ProfileId) => {
+  const fetchMacroReport = useCallback(async () => {
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
@@ -57,7 +46,6 @@ export default function Home() {
 
     try {
       const url = new URL("/api/macro/latest", window.location.origin);
-      url.searchParams.set("profile", profileValue);
       const response = await fetch(url.toString(), {
         signal: controller.signal,
       });
@@ -98,25 +86,18 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    void fetchMacroReport(profileId);
+    void fetchMacroReport();
     return () => {
       abortRef.current?.abort();
     };
-  }, [fetchMacroReport, profileId]);
+  }, [fetchMacroReport]);
 
-  const reportVariantCode = useMemo(
-    () => `${profileId}_daily`,
-    [profileId]
-  );
+  const reportVariantCode = useMemo(() => "base_app", []);
 
   const dashboardTitle = useMemo(() => {
-    const variantLabel = getMacroVariantLabel(reportVariantCode);
-    if (variantLabel) return variantLabel;
-    if (profile.shortLabel) {
-      return `${profile.shortLabel}'s Daily Macros`;
-    }
-    return "Daily Macros";
-  }, [reportVariantCode, profile.shortLabel]);
+    void reportVariantCode;
+    return "Crypto Macro Economics";
+  }, [reportVariantCode]);
 
   return (
     <PageShell mainClassName="gap-8">
@@ -158,7 +139,7 @@ export default function Home() {
         <MacroReportRenderer
           outputs={macroReport.outputs}
           variantCode={reportVariantCode}
-          macroProfileShortLabel={profile.shortLabel}
+          macroProfileShortLabel={null}
           macroCadence="daily"
           macroCadenceDisabled={true}
         />

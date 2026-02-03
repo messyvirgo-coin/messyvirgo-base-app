@@ -1,11 +1,5 @@
 const MACRO_REPORT_VARIANTS = [
-  { code: "default", label: "Full Macros Report" },
-  { code: "allocator_daily", label: "Allocator's Daily Macros" },
-  { code: "trader_daily", label: "Trader's Daily Macros" },
-  { code: "degen_daily", label: "Degen's Daily Macros" },
-  { code: "allocator_weekly", label: "Allocator's Weekly Macros" },
-  { code: "trader_weekly", label: "Trader's Weekly Macros" },
-  { code: "degen_weekly", label: "Degen's Weekly Macros" },
+  { code: "base_app", label: "Crypto Macro Economics" },
 ] as const;
 
 export function getMacroVariantLabel(

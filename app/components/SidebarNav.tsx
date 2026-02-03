@@ -13,13 +13,10 @@ import {
   Moon,
   Sun,
   Laptop,
-  ChevronRight,
   Share2,
   Download,
 } from "lucide-react";
-import { useAccount } from "wagmi";
 import { cn } from "@/app/lib/utils";
-import { profileById, useProfileId } from "@/app/lib/profile";
 
 const NAV_ITEMS: Array<{ href: string; label: string }> = [
   { href: "/", label: "Dashboard" },
@@ -85,9 +82,6 @@ export function SidebarNav() {
   });
   const dragOffsetXRef = useRef(0);
   const dragRafRef = useRef<number | null>(null);
-  const { address } = useAccount();
-  const profileId = useProfileId(address);
-  const profile = profileById(profileId);
   const { theme, setTheme, resolvedTheme } = useTheme();
 
   const activeTheme = useMemo(() => theme ?? "system", [theme]);
@@ -488,43 +482,6 @@ export function SidebarNav() {
               })}
             </div>
           </nav>
-
-          <div
-            className={cn(
-              "border-t border-border",
-              "sticky bottom-0 bg-background",
-              "dark:bg-background/70 dark:backdrop-blur-xl"
-            )}
-            style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
-          >
-            <Link
-              href="/me"
-              className={cn(
-                "flex min-h-11 w-full items-center gap-3 px-5 py-4",
-                "text-sm font-medium text-foreground",
-                "transition-colors hover:bg-accent/60"
-              )}
-            >
-              <span className="relative h-8 w-8 overflow-hidden rounded-full border border-border">
-                <Image
-                  src={profile.iconSrc}
-                  alt={profile.shortLabel}
-                  fill
-                  sizes="32px"
-                  style={{ objectFit: "cover" }}
-                />
-              </span>
-              <div className="flex flex-1 items-center justify-between gap-3">
-                <div className="flex flex-col leading-tight">
-                  <span className="text-sm font-semibold">{profile.shortLabel}</span>
-                  <span className="text-xs text-foreground/60 dark:text-muted-foreground">
-                    Manage your profile
-                  </span>
-                </div>
-                <ChevronRight className="h-5 w-5 text-foreground/60 dark:text-muted-foreground" />
-              </div>
-            </Link>
-          </div>
         </div>
       </div>
     </>
