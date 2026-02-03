@@ -1,5 +1,11 @@
 # Waitlist Mini App Quickstart
 
+## Mini-App Name & Description (listing copy)
+
+- **Name (long)**: Crypto Macro & Liquidity Daily (by Messy Virgo)
+- **Name (short)**: Crypto Macro Daily — Messy Virgo
+- **Description**: Daily crypto macro + liquidity dashboard and shareable summary. We track 13 indicators, score the current market regime (risk-on → defensive), and translate it into clear positioning guidance across stables, BTC/ETH, high-beta alts, and long-tail—plus a link to the full report. Powered by Messy Virgo / $MESSY on Base. Educational research, not financial advice.
+
 This is a demo Mini App application built using OnchainKit and the Farcaster SDK. Build a waitlist sign-up mini app for your company that can be published to the Base app and Farcaster. 
 
 > [!IMPORTANT]  

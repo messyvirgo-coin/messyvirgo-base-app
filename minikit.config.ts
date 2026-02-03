@@ -38,10 +38,11 @@ export const minikitConfig = {
   },
   miniapp: {
     version: "1",
-    name: "Messy Virgo",
-    subtitle: "Macro and token intelligence",
+    // Short display name (used in manifests / small UI surfaces)
+    name: "Crypto Macro Daily — Messy Virgo",
+    subtitle: "Crypto macro + liquidity dashboard",
     description:
-      "Daily macro regime card from Messy Virgo. Fast, shareable market context. More lenses may be added later, including deeper reports and technical analysis.",
+      "Daily crypto macro + liquidity dashboard and shareable summary. We track 13 indicators, score the current market regime (risk-on → defensive), and translate it into clear positioning guidance across stables, BTC/ETH, high-beta alts, and long-tail—plus a link to the full report. Powered by Messy Virgo / $MESSY on Base. Educational research, not financial advice.",
     screenshotUrls: [`${ROOT_URL}/screenshot-portrait.png`],
     iconUrl: `${ROOT_URL}/messy-icon.png`,
     splashImageUrl: `${ROOT_URL}/messy-splash.png`,
@@ -49,11 +50,24 @@ export const minikitConfig = {
     homeUrl: ROOT_URL,
     webhookUrl: `${ROOT_URL}/api/webhook`,
     primaryCategory: "finance",
-    tags: ["macro", "research", "signal", "risk", "analysis"],
+    tags: [
+      "macro",
+      "liquidity",
+      "indicators",
+      "regime",
+      "positioning",
+      "bitcoin",
+      "ethereum",
+      "alts",
+      "research",
+      "base",
+    ],
     heroImageUrl: `${ROOT_URL}/messy-hero.png`,
-    tagline: "Daily regime. Clear context.",
-    ogTitle: "Messy Virgo",
-    ogDescription: "Daily macro regime card and token intelligence.",
+    tagline: "Daily macro + liquidity. Clear positioning.",
+    // Long-form title/description for rich previews
+    ogTitle: "Crypto Macro & Liquidity Daily (by Messy Virgo)",
+    ogDescription:
+      "Daily crypto macro + liquidity dashboard and shareable summary. We track 13 indicators and translate the current regime into clear positioning guidance.",
     ogImageUrl: `${ROOT_URL}/messy-hero.png`,
   },
 } as const;
