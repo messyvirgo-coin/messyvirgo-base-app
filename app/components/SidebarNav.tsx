@@ -62,6 +62,7 @@ export function SidebarNav() {
   const menuButtonRef = useRef<HTMLButtonElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const drawerRef = useRef<HTMLDivElement | null>(null);
+  const wasOpenRef = useRef(false);
   const pathname = usePathname();
   const swipeStateRef = useRef<{
     pointerId: number | null;
@@ -143,11 +144,16 @@ export function SidebarNav() {
     if (isOpen) {
       // Focus the close button when opening.
       requestAnimationFrame(() => closeButtonRef.current?.focus());
+      wasOpenRef.current = true;
       return;
     }
 
-    // Restore focus to the menu button when closing.
-    requestAnimationFrame(() => menuButtonRef.current?.focus());
+    // Restore focus to the menu button only when we *just* closed the drawer.
+    // Avoid auto-focusing on initial mount (can cause "weird borders"/outlines).
+    if (wasOpenRef.current) {
+      requestAnimationFrame(() => menuButtonRef.current?.focus());
+    }
+    wasOpenRef.current = false;
   }, [isOpen]);
 
   const scheduleDragOffsetUpdate = (nextX: number) => {
@@ -273,7 +279,8 @@ export function SidebarNav() {
             onClick={() => undefined}
             className={cn(
               "inline-flex h-11 items-center gap-2 px-4",
-              "text-sm font-medium text-foreground transition-colors hover:bg-accent/70"
+              "text-sm font-medium text-foreground transition-colors hover:bg-accent/70",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             )}
             aria-label="Share (coming soon)"
             title="Share (coming soon)"
@@ -289,7 +296,8 @@ export function SidebarNav() {
           ref={menuButtonRef}
           className={cn(
             "inline-flex h-11 items-center gap-2 px-4",
-            "text-sm font-medium text-foreground transition-colors hover:bg-accent/70"
+            "text-sm font-medium text-foreground transition-colors hover:bg-accent/70",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           )}
           aria-label="Open navigation menu"
         >
@@ -303,7 +311,8 @@ export function SidebarNav() {
             onClick={() => undefined}
             className={cn(
               "inline-flex h-11 items-center gap-2 px-4",
-              "text-sm font-medium text-foreground transition-colors hover:bg-accent/70"
+              "text-sm font-medium text-foreground transition-colors hover:bg-accent/70",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             )}
             aria-label="Save (coming soon)"
             title="Save (coming soon)"
