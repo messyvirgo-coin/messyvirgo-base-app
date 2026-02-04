@@ -8,7 +8,7 @@ import { PageTransitionLoader } from "./components/PageTransitionLoader";
 import "./globals.css";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const baseAppId = process.env.NEXT_PUBLIC_BASE_APP_ID || "6957f29c4d3a403912ed8a58";
+  const baseAppId = process.env.NEXT_PUBLIC_BASE_APP_ID || "698347b104e71c950acb8a5e";
 
   // Web / SEO title (can be longer than the MiniApp name)
   const titleLong = "Crypto Macro & Liquidity Daily (by Messy Virgo)";
