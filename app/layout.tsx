@@ -4,6 +4,7 @@ import { SafeArea } from "@coinbase/onchainkit/minikit";
 import { minikitConfig } from "../minikit.config";
 import { RootProvider } from "./rootProvider";
 import { ThemeProvider } from "./components/ThemeProvider";
+import { PageTransitionLoader } from "./components/PageTransitionLoader";
 import "./globals.css";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -105,6 +106,7 @@ export default function RootLayout({
       >
         <RootProvider>
           <ThemeProvider>
+            <PageTransitionLoader />
             <SafeArea>
               {children}
             </SafeArea>

@@ -11,6 +11,8 @@ import type { PublishedMacroReportResponse } from "@/app/lib/report-types";
 type MacroStatus = "idle" | "loading" | "success" | "error";
 
 const LEGAL_ACK_STORAGE_KEY = "mv_legal_ack_v1";
+const MACRO_REPORT_CACHE_KEY = "mv_macro_latest_cache_v1";
+const MACRO_REPORT_CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
 
 function StatusMessage({ children }: { children: React.ReactNode }) {
   return (
@@ -26,6 +28,29 @@ function StatusMessage({ children }: { children: React.ReactNode }) {
   );
 }
 
+function LoadingIndicator({ label = "Loading report…" }: { label?: string }) {
+  return (
+    <div className="flex w-full flex-col items-center gap-4">
+      <div className="flex items-center gap-3 text-sm">
+        <span
+          className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-foreground/20 border-t-foreground/70"
+          aria-hidden="true"
+        />
+        <span>{label}</span>
+      </div>
+
+      <div
+        className="h-2 w-full max-w-md overflow-hidden rounded-full bg-border/30"
+        role="progressbar"
+        aria-label="Loading"
+        aria-valuetext="Loading"
+      >
+        <div className="h-full w-2/3 animate-pulse rounded-full bg-gradient-to-r from-pink-400 via-fuchsia-400 to-violet-400" />
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
   const [macroStatus, setMacroStatus] = useState<MacroStatus>("idle");
   const [macroError, setMacroError] = useState<Error | null>(null);
@@ -36,6 +61,41 @@ export default function Home() {
   const [hasAcknowledgedLegal, setHasAcknowledgedLegal] = useState(false);
   const [termsChecked, setTermsChecked] = useState(false);
   const [privacyChecked, setPrivacyChecked] = useState(false);
+
+  const loadCachedMacroReport = useCallback(() => {
+    try {
+      const raw = window.localStorage.getItem(MACRO_REPORT_CACHE_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw) as {
+        cachedAtMs?: unknown;
+        report?: unknown;
+      };
+
+      if (typeof parsed?.cachedAtMs !== "number") return null;
+      if (!parsed.report) return null;
+
+      const ageMs = Date.now() - parsed.cachedAtMs;
+      if (ageMs < 0 || ageMs > MACRO_REPORT_CACHE_TTL_MS) return null;
+
+      return parsed.report as PublishedMacroReportResponse;
+    } catch {
+      return null;
+    }
+  }, []);
+
+  const persistCachedMacroReport = useCallback(
+    (report: PublishedMacroReportResponse) => {
+      try {
+        window.localStorage.setItem(
+          MACRO_REPORT_CACHE_KEY,
+          JSON.stringify({ cachedAtMs: Date.now(), report })
+        );
+      } catch {
+        // Non-fatal: caching is best-effort.
+      }
+    },
+    []
+  );
 
   useEffect(() => {
     setMounted(true);
@@ -85,6 +145,7 @@ export default function Home() {
       }
       setMacroReport(report);
       setMacroStatus("success");
+      persistCachedMacroReport(report);
     } catch (fetchError) {
       if (fetchError instanceof DOMException && fetchError.name === "AbortError") {
         return;
@@ -101,16 +162,27 @@ export default function Home() {
         abortRef.current = null;
       }
     }
-  }, []);
+  }, [persistCachedMacroReport]);
 
   useEffect(() => {
     if (!mounted) return;
-    // Start loading the report immediately, even while overlay is displayed
+    // Start loading the report immediately, even while overlay is displayed.
+    // Prefer a fresh cached report to avoid re-fetching the same daily payload.
+    const cached = loadCachedMacroReport();
+    if (cached) {
+      setMacroError(null);
+      setMacroReport(cached);
+      setMacroStatus("success");
+      return () => {
+        abortRef.current?.abort();
+      };
+    }
+
     void fetchMacroReport();
     return () => {
       abortRef.current?.abort();
     };
-  }, [fetchMacroReport, mounted]);
+  }, [fetchMacroReport, loadCachedMacroReport, mounted]);
 
   const reportVariantCode = useMemo(() => "base_app", []);
 
@@ -160,7 +232,9 @@ export default function Home() {
       )}
 
       {isGateOpen && macroStatus === "loading" && (
-        <StatusMessage>Crunching macro data...</StatusMessage>
+        <StatusMessage>
+          <LoadingIndicator />
+        </StatusMessage>
       )}
 
       {isGateOpen && macroStatus === "error" && (
