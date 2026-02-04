@@ -1,9 +1,8 @@
 "use client";
 
-import { useMemo, useCallback, useState, type ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Download } from "lucide-react";
 import { MacroReportHeaderCard } from "@/app/components/report/MacroReportHeaderCard";
 import {
   extractMacroRegimeDetails,
@@ -75,32 +74,6 @@ export function MacroReportRenderer({
 }) {
   const markdownArtifact = getReportMarkdownArtifact(outputs);
   const markdownContent = getMarkdownReportText(outputs);
-  const [isDownloading, setIsDownloading] = useState(false);
-
-  const handleDownload = useCallback(async () => {
-    setIsDownloading(true);
-    try {
-      const url = new URL("/api/macro/download", window.location.origin);
-      const variantToUse =
-        typeof variantCode === "string" && variantCode.trim()
-          ? variantCode.trim()
-          : "base_app";
-      url.searchParams.set("variant", variantToUse);
-
-      // Use a direct navigation download so the browser honors Content-Disposition.
-      const anchor = document.createElement("a");
-      anchor.href = url.toString();
-      anchor.rel = "noreferrer";
-      document.body.appendChild(anchor);
-      anchor.click();
-      anchor.remove();
-    } catch (error) {
-      console.error("Download failed:", error);
-      // You could add a toast notification here if desired
-    } finally {
-      window.setTimeout(() => setIsDownloading(false), 600);
-    }
-  }, [variantCode]);
 
   const { bodyMarkdown, annexesMarkdown, footerMarkdown } = useMemo(() => {
     if (!markdownArtifact)
@@ -201,19 +174,6 @@ export function MacroReportRenderer({
               macroCadenceDisabled={macroCadenceDisabled}
               macroProfileShortLabel={macroProfileShortLabel ?? null}
             />
-            </div>
-
-            <div className="flex justify-end -mt-2 mb-2">
-              <button
-                type="button"
-                onClick={handleDownload}
-                disabled={isDownloading}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-md border border-pink-400/30 bg-pink-400/10 text-sm font-medium text-foreground hover:bg-pink-400/20 hover:border-pink-400/50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                aria-label="Download report as markdown"
-              >
-                <Download className="h-4 w-4" />
-                {isDownloading ? "Downloading..." : "Download"}
-              </button>
             </div>
 
             <div>
