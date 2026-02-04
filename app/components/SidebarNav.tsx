@@ -260,7 +260,7 @@ export function SidebarNav() {
           "fixed left-1/2 z-40 inline-flex items-center -translate-x-1/2 overflow-hidden rounded-full",
           "max-w-[calc(100vw-2rem)]",
           // Make the floating control more solid in light mode.
-          "border border-border bg-card/95 shadow-lg backdrop-blur-md transition-colors dark:bg-card/80",
+          "border border-border mv-glass-menu-surface shadow-lg mv-backdrop-blur-md transition-colors",
           "hover:border-pink-400/40"
         )}
         style={{
@@ -338,7 +338,7 @@ export function SidebarNav() {
           "fixed left-0 top-0 z-50 h-dvh w-[min(85vw,320px)] overflow-hidden",
           // In light mode keep the drawer more opaque/solid.
           // In dark mode allow subtle translucency + blur.
-          "bg-background backdrop-blur-none shadow-2xl dark:bg-background/95 dark:backdrop-blur-xl",
+          "bg-background mv-glass-drawer-surface-dark mv-backdrop-none shadow-2xl mv-backdrop-blur-xl-dark",
           "border-r border-border",
           "transform ease-out",
           isDragging ? "transition-none" : "transition-transform duration-300",

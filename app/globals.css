@@ -148,6 +148,71 @@
 }
 
 @layer utilities {
+  /* iOS Safari/WebViews often require the WebKit-prefixed property for backdrop blur. */
+  .mv-backdrop-none {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .mv-backdrop-blur-sm {
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+
+  .mv-backdrop-blur-md {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .mv-backdrop-blur-xl {
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+  }
+
+  /* Convenience helper: apply blur only in dark mode (light mode stays solid). */
+  .mv-backdrop-blur-xl-dark {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .dark .mv-backdrop-blur-xl-dark {
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+  }
+
+  /*
+    Glass surfaces with RGBA fallback for older iOS Safari/WebViews that can be
+    picky about modern `hsl(var(--token) / alpha)` syntax.
+  */
+  .mv-glass-card-surface {
+    background-color: rgba(255, 255, 255, 0.5);
+    background-color: hsl(var(--card) / 0.5);
+  }
+
+  .dark .mv-glass-card-surface {
+    background-color: rgba(0, 0, 0, 0.5);
+    background-color: hsl(var(--card) / 0.5);
+  }
+
+  .mv-glass-menu-surface {
+    background-color: rgba(255, 255, 255, 0.95);
+    background-color: hsl(var(--card) / 0.95);
+  }
+
+  .dark .mv-glass-menu-surface {
+    background-color: rgba(0, 0, 0, 0.8);
+    background-color: hsl(var(--card) / 0.8);
+  }
+
+  .mv-glass-drawer-surface-dark {
+    /* No-op in light mode (drawer uses solid `bg-background`). */
+  }
+
+  .dark .mv-glass-drawer-surface-dark {
+    background-color: rgba(17, 24, 39, 0.95);
+    background-color: hsl(var(--background) / 0.95);
+  }
+
   .mv-card {
     background: var(--mv-glass-bg);
     backdrop-filter: blur(12px);

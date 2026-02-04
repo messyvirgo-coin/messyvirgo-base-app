@@ -16,7 +16,7 @@ function StatusMessage({ children }: { children: React.ReactNode }) {
   return (
     <div className="w-full max-w-4xl">
       <div
-        className="mv-card rounded-lg border border-input bg-black/40 backdrop-blur-sm overflow-hidden p-6 sm:p-8 text-center text-muted-foreground"
+        className="mv-card rounded-lg border border-input bg-black/40 overflow-hidden p-6 sm:p-8 text-center text-muted-foreground"
         role="status"
         aria-live="polite"
       >
@@ -192,7 +192,7 @@ export default function Home() {
           aria-modal="true"
           aria-label="Terms and privacy acknowledgement"
         >
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+          <div className="absolute inset-0 bg-black/60 mv-backdrop-blur-sm" />
           <div className="relative w-full max-w-2xl overflow-hidden rounded-2xl border border-border bg-background shadow-2xl">
             <div className="bg-gradient-to-br from-fuchsia-500/10 via-transparent to-cyan-500/10 p-6 sm:p-7">
               <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:gap-6">
