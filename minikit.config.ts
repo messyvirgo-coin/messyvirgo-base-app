@@ -104,7 +104,7 @@ export const minikitConfig = {
     subtitle: "by Messy Virgo / MESSY",
     description: 
       "Daily crypto market intel. Get todays regime and risk context, plus what traders typically do, summarized in 2 minutes. Full report included. No advice, education only.",
-    screenshotUrls: [`${ROOT_URL}/screenshot-portrait.png`],
+    screenshotUrls: [`${ROOT_URL}/screenshot-1.png`, `${ROOT_URL}/screenshot-2.png`, `${ROOT_URL}/screenshot-3.png`],
     iconUrl: `${ROOT_URL}/messy-icon.png`,
     splashImageUrl: `${ROOT_URL}/messy-splash.png`,
     splashBackgroundColor: "#000000",

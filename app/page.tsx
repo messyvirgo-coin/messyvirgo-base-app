@@ -16,7 +16,7 @@ function StatusMessage({ children }: { children: React.ReactNode }) {
   return (
     <div className="w-full max-w-4xl">
       <div
-        className="mv-card rounded-lg border border-input bg-black/40 backdrop-blur-sm overflow-hidden p-6 sm:p-8 text-center text-muted-foreground"
+        className="mv-card rounded-lg border border-input bg-black/40 overflow-hidden p-6 sm:p-8 text-center text-muted-foreground"
         role="status"
         aria-live="polite"
       >
@@ -192,8 +192,8 @@ export default function Home() {
           aria-modal="true"
           aria-label="Terms and privacy acknowledgement"
         >
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-          <div className="relative w-full max-w-2xl overflow-hidden rounded-2xl border border-border bg-background shadow-2xl">
+          <div className="absolute inset-0 bg-black/60 mv-backdrop-blur-sm" />
+          <div className="relative w-full max-w-2xl overflow-hidden rounded-2xl border border-border mv-glass-modal-surface mv-backdrop-blur-md shadow-2xl">
             <div className="bg-gradient-to-br from-fuchsia-500/10 via-transparent to-cyan-500/10 p-6 sm:p-7">
               <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:gap-6">
                 <div className="relative w-full shrink-0 overflow-hidden rounded-2xl bg-muted/20 shadow-sm aspect-video lg:h-32 lg:w-32 lg:aspect-square">
@@ -208,15 +208,15 @@ export default function Home() {
                 </div>
 
                 <div className="min-w-0">
-                  <div className="text-xl font-semibold font-serif text-gradient leading-tight sm:text-2xl">
-                    Welcome to Market Vibe Daily
+                  <div className="text-4xl font-semibold font-serif text-gradient leading-tight sm:text-3xl md:text-3xl lg:text-4xl">
+                    Market Vibe Daily
                   </div>
                   <div className="mt-1 text-sm text-foreground/70">
                     by Messy Virgo / $MESSY
                   </div>
 
                   <p className="mt-3 text-sm text-foreground/80">
-                    Daily crypto market intel. Get today&apos;s regime and risk
+                    Welcome to your Daily crypto market intel. Get today&apos;s regime and risk
                     context, plus what traders typically do, summarized in 2 minutes.
                     Full report included. No advice, education only.
                   </p>
@@ -230,10 +230,10 @@ export default function Home() {
               </div>
 
               <div className="space-y-4">
-                <label className="flex cursor-pointer items-start gap-4 p-2 -m-2 rounded-md touch-manipulation active:bg-accent/50 transition-colors">
+                <label className="flex cursor-pointer items-center gap-4 p-2 -m-2 rounded-md touch-manipulation active:bg-accent/50 transition-colors">
                   <input
                     type="checkbox"
-                    className="mt-0.5 h-6 w-6 shrink-0 accent-primary touch-none"
+                    className="h-6 w-6 shrink-0 accent-primary touch-none"
                     checked={termsChecked}
                     onChange={(e) => setTermsChecked(e.target.checked)}
                   />
@@ -252,10 +252,10 @@ export default function Home() {
                   </span>
                 </label>
 
-                <label className="flex cursor-pointer items-start gap-4 p-2 -m-2 rounded-md touch-manipulation active:bg-accent/50 transition-colors">
+                <label className="flex cursor-pointer items-center gap-4 p-2 -m-2 rounded-md touch-manipulation active:bg-accent/50 transition-colors">
                   <input
                     type="checkbox"
-                    className="mt-0.5 h-6 w-6 shrink-0 accent-primary touch-none"
+                    className="h-6 w-6 shrink-0 accent-primary touch-none"
                     checked={privacyChecked}
                     onChange={(e) => setPrivacyChecked(e.target.checked)}
                   />

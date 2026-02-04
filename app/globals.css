@@ -148,6 +148,78 @@
 }
 
 @layer utilities {
+  /* iOS Safari/WebViews often require the WebKit-prefixed property for backdrop blur. */
+  .mv-backdrop-none {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .mv-backdrop-blur-sm {
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+
+  .mv-backdrop-blur-md {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .mv-backdrop-blur-xl {
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+  }
+
+  /* Convenience helper: apply blur only in dark mode (light mode stays solid). */
+  .dark .mv-backdrop-blur-xl-dark {
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+  }
+
+  /*
+    Glass surfaces with RGBA fallback for older iOS Safari/WebViews that can be
+    picky about modern `hsl(var(--token) / alpha)` syntax.
+  */
+  .mv-glass-card-surface {
+    background-color: rgba(255, 255, 255, 0.5);
+    background-color: hsl(var(--card) / 0.5);
+  }
+
+  .dark .mv-glass-card-surface {
+    background-color: rgba(0, 0, 0, 0.5);
+    background-color: hsl(var(--card) / 0.5);
+  }
+
+  .mv-glass-menu-surface {
+    background-color: rgba(255, 255, 255, 0.95);
+    background-color: hsl(var(--card) / 0.95);
+  }
+
+  .dark .mv-glass-menu-surface {
+    background-color: rgba(0, 0, 0, 0.8);
+    background-color: hsl(var(--card) / 0.8);
+  }
+
+  .mv-glass-drawer-surface {
+    /* Light mode: semi-transparent white with RGBA fallback for iOS Safari */
+    background-color: rgba(250, 250, 252, 0.3);
+    background-color: hsl(var(--background) / 0.3);
+  }
+
+  .dark .mv-glass-drawer-surface {
+    background-color: rgba(17, 24, 39, 0.3);
+    background-color: hsl(var(--background) / 0.3);
+  }
+
+  .mv-glass-modal-surface {
+    background-color: rgba(255, 255, 255, 0.5);
+    background-color: hsl(var(--card) / 0.5);
+  }
+
+  .dark .mv-glass-modal-surface {
+    background-color: rgba(0, 0, 0, 0.5);
+    background-color: hsl(var(--card) / 0.5);
+  }
+
   .mv-card {
     background: var(--mv-glass-bg);
     backdrop-filter: blur(12px);

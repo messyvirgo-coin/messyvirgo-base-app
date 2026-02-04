@@ -13,7 +13,7 @@ export default async function TermsPage() {
     <PageShell mainClassName="gap-8">
       <PageHeader
         title="Terms of Service"
-        subtitle="Conditions of use for Messy Virgo"
+        subtitle="What you agree to"
       />
 
       <div className="w-full max-w-4xl space-y-4">
