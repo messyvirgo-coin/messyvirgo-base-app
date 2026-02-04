@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, type ReactNode } from "react";
+import { useMemo, useState, useCallback, type ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { Download, Smartphone, ChevronRight } from "lucide-react";
 import { MacroReportHeaderCard } from "@/app/components/report/MacroReportHeaderCard";
 import {
   extractMacroRegimeDetails,
@@ -15,14 +16,17 @@ import {
   getReportMarkdownArtifact,
 } from "@/app/lib/lens-outputs";
 import type { LensOutputArtifact } from "@/app/lib/report-types";
+import { Alert, AlertDescription, AlertTitle } from "@/app/components/ui/alert";
+
+const DEFAULT_VARIANT_CODE = "base_app";
 
 const PROSE_CLASSNAME =
-  "prose max-w-none text-sm leading-6 dark:prose-invert prose-headings:font-semibold prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-code:text-foreground prose-code:bg-muted prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-muted prose-pre:text-foreground prose-table:w-full prose-table:border prose-table:border-collapse prose-table:border-white/15 prose-th:border prose-th:border-white/15 prose-th:bg-white/5 prose-th:p-2 prose-th:text-left prose-th:font-semibold prose-td:border prose-td:border-white/15 prose-td:p-2 prose-td:text-left prose-ul:text-foreground prose-ol:text-foreground prose-li:text-foreground";
+  "prose max-w-none text-sm leading-6 dark:prose-invert prose-headings:font-semibold prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-code:text-foreground prose-code:bg-muted prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-muted prose-pre:text-foreground prose-table:border prose-table:border-collapse prose-table:border-white/15 prose-th:border prose-th:border-white/15 prose-th:bg-white/5 prose-th:p-2 prose-th:text-left prose-th:font-semibold prose-td:border prose-td:border-white/15 prose-td:p-2 prose-td:text-left prose-ul:text-foreground prose-ol:text-foreground prose-li:text-foreground";
 
 const MARKDOWN_COMPONENTS = {
   table: ({ children }: { children?: ReactNode }) => (
-    <div className="overflow-x-auto my-4 mv-scrollbar">
-      <table className="w-full border-collapse">{children}</table>
+    <div className="overflow-x-auto my-4 mv-scrollbar -mx-4 px-4">
+      <table className="min-w-full border-collapse">{children}</table>
     </div>
   ),
   hr: () => (
@@ -146,6 +150,30 @@ export function MacroReportRenderer({
       ? `${qualitativeAdjustment >= 0 ? "+" : ""}${qualitativeAdjustment.toFixed(2)} (QA)`
       : "—";
 
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  const handleDownload = useCallback(async () => {
+    setIsDownloading(true);
+    try {
+      const url = new URL("/api/macro/download", window.location.origin);
+      const variantToUse =
+        typeof variantCode === "string" && variantCode.trim()
+          ? variantCode.trim()
+          : DEFAULT_VARIANT_CODE;
+      url.searchParams.set("variant", variantToUse);
+      const anchor = document.createElement("a");
+      anchor.href = url.toString();
+      anchor.rel = "noreferrer";
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+    } catch (error) {
+      console.error("Download failed:", error);
+    } finally {
+      window.setTimeout(() => setIsDownloading(false), 600);
+    }
+  }, [variantCode]);
+
   return (
     <div className="w-full max-w-4xl mx-auto space-y-4">
       <div className="space-y-4">
@@ -174,6 +202,38 @@ export function MacroReportRenderer({
               macroCadenceDisabled={macroCadenceDisabled}
               macroProfileShortLabel={macroProfileShortLabel ?? null}
             />
+            </div>
+
+            {/* Mobile alert: encourage download for better viewing */}
+            <div className="md:hidden">
+              <Alert className="border-primary/20 bg-primary/5 px-5 py-4 [&>svg]:left-5 [&>svg]:top-5 [&>svg~*]:pl-8">
+                <Smartphone aria-hidden="true" size={18} className="text-primary" />
+                <div>
+                  <AlertTitle className="text-sm font-semibold">
+                    Better on larger screens
+                  </AlertTitle>
+                  <AlertDescription className="mt-2 text-sm">
+                    <p className="mb-3">
+                      This report contains detailed tables and data that are best viewed
+                      on a desktop or tablet. For the best reading experience, we
+                      recommend downloading the report.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={handleDownload}
+                      disabled={isDownloading}
+                      className="relative inline-flex h-11 w-full items-center justify-center rounded-md bg-gradient-to-r from-pink-500 to-fuchsia-500 px-6 text-sm font-semibold text-white shadow-sm transition-all hover:from-pink-600 hover:to-fuchsia-600 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:from-pink-500 disabled:hover:to-fuchsia-500"
+                    >
+                      <span>{isDownloading ? "Downloading..." : "Download Report"}</span>
+                      <ChevronRight
+                        aria-hidden="true"
+                        size={20}
+                        className="absolute right-5 top-1/2 -translate-y-1/2"
+                      />
+                    </button>
+                  </AlertDescription>
+                </div>
+              </Alert>
             </div>
 
             <div>

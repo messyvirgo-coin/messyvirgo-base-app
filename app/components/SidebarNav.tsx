@@ -87,6 +87,8 @@ export function SidebarNav() {
   const [isDownloading, setIsDownloading] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const isSharingRef = useRef(false);
+  const shareRequestSeqRef = useRef(0);
+  const activeShareSeqRef = useRef<number | null>(null);
   const menuButtonRef = useRef<HTMLButtonElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const drawerRef = useRef<HTMLDivElement | null>(null);
@@ -114,7 +116,7 @@ export function SidebarNav() {
   const dragOffsetXRef = useRef(0);
   const dragRafRef = useRef<number | null>(null);
   const { theme, setTheme, resolvedTheme } = useTheme();
-  const { composeCast } = useComposeCast();
+  const { composeCastAsync } = useComposeCast();
 
   const activeTheme = useMemo(() => theme ?? "system", [theme]);
   const isDarkMode = resolvedTheme === "dark";
@@ -122,15 +124,13 @@ export function SidebarNav() {
   const reportContext = REPORT_CONTEXT_BY_PATH[activePath] ?? null;
   const showShare = reportContext !== null;
   const showDownload = showShare;
-  const reportCacheKey = reportContext?.cacheKey ?? null;
   const reportVariant = reportContext?.variant ?? null;
-  const shareTitle = reportContext?.shareTitle ?? "Market Vibe Daily";
-  const embedPath = reportContext?.path ?? "/";
 
-  const loadCachedMacroReport = useCallback((): PublishedMacroReportResponse | null => {
+  const loadCachedMacroReport = useCallback(
+    (cacheKey: string | null): PublishedMacroReportResponse | null => {
     try {
-      if (!reportCacheKey) return null;
-      const raw = window.localStorage.getItem(reportCacheKey);
+      if (!cacheKey) return null;
+      const raw = window.localStorage.getItem(cacheKey);
       if (!raw) return null;
       const parsed = JSON.parse(raw) as {
         cachedAtMs?: unknown;
@@ -147,29 +147,52 @@ export function SidebarNav() {
     } catch {
       return null;
     }
-  }, [reportCacheKey]);
+    },
+    []
+  );
 
-  const handleShare = useCallback(async () => {
+  const startShareForPath = useCallback(
+    (path: string) => {
+      const seq = ++shareRequestSeqRef.current;
+      activeShareSeqRef.current = seq;
+      isSharingRef.current = true;
+      setIsSharing(true);
+
+      void (async () => {
+        try {
+          const normalizedPath = path.replace(/\/+$/, "") || "/";
+          const context =
+            REPORT_CONTEXT_BY_PATH[normalizedPath] ??
+            REPORT_CONTEXT_BY_PATH["/"]!;
+
+          const appUrl = new URL(context.path, window.location.origin).toString();
+          const cached = loadCachedMacroReport(context.cacheKey);
+          const { reportDate, snippet } = buildMacroShareContent(cached);
+
+          await composeCastAsync({
+            text: `📊 ${context.shareTitle} - ${reportDate}\n\n${snippet}\n\nPowered by @$MESSY - Messy Virgo Coin`,
+            embeds: [appUrl],
+          });
+        } catch (error) {
+          console.error("Share failed:", error);
+        } finally {
+          // Only clear "sharing" state if this is still the latest share request.
+          if (activeShareSeqRef.current === seq) {
+            activeShareSeqRef.current = null;
+            isSharingRef.current = false;
+            setIsSharing(false);
+          }
+        }
+      })();
+    },
+    [composeCastAsync, loadCachedMacroReport]
+  );
+
+  const handleShare = useCallback(() => {
     // Guard against rapid clicks before React re-renders + disables the button.
     if (isSharingRef.current) return;
-    isSharingRef.current = true;
-    setIsSharing(true);
-    try {
-      const appUrl = new URL(embedPath, window.location.origin).toString();
-      const cached = loadCachedMacroReport();
-      const { reportDate, snippet } = buildMacroShareContent(cached);
-
-      await composeCast({
-        text: `📊 ${shareTitle} - ${reportDate}\n\n${snippet}\n\nPowered by @$MESSY - Messy Virgo Coin`,
-        embeds: [appUrl],
-      });
-    } catch (error) {
-      console.error("Share failed:", error);
-    } finally {
-      isSharingRef.current = false;
-      setIsSharing(false);
-    }
-  }, [composeCast, embedPath, loadCachedMacroReport, shareTitle]);
+    startShareForPath(activePath);
+  }, [activePath, startShareForPath]);
 
   const handleDownload = useCallback(async () => {
     setIsDownloading(true);
@@ -205,6 +228,14 @@ export function SidebarNav() {
   useEffect(() => {
     setIsOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    // If a share is in-flight and the user navigates, refresh the share composer
+    // with the new page's embed + title so users don't accidentally share stale content.
+    if (!pathname) return;
+    if (activeShareSeqRef.current == null) return;
+    startShareForPath(pathname);
+  }, [pathname, startShareForPath]);
 
   useEffect(() => {
     if (!isOpen) {

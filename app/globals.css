@@ -416,7 +416,8 @@
 
   /* Tables */
   .prose table {
-    width: 100%;
+    min-width: 100%;
+    width: auto;
     border-collapse: collapse;
     margin-bottom: 1rem;
     border: 1px solid hsl(var(--border));
@@ -435,6 +436,33 @@
     padding: 0.75rem;
     border: 1px solid hsl(var(--border));
     color: hsl(var(--foreground));
+  }
+
+  /* Light mode: darker table borders for better visibility */
+  .prose table {
+    border-color: hsl(214 20% 60%);
+  }
+
+  .prose th {
+    border-color: hsl(214 20% 60%);
+  }
+
+  .prose td {
+    border-color: hsl(214 20% 60%);
+  }
+
+  /* Dark mode table tweaks: transparent headers + clearer grid lines */
+  .dark .prose table {
+    border-color: hsl(0 0% 100% / 0.14);
+  }
+
+  .dark .prose th {
+    background-color: transparent;
+    border-color: hsl(0 0% 100% / 0.14);
+  }
+
+  .dark .prose td {
+    border-color: hsl(0 0% 100% / 0.14);
   }
 
   /* Images */
