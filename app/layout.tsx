@@ -11,8 +11,8 @@ export async function generateMetadata(): Promise<Metadata> {
   const baseAppId = process.env.NEXT_PUBLIC_BASE_APP_ID || "698347b104e71c950acb8a5e";
 
   // Web / SEO title (can be longer than the MiniApp name)
-  const titleLong = "Crypto Macro & Liquidity Daily (by Messy Virgo)";
-  const titleShort = "Crypto Macro Daily — Messy Virgo";
+  const titleLong = "Market Vibe Daily by Messy Virgo";
+  const titleShort = "Market Vibe Daily — Messy Virgo";
   
   // Debug logging (visible in server console)
   if (process.env.NODE_ENV === "development") {

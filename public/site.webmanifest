@@ -1,7 +1,7 @@
 {
-  "name": "Crypto Macro & Liquidity Daily (by Messy Virgo)",
-  "short_name": "Crypto Macro Daily",
-  "description": "Daily crypto macro + liquidity dashboard and shareable summary. We track 13 indicators, score the current market regime (risk-on → defensive), and translate it into clear positioning guidance across stables, BTC/ETH, high-beta alts, and long-tail—plus a link to the full report. Powered by Messy Virgo / $MESSY on Base. Educational research, not financial advice.",
+  "name": "Market Vibe Daily by Messy Virgo",
+  "short_name": "Market Vibe Daily",
+  "description": "Daily crypto market intel. Get todays regime and risk context, plus what traders typically do, summarized in 2 minutes. Full report included. No advice, education only.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
