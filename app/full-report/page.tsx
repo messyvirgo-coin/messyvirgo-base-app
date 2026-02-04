@@ -2,15 +2,15 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { PageShell } from "@/app/components/PageShell";
 import { ErrorDisplay } from "@/app/components/ErrorDisplay";
 import { MacroReportRenderer } from "@/app/components/macro/MacroReportRenderer";
+import { LegalAcknowledgementOverlay } from "@/app/components/LegalAcknowledgementOverlay";
 import type { PublishedMacroReportResponse } from "@/app/lib/report-types";
+import { useLegalAcknowledgement } from "@/app/lib/useLegalAcknowledgement";
 
 type MacroStatus = "idle" | "loading" | "success" | "error";
 
-const LEGAL_ACK_STORAGE_KEY = "mv_legal_ack_v1";
 const MACRO_REPORT_CACHE_KEY = "mv_macro_default_cache_v1";
 const MACRO_REPORT_CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
 const REPORT_VARIANT_CODE = "default";
@@ -46,7 +46,7 @@ function LoadingIndicator({ label = "Loading report…" }: { label?: string }) {
         aria-label="Loading"
         aria-valuetext="Loading"
       >
-        <div className="h-full w-2/3 animate-pulse rounded-full bg-gradient-to-r from-pink-400 via-fuchsia-400 to-violet-400" />
+        <div className="h-full w-2/3 animate-pulse rounded-full bg-linear-to-r from-pink-400 via-fuchsia-400 to-violet-400" />
       </div>
     </div>
   );
@@ -58,10 +58,14 @@ export default function FullReportPage() {
   const [macroReport, setMacroReport] =
     useState<PublishedMacroReportResponse | null>(null);
   const abortRef = useRef<AbortController | null>(null);
-  const [mounted, setMounted] = useState(false);
-  const [hasAcknowledgedLegal, setHasAcknowledgedLegal] = useState(false);
-  const [termsChecked, setTermsChecked] = useState(false);
-  const [privacyChecked, setPrivacyChecked] = useState(false);
+  const {
+    mounted,
+    hasAcknowledgedLegal,
+    legalChecked,
+    setLegalChecked,
+    canAcknowledge,
+    acknowledge,
+  } = useLegalAcknowledgement();
 
   const loadCachedMacroReport = useCallback(() => {
     try {
@@ -97,22 +101,6 @@ export default function FullReportPage() {
     },
     []
   );
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (!mounted) return;
-    try {
-      const stored = window.localStorage.getItem(LEGAL_ACK_STORAGE_KEY);
-      if (stored === "true") {
-        setHasAcknowledgedLegal(true);
-      }
-    } catch {
-      // If storage is unavailable/blocked, keep overlay visible.
-    }
-  }, [mounted]);
 
   const fetchMacroReport = useCallback(async () => {
     abortRef.current?.abort();
@@ -187,18 +175,6 @@ export default function FullReportPage() {
   }, [fetchMacroReport, loadCachedMacroReport, mounted]);
 
   const isGateOpen = mounted && hasAcknowledgedLegal;
-  const canAcknowledge = termsChecked && privacyChecked;
-
-  const acknowledge = useCallback(() => {
-    if (!canAcknowledge) return;
-    try {
-      window.localStorage.setItem(LEGAL_ACK_STORAGE_KEY, "true");
-      setHasAcknowledgedLegal(true);
-    } catch {
-      // If storage fails, still allow access for this session.
-      setHasAcknowledgedLegal(true);
-    }
-  }, [canAcknowledge]);
 
   return (
     <PageShell mainClassName="gap-8">
@@ -252,110 +228,13 @@ export default function FullReportPage() {
         </StatusMessage>
       )}
 
-      {mounted && !hasAcknowledgedLegal && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Terms and privacy acknowledgement"
-        >
-          <div className="absolute inset-0 bg-black/80 mv-backdrop-blur-xl" />
-          <div className="relative w-full max-w-2xl overflow-hidden rounded-2xl border border-border mv-glass-modal-surface mv-backdrop-blur-md shadow-2xl">
-            <div className="bg-gradient-to-br from-fuchsia-500/10 via-transparent to-cyan-500/10 p-6 sm:p-7">
-              <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:gap-6">
-                <div className="relative w-full shrink-0 overflow-hidden rounded-2xl bg-muted/20 shadow-sm aspect-video lg:h-32 lg:w-32 lg:aspect-square">
-                  <Image
-                    src="/messy-create-me.png"
-                    alt="Market Vibe Daily"
-                    fill
-                    sizes="(max-width: 1023px) 100vw, 128px"
-                    style={{ objectFit: "cover", objectPosition: "top center" }}
-                    priority
-                  />
-                </div>
-
-                <div className="min-w-0">
-                  <div className="text-4xl font-semibold font-serif text-gradient leading-tight sm:text-3xl md:text-3xl lg:text-4xl">
-                    Market Vibe Daily
-                  </div>
-                  <div className="mt-1 text-sm text-foreground/70">
-                    by Messy Virgo / $MESSY
-                  </div>
-
-                  <p className="mt-3 text-sm text-foreground/80">
-                    Welcome to your Daily crypto market intel. Get today&apos;s regime and risk
-                    context, plus what traders typically do, summarized in 2 minutes.
-                    Full report included. No advice, education only.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-6 sm:p-7 pt-5">
-              <div className="mb-3 text-sm font-semibold text-foreground">
-                Before we start:
-              </div>
-
-              <div className="space-y-4">
-                <label className="flex cursor-pointer items-center gap-4 p-2 -m-2 rounded-md touch-manipulation active:bg-accent/50 transition-colors">
-                  <input
-                    type="checkbox"
-                    className="h-6 w-6 shrink-0 accent-primary touch-none"
-                    checked={termsChecked}
-                    onChange={(e) => setTermsChecked(e.target.checked)}
-                  />
-                  <span className="text-sm leading-relaxed">
-                    I agree to the{" "}
-                    <Link
-                      href="/terms"
-                      className="font-medium underline underline-offset-4 hover:opacity-90"
-                      target="_blank"
-                      rel="noreferrer"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      Terms of Service
-                    </Link>
-                    .
-                  </span>
-                </label>
-
-                <label className="flex cursor-pointer items-center gap-4 p-2 -m-2 rounded-md touch-manipulation active:bg-accent/50 transition-colors">
-                  <input
-                    type="checkbox"
-                    className="h-6 w-6 shrink-0 accent-primary touch-none"
-                    checked={privacyChecked}
-                    onChange={(e) => setPrivacyChecked(e.target.checked)}
-                  />
-                  <span className="text-sm leading-relaxed">
-                    I agree to the{" "}
-                    <Link
-                      href="/privacy"
-                      className="font-medium underline underline-offset-4 hover:opacity-90"
-                      target="_blank"
-                      rel="noreferrer"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      Privacy Policy
-                    </Link>
-                    .
-                  </span>
-                </label>
-              </div>
-
-              <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-start">
-                <button
-                  type="button"
-                  className="inline-flex h-11 items-center justify-center rounded-md bg-gradient-to-r from-pink-500 to-fuchsia-500 px-6 text-sm font-semibold text-white shadow-sm transition-all hover:from-pink-600 hover:to-fuchsia-600 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:from-pink-500 disabled:hover:to-fuchsia-500"
-                  onClick={acknowledge}
-                  disabled={!canAcknowledge}
-                >
-                  Let&apos;s go
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <LegalAcknowledgementOverlay
+        open={mounted && !hasAcknowledgedLegal}
+        legalChecked={legalChecked}
+        setLegalChecked={setLegalChecked}
+        canAcknowledge={canAcknowledge}
+        acknowledge={acknowledge}
+      />
     </PageShell>
   );
 }
