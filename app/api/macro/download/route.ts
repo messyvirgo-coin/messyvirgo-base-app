@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
-import { getLatestDailyMacroReport } from "@/lib/messyVirgoApiClient";
+import {
+  DEFAULT_DAILY_MACRO_REPORT_VARIANT_CODE,
+  getLatestDailyMacroReport,
+} from "@/lib/messyVirgoApiClient";
 import {
   getReportMarkdownArtifact,
   getMarkdownReportText,
@@ -13,35 +16,60 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
+const VARIANT_RE = /^[a-zA-Z0-9_-]{1,64}$/;
 
 type CachedValue = {
   report: PublishedMacroReportResponse;
   cachedAtMs: number;
 };
 
-let cachedLatest: CachedValue | null = null;
-let inFlight: Promise<CachedValue> | null = null;
+const cachedByVariant = new Map<string, CachedValue>();
+const inFlightByVariant = new Map<string, Promise<CachedValue>>();
 
-function getReportFromCache(): Promise<PublishedMacroReportResponse> {
-  const now = Date.now();
-  if (cachedLatest && now - cachedLatest.cachedAtMs < CACHE_TTL_MS) {
-    return Promise.resolve(cachedLatest.report);
+function parseVariant(request: Request):
+  | { ok: true; variant: string }
+  | { ok: false; error: string } {
+  const url = new URL(request.url);
+  const raw = url.searchParams.get("variant");
+  const trimmed = raw?.trim() ?? "";
+
+  if (!trimmed) {
+    return { ok: true, variant: DEFAULT_DAILY_MACRO_REPORT_VARIANT_CODE };
   }
 
+  if (!VARIANT_RE.test(trimmed)) {
+    return {
+      ok: false,
+      error: "Invalid variant. Expected 1-64 characters: letters, numbers, '_' or '-'.",
+    };
+  }
+
+  return { ok: true, variant: trimmed };
+}
+
+function getReportFromCache(variant: string): Promise<PublishedMacroReportResponse> {
+  const now = Date.now();
+  const cachedValue = cachedByVariant.get(variant) ?? null;
+  if (cachedValue && now - cachedValue.cachedAtMs < CACHE_TTL_MS) {
+    return Promise.resolve(cachedValue.report);
+  }
+
+  let inFlight = inFlightByVariant.get(variant) ?? null;
   if (!inFlight) {
-    inFlight = getLatestDailyMacroReport()
+    inFlight = getLatestDailyMacroReport(variant)
       .then((report) => {
         const cachedAtMs = Date.now();
         const cached: CachedValue = {
           report: report as PublishedMacroReportResponse,
           cachedAtMs,
         };
-        cachedLatest = cached;
+        cachedByVariant.set(variant, cached);
         return cached;
       })
       .finally(() => {
-        inFlight = null;
+        inFlightByVariant.delete(variant);
       });
+    inFlightByVariant.set(variant, inFlight);
   }
 
   return inFlight.then((cached) => cached.report);
@@ -54,7 +82,10 @@ function formatDateForFilename(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
-function generateFilename(report: PublishedMacroReportResponse): string {
+function generateFilename(
+  report: PublishedMacroReportResponse,
+  variant: string
+): string {
   // Try to get date from published_at in meta
   let date = new Date();
   if (report.meta?.published_at) {
@@ -65,11 +96,29 @@ function generateFilename(report: PublishedMacroReportResponse): string {
   }
 
   const dateStr = formatDateForFilename(date);
+  
+  // Use different filename patterns based on variant
+  if (variant === "default") {
+    return `messy-macros-report-${dateStr}.md`;
+  }
+  
+  // Default to market vibe daily for "base_app" and other variants
   return `messy-market-vibe-daily-${dateStr}.md`;
 }
 
+function replaceH1InHeader(header: string, variant: string): string {
+  const replacementTitle =
+    variant === "default"
+      ? "Macros Report by $MESSY"
+      : "Market Vibes Daily by $MESSY";
+
+  // Replace H1 headings (lines starting with "# ")
+  return header.replace(/^#\s+.+$/gm, `# ${replacementTitle}`);
+}
+
 function extractMarkdownContent(
-  report: PublishedMacroReportResponse
+  report: PublishedMacroReportResponse,
+  variant: string
 ): string {
   const markdownArtifact = getReportMarkdownArtifact(report.outputs);
   if (!markdownArtifact) {
@@ -88,7 +137,11 @@ function extractMarkdownContent(
     const parts: string[] = [];
 
     if (typeof structured.header === "string" && structured.header.trim()) {
-      parts.push(structured.header.trim());
+      const processedHeader = replaceH1InHeader(
+        structured.header.trim(),
+        variant
+      );
+      parts.push(processedHeader);
     }
 
     if (typeof structured.body === "string" && structured.body.trim()) {
@@ -112,7 +165,8 @@ function extractMarkdownContent(
   // Fallback to full markdown text if not structured
   const markdownText = getMarkdownReportText(report.outputs);
   if (markdownText) {
-    return markdownText;
+    // For unstructured content, replace H1 in the entire text
+    return replaceH1InHeader(markdownText, variant);
   }
 
   throw new Error("No markdown content found in report");
@@ -120,11 +174,14 @@ function extractMarkdownContent(
 
 export async function GET(request: Request) {
   try {
-    void request; // keep signature stable; request is currently unused
+    const parsed = parseVariant(request);
+    if (!parsed.ok) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 });
+    }
 
-    const report = await getReportFromCache();
-    const markdownContent = extractMarkdownContent(report);
-    const filename = generateFilename(report);
+    const report = await getReportFromCache(parsed.variant);
+    const markdownContent = extractMarkdownContent(report, parsed.variant);
+    const filename = generateFilename(report, parsed.variant);
 
     return new NextResponse(markdownContent, {
       headers: {

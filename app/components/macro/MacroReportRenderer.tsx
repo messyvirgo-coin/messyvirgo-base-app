@@ -79,58 +79,28 @@ export function MacroReportRenderer({
 
   const handleDownload = useCallback(async () => {
     setIsDownloading(true);
-    let downloadUrl: string | null = null;
-    let anchor: HTMLAnchorElement | null = null;
-    let didTriggerDownload = false;
     try {
       const url = new URL("/api/macro/download", window.location.origin);
-      const response = await fetch(url.toString());
+      const variantToUse =
+        typeof variantCode === "string" && variantCode.trim()
+          ? variantCode.trim()
+          : "base_app";
+      url.searchParams.set("variant", variantToUse);
 
-      if (!response.ok) {
-        throw new Error("Failed to download report");
-      }
-
-      const blob = await response.blob();
-      downloadUrl = window.URL.createObjectURL(blob);
-      anchor = document.createElement("a");
-      anchor.href = downloadUrl;
-      anchor.download =
-        response.headers
-          .get("Content-Disposition")
-          ?.match(/filename="(.+)"/)?.[1] ?? "messy-market-vibe-daily.md";
+      // Use a direct navigation download so the browser honors Content-Disposition.
+      const anchor = document.createElement("a");
+      anchor.href = url.toString();
+      anchor.rel = "noreferrer";
       document.body.appendChild(anchor);
-
       anchor.click();
-      didTriggerDownload = true;
+      anchor.remove();
     } catch (error) {
       console.error("Download failed:", error);
       // You could add a toast notification here if desired
     } finally {
-      // Ensure DOM + blob URL cleanup even if an error happens mid-flow.
-      try {
-        anchor?.remove();
-      } catch {
-        // No-op
-      }
-
-      if (downloadUrl) {
-        if (didTriggerDownload) {
-          // Don't revoke immediately after click—downloads are processed async in many browsers.
-          // Use a time-based cleanup so it runs even if programmatic clicks don't invoke handlers
-          // in a given embedded browser/webview.
-          const urlToRevoke = downloadUrl;
-          window.setTimeout(() => {
-            window.URL.revokeObjectURL(urlToRevoke);
-          }, 10_000);
-        } else {
-          // If we never triggered the download, revoke immediately to avoid leaking.
-          window.URL.revokeObjectURL(downloadUrl);
-        }
-      }
-
-      setIsDownloading(false);
+      window.setTimeout(() => setIsDownloading(false), 600);
     }
-  }, []);
+  }, [variantCode]);
 
   const { bodyMarkdown, annexesMarkdown, footerMarkdown } = useMemo(() => {
     if (!markdownArtifact)

@@ -2,7 +2,7 @@ function normalizeRootUrl(raw: string): string {
   const trimmed = raw.trim().replace(/\/+$/, "");
   if (!trimmed) {
     throw new Error(
-      "[minikit.config] NEXT_PUBLIC_URL is set but empty/whitespace. Set it to your canonical production URL (e.g. https://messyvirgo-base-app.vercel.app)."
+      "[minikit.config] NEXT_PUBLIC_URL is set but empty/whitespace. Set it to your canonical production URL (e.g. https://messyvirgo-base-macros.vercel.app)."
     );
   }
 
@@ -15,7 +15,7 @@ function normalizeRootUrl(raw: string): string {
     return new URL(withProtocol).origin;
   } catch {
     throw new Error(
-      `[minikit.config] Invalid URL value "${raw}". Set NEXT_PUBLIC_URL to a valid absolute URL (e.g. https://messyvirgo-base-app.vercel.app).`
+      `[minikit.config] Invalid URL value "${raw}". Set NEXT_PUBLIC_URL to a valid absolute URL (e.g. https://messyvirgo-base-macros.vercel.app).`
     );
   }
 }

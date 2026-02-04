@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { PageShell } from "@/app/components/PageShell";
@@ -11,8 +11,9 @@ import type { PublishedMacroReportResponse } from "@/app/lib/report-types";
 type MacroStatus = "idle" | "loading" | "success" | "error";
 
 const LEGAL_ACK_STORAGE_KEY = "mv_legal_ack_v1";
-const MACRO_REPORT_CACHE_KEY = "mv_macro_latest_cache_v1";
+const MACRO_REPORT_CACHE_KEY = "mv_macro_default_cache_v1";
 const MACRO_REPORT_CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
+const REPORT_VARIANT_CODE = "default";
 
 function StatusMessage({ children }: { children: React.ReactNode }) {
   return (
@@ -51,7 +52,7 @@ function LoadingIndicator({ label = "Loading report…" }: { label?: string }) {
   );
 }
 
-export default function Home() {
+export default function FullReportPage() {
   const [macroStatus, setMacroStatus] = useState<MacroStatus>("idle");
   const [macroError, setMacroError] = useState<Error | null>(null);
   const [macroReport, setMacroReport] =
@@ -124,7 +125,7 @@ export default function Home() {
 
     try {
       const url = new URL("/api/macro/latest", window.location.origin);
-      url.searchParams.set("variant", "base_app");
+      url.searchParams.set("variant", REPORT_VARIANT_CODE);
       const response = await fetch(url.toString(), {
         signal: controller.signal,
       });
@@ -185,13 +186,6 @@ export default function Home() {
     };
   }, [fetchMacroReport, loadCachedMacroReport, mounted]);
 
-  const reportVariantCode = useMemo(() => "base_app", []);
-
-  const dashboardTitle = useMemo(() => {
-    void reportVariantCode;
-    return "Market Vibe Daily";
-  }, [reportVariantCode]);
-
   const isGateOpen = mounted && hasAcknowledgedLegal;
   const canAcknowledge = termsChecked && privacyChecked;
 
@@ -208,11 +202,9 @@ export default function Home() {
 
   return (
     <PageShell mainClassName="gap-8">
-      {dashboardTitle && (
-        <h1 className="text-5xl font-bold font-serif text-gradient leading-[1.15] text-center -mt-4 md:mt-0">
-          {dashboardTitle}
-        </h1>
-      )}
+      <h1 className="text-5xl font-bold font-serif text-gradient leading-[1.15] text-center -mt-4 md:mt-0">
+        Full market report
+      </h1>
 
       {!mounted && (
         <div
@@ -247,7 +239,7 @@ export default function Home() {
       {isGateOpen && macroStatus === "success" && macroReport?.outputs && (
         <MacroReportRenderer
           outputs={macroReport.outputs}
-          variantCode={reportVariantCode}
+          variantCode={REPORT_VARIANT_CODE}
           macroProfileShortLabel={null}
           macroCadence="daily"
           macroCadenceDisabled={true}
@@ -367,3 +359,4 @@ export default function Home() {
     </PageShell>
   );
 }
+

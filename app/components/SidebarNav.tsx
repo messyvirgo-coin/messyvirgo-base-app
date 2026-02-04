@@ -23,6 +23,7 @@ import { buildMacroShareContent } from "@/app/lib/share";
 
 const NAV_ITEMS: Array<{ href: string; label: string }> = [
   { href: "/", label: "Dashboard" },
+  { href: "/full-report", label: "Full report" },
   { href: "/about", label: "About" },
   { href: "/privacy", label: "Privacy" },
   { href: "/terms", label: "Terms" },
@@ -53,6 +54,30 @@ const THEME_OPTIONS = [
   { value: "light", label: "Light", icon: Sun },
   { value: "dark", label: "Dark", icon: Moon },
 ];
+
+const MACRO_REPORT_CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
+
+type ReportContext = {
+  path: string;
+  variant: string;
+  cacheKey: string;
+  shareTitle: string;
+};
+
+const REPORT_CONTEXT_BY_PATH: Record<string, ReportContext> = {
+  "/": {
+    path: "/",
+    variant: "base_app",
+    cacheKey: "mv_macro_latest_cache_v1",
+    shareTitle: "Market Vibe Daily",
+  },
+  "/full-report": {
+    path: "/full-report",
+    variant: "default",
+    cacheKey: "mv_macro_default_cache_v1",
+    shareTitle: "Full market report",
+  },
+};
 
 export function SidebarNav() {
   const [isOpen, setIsOpen] = useState(false);
@@ -93,19 +118,36 @@ export function SidebarNav() {
 
   const activeTheme = useMemo(() => theme ?? "system", [theme]);
   const isDarkMode = resolvedTheme === "dark";
-  const showShare = (pathname || "/") === "/";
+  const activePath = (pathname || "/").replace(/\/+$/, "") || "/";
+  const reportContext = REPORT_CONTEXT_BY_PATH[activePath] ?? null;
+  const showShare = reportContext !== null;
   const showDownload = showShare;
+  const reportCacheKey = reportContext?.cacheKey ?? null;
+  const reportVariant = reportContext?.variant ?? null;
+  const shareTitle = reportContext?.shareTitle ?? "Market Vibe Daily";
+  const embedPath = reportContext?.path ?? "/";
 
   const loadCachedMacroReport = useCallback((): PublishedMacroReportResponse | null => {
     try {
-      const raw = window.localStorage.getItem("mv_macro_latest_cache_v1");
+      if (!reportCacheKey) return null;
+      const raw = window.localStorage.getItem(reportCacheKey);
       if (!raw) return null;
-      const parsed = JSON.parse(raw) as { report?: unknown };
-      return (parsed?.report as PublishedMacroReportResponse) ?? null;
+      const parsed = JSON.parse(raw) as {
+        cachedAtMs?: unknown;
+        report?: unknown;
+      };
+
+      if (typeof parsed?.cachedAtMs !== "number") return null;
+      if (!parsed.report) return null;
+
+      const ageMs = Date.now() - parsed.cachedAtMs;
+      if (ageMs < 0 || ageMs > MACRO_REPORT_CACHE_TTL_MS) return null;
+
+      return parsed.report as PublishedMacroReportResponse;
     } catch {
       return null;
     }
-  }, []);
+  }, [reportCacheKey]);
 
   const handleShare = useCallback(async () => {
     // Guard against rapid clicks before React re-renders + disables the button.
@@ -113,12 +155,12 @@ export function SidebarNav() {
     isSharingRef.current = true;
     setIsSharing(true);
     try {
-      const appUrl = new URL("/", window.location.origin).toString();
+      const appUrl = new URL(embedPath, window.location.origin).toString();
       const cached = loadCachedMacroReport();
       const { reportDate, snippet } = buildMacroShareContent(cached);
 
       await composeCast({
-        text: `📊 Market Vibe Daily - ${reportDate}\n\n${snippet}\n\nPowered by @$MESSY - Messy Virgo Coin`,
+        text: `📊 ${shareTitle} - ${reportDate}\n\n${snippet}\n\nPowered by @$MESSY - Messy Virgo Coin`,
         embeds: [appUrl],
       });
     } catch (error) {
@@ -127,62 +169,34 @@ export function SidebarNav() {
       isSharingRef.current = false;
       setIsSharing(false);
     }
-  }, [composeCast, loadCachedMacroReport]);
+  }, [composeCast, embedPath, loadCachedMacroReport, shareTitle]);
 
   const handleDownload = useCallback(async () => {
     setIsDownloading(true);
-    let downloadUrl: string | null = null;
-    let anchor: HTMLAnchorElement | null = null;
-    let didTriggerDownload = false;
     try {
       const url = new URL("/api/macro/download", window.location.origin);
-      const response = await fetch(url.toString());
-
-      if (!response.ok) {
-        throw new Error("Failed to download report");
-      }
-
-      const blob = await response.blob();
-      downloadUrl = window.URL.createObjectURL(blob);
-      anchor = document.createElement("a");
-      anchor.href = downloadUrl;
-      anchor.download =
-        response.headers
-          .get("Content-Disposition")
-          ?.match(/filename="(.+)"/)?.[1] ?? "messy-market-vibe-daily.md";
+      // Always pass variant explicitly to ensure correct filename generation
+      const variantToUse =
+        typeof reportVariant === "string" && reportVariant.trim()
+          ? reportVariant.trim()
+          : "base_app"; // fallback to default
+      url.searchParams.set("variant", variantToUse);
+      // Use a direct navigation download so the browser honors Content-Disposition.
+      // This is more reliable than blob downloads in embedded webviews.
+      const anchor = document.createElement("a");
+      anchor.href = url.toString();
+      anchor.rel = "noreferrer";
       document.body.appendChild(anchor);
-
       anchor.click();
-      didTriggerDownload = true;
+      anchor.remove();
     } catch (error) {
       console.error("Download failed:", error);
       // You could add a toast notification here if desired
     } finally {
-      // Ensure DOM + blob URL cleanup even if an error happens mid-flow.
-      try {
-        anchor?.remove();
-      } catch {
-        // No-op
-      }
-
-      if (downloadUrl) {
-        if (didTriggerDownload) {
-          // Don't revoke immediately after click—downloads are processed async in many browsers.
-          // Use a time-based cleanup so it runs even if programmatic clicks don't invoke handlers
-          // in a given embedded browser/webview.
-          const urlToRevoke = downloadUrl;
-          window.setTimeout(() => {
-            window.URL.revokeObjectURL(urlToRevoke);
-          }, 10_000);
-        } else {
-          // If we never triggered the download, revoke immediately to avoid leaking.
-          window.URL.revokeObjectURL(downloadUrl);
-        }
-      }
-
-      setIsDownloading(false);
+      // We can't reliably detect when the download finishes; clear UI quickly.
+      window.setTimeout(() => setIsDownloading(false), 600);
     }
-  }, []);
+  }, [reportVariant]);
 
   useEffect(() => {
     setMounted(true);
