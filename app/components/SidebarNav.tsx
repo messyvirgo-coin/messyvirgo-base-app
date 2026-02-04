@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
+import { useComposeCast } from "@coinbase/onchainkit/minikit";
 import {
   Menu,
   X,
@@ -17,9 +18,12 @@ import {
   Download,
 } from "lucide-react";
 import { cn } from "@/app/lib/utils";
+import type { PublishedMacroReportResponse } from "@/app/lib/report-types";
+import { buildMacroShareContent } from "@/app/lib/share";
 
 const NAV_ITEMS: Array<{ href: string; label: string }> = [
   { href: "/", label: "Dashboard" },
+  { href: "/full-report", label: "Full report" },
   { href: "/about", label: "About" },
   { href: "/privacy", label: "Privacy" },
   { href: "/terms", label: "Terms" },
@@ -51,11 +55,40 @@ const THEME_OPTIONS = [
   { value: "dark", label: "Dark", icon: Moon },
 ];
 
+const MACRO_REPORT_CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
+
+type ReportContext = {
+  path: string;
+  variant: string;
+  cacheKey: string;
+  shareTitle: string;
+};
+
+const REPORT_CONTEXT_BY_PATH: Record<string, ReportContext> = {
+  "/": {
+    path: "/",
+    variant: "base_app",
+    cacheKey: "mv_macro_latest_cache_v1",
+    shareTitle: "Market Vibe Daily",
+  },
+  "/full-report": {
+    path: "/full-report",
+    variant: "default",
+    cacheKey: "mv_macro_default_cache_v1",
+    shareTitle: "Full market report",
+  },
+};
+
 export function SidebarNav() {
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [dragOffsetX, setDragOffsetX] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
+  const isSharingRef = useRef(false);
+  const shareRequestSeqRef = useRef(0);
+  const activeShareSeqRef = useRef<number | null>(null);
   const menuButtonRef = useRef<HTMLButtonElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const drawerRef = useRef<HTMLDivElement | null>(null);
@@ -83,11 +116,110 @@ export function SidebarNav() {
   const dragOffsetXRef = useRef(0);
   const dragRafRef = useRef<number | null>(null);
   const { theme, setTheme, resolvedTheme } = useTheme();
+  const { composeCastAsync } = useComposeCast();
 
   const activeTheme = useMemo(() => theme ?? "system", [theme]);
   const isDarkMode = resolvedTheme === "dark";
-  const showShare = (pathname || "/") === "/";
+  const activePath = (pathname || "/").replace(/\/+$/, "") || "/";
+  const reportContext = REPORT_CONTEXT_BY_PATH[activePath] ?? null;
+  const showShare = reportContext !== null;
   const showDownload = showShare;
+  const reportVariant = reportContext?.variant ?? null;
+
+  const loadCachedMacroReport = useCallback(
+    (cacheKey: string | null): PublishedMacroReportResponse | null => {
+    try {
+      if (!cacheKey) return null;
+      const raw = window.localStorage.getItem(cacheKey);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw) as {
+        cachedAtMs?: unknown;
+        report?: unknown;
+      };
+
+      if (typeof parsed?.cachedAtMs !== "number") return null;
+      if (!parsed.report) return null;
+
+      const ageMs = Date.now() - parsed.cachedAtMs;
+      if (ageMs < 0 || ageMs > MACRO_REPORT_CACHE_TTL_MS) return null;
+
+      return parsed.report as PublishedMacroReportResponse;
+    } catch {
+      return null;
+    }
+    },
+    []
+  );
+
+  const startShareForPath = useCallback(
+    (path: string) => {
+      const seq = ++shareRequestSeqRef.current;
+      activeShareSeqRef.current = seq;
+      isSharingRef.current = true;
+      setIsSharing(true);
+
+      void (async () => {
+        try {
+          const normalizedPath = path.replace(/\/+$/, "") || "/";
+          const context =
+            REPORT_CONTEXT_BY_PATH[normalizedPath] ??
+            REPORT_CONTEXT_BY_PATH["/"]!;
+
+          const appUrl = new URL(context.path, window.location.origin).toString();
+          const cached = loadCachedMacroReport(context.cacheKey);
+          const { reportDate, snippet } = buildMacroShareContent(cached);
+
+          await composeCastAsync({
+            text: `📊 ${context.shareTitle} - ${reportDate}\n\n${snippet}\n\nPowered by @$MESSY - Messy Virgo Coin`,
+            embeds: [appUrl],
+          });
+        } catch (error) {
+          console.error("Share failed:", error);
+        } finally {
+          // Only clear "sharing" state if this is still the latest share request.
+          if (activeShareSeqRef.current === seq) {
+            activeShareSeqRef.current = null;
+            isSharingRef.current = false;
+            setIsSharing(false);
+          }
+        }
+      })();
+    },
+    [composeCastAsync, loadCachedMacroReport]
+  );
+
+  const handleShare = useCallback(() => {
+    // Guard against rapid clicks before React re-renders + disables the button.
+    if (isSharingRef.current) return;
+    startShareForPath(activePath);
+  }, [activePath, startShareForPath]);
+
+  const handleDownload = useCallback(async () => {
+    setIsDownloading(true);
+    try {
+      const url = new URL("/api/macro/download", window.location.origin);
+      // Always pass variant explicitly to ensure correct filename generation
+      const variantToUse =
+        typeof reportVariant === "string" && reportVariant.trim()
+          ? reportVariant.trim()
+          : "base_app"; // fallback to default
+      url.searchParams.set("variant", variantToUse);
+      // Use a direct navigation download so the browser honors Content-Disposition.
+      // This is more reliable than blob downloads in embedded webviews.
+      const anchor = document.createElement("a");
+      anchor.href = url.toString();
+      anchor.rel = "noreferrer";
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+    } catch (error) {
+      console.error("Download failed:", error);
+      // You could add a toast notification here if desired
+    } finally {
+      // We can't reliably detect when the download finishes; clear UI quickly.
+      window.setTimeout(() => setIsDownloading(false), 600);
+    }
+  }, [reportVariant]);
 
   useEffect(() => {
     setMounted(true);
@@ -96,6 +228,14 @@ export function SidebarNav() {
   useEffect(() => {
     setIsOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    // If a share is in-flight and the user navigates, refresh the share composer
+    // with the new page's embed + title so users don't accidentally share stale content.
+    if (!pathname) return;
+    if (activeShareSeqRef.current == null) return;
+    startShareForPath(pathname);
+  }, [pathname, startShareForPath]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -270,15 +410,17 @@ export function SidebarNav() {
         {showShare ? (
           <button
             type="button"
-            onClick={() => undefined}
+            onClick={handleShare}
+            disabled={isSharing}
             className={cn(
               "inline-flex min-h-11 min-w-11 h-11 items-center justify-center gap-2 px-4",
               "text-sm font-medium text-foreground transition-colors hover:bg-accent/70",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-              "touch-manipulation"
+              "touch-manipulation",
+              "disabled:opacity-50 disabled:cursor-not-allowed"
             )}
-            aria-label="Share (coming soon)"
-            title="Share (coming soon)"
+            aria-label={isSharing ? "Opening share composer..." : "Share"}
+            title={isSharing ? "Opening..." : "Share"}
           >
             <Share2 className="h-5 w-5" />
             <span>Share</span>
@@ -304,18 +446,20 @@ export function SidebarNav() {
         {showDownload ? (
           <button
             type="button"
-            onClick={() => undefined}
+            onClick={handleDownload}
+            disabled={isDownloading}
             className={cn(
               "inline-flex min-h-11 min-w-11 h-11 items-center justify-center gap-2 px-4",
               "text-sm font-medium text-foreground transition-colors hover:bg-accent/70",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-              "touch-manipulation"
+              "touch-manipulation",
+              "disabled:opacity-50 disabled:cursor-not-allowed"
             )}
-            aria-label="Save (coming soon)"
-            title="Save (coming soon)"
+            aria-label={isDownloading ? "Downloading report..." : "Download report"}
+            title={isDownloading ? "Downloading..." : "Download report"}
           >
             <Download className="h-5 w-5" />
-            <span>Save</span>
+            <span>{isDownloading ? "Downloading..." : "Download"}</span>
           </button>
         ) : null}
       </div>

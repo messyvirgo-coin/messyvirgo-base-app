@@ -8,8 +8,15 @@ type ClientOptions = {
 const API_BASE_URL =
   process.env.MESSY_VIRGO_API_BASE_URL ?? "https://api.messyvirgo.com";
 
-function resolveBaseAppMacroPath(): string {
-  return "/api/v1/published/macro/report/base_app";
+export const DEFAULT_DAILY_MACRO_REPORT_VARIANT_CODE = "base_app";
+
+function resolveDailyMacroPath(variantCode: string): string {
+  const normalized =
+    typeof variantCode === "string" && variantCode.trim()
+      ? variantCode.trim()
+      : DEFAULT_DAILY_MACRO_REPORT_VARIANT_CODE;
+  // Variant codes are a single path segment in the upstream API.
+  return `/api/v1/published/macro/report/${encodeURIComponent(normalized)}`;
 }
 
 function buildAuthHeaders(): Record<string, string> {
@@ -29,9 +36,10 @@ function buildAuthHeaders(): Record<string, string> {
 }
 
 export async function getLatestDailyMacroReport(
+  variantCode: string = DEFAULT_DAILY_MACRO_REPORT_VARIANT_CODE,
   options?: ClientOptions
 ): Promise<unknown> {
-  const url = new URL(resolveBaseAppMacroPath(), API_BASE_URL);
+  const url = new URL(resolveDailyMacroPath(variantCode), API_BASE_URL);
 
   const timeoutMs = options?.timeoutMs ?? 12_000;
   const controller = new AbortController();
