@@ -267,7 +267,7 @@ export default function Home() {
           aria-modal="true"
           aria-label="Terms and privacy acknowledgement"
         >
-          <div className="absolute inset-0 bg-black/60 mv-backdrop-blur-sm" />
+          <div className="absolute inset-0 bg-black/80 mv-backdrop-blur-xl" />
           <div className="relative w-full max-w-2xl overflow-hidden rounded-2xl border border-border mv-glass-modal-surface mv-backdrop-blur-md shadow-2xl">
             <div className="bg-gradient-to-br from-fuchsia-500/10 via-transparent to-cyan-500/10 p-6 sm:p-7">
               <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:gap-6">

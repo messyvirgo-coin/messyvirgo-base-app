@@ -68,7 +68,7 @@ export async function generateMetadata(): Promise<Metadata> {
         version: minikitConfig.miniapp.version,
         imageUrl: minikitConfig.miniapp.heroImageUrl,
         button: {
-          title: `Get your ${minikitConfig.miniapp.name}`,
+          title: `GM. Here’s the market vibe`,
           action: {
             name: `Launch ${minikitConfig.miniapp.name}`,
             type: "launch_frame",
