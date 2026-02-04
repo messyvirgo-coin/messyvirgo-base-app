@@ -13,7 +13,7 @@ export default async function PrivacyPage() {
     <PageShell mainClassName="gap-8">
       <PageHeader
         title="Privacy Policy"
-        subtitle="How we handle your data and privacy"
+        subtitle="What we collect and why"
       />
 
       <div className="w-full max-w-4xl space-y-4">

@@ -193,7 +193,7 @@ export default function Home() {
           aria-label="Terms and privacy acknowledgement"
         >
           <div className="absolute inset-0 bg-black/60 mv-backdrop-blur-sm" />
-          <div className="relative w-full max-w-2xl overflow-hidden rounded-2xl border border-border bg-background shadow-2xl">
+          <div className="relative w-full max-w-2xl overflow-hidden rounded-2xl border border-border mv-glass-modal-surface mv-backdrop-blur-md shadow-2xl">
             <div className="bg-gradient-to-br from-fuchsia-500/10 via-transparent to-cyan-500/10 p-6 sm:p-7">
               <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:gap-6">
                 <div className="relative w-full shrink-0 overflow-hidden rounded-2xl bg-muted/20 shadow-sm aspect-video lg:h-32 lg:w-32 lg:aspect-square">
@@ -208,7 +208,7 @@ export default function Home() {
                 </div>
 
                 <div className="min-w-0">
-                  <div className="text-3xl font-semibold font-serif text-gradient leading-tight sm:text-4xl md:text-5xl lg:text-6xl">
+                  <div className="text-4xl font-semibold font-serif text-gradient leading-tight sm:text-3xl md:text-3xl lg:text-4xl">
                     Market Vibe Daily
                   </div>
                   <div className="mt-1 text-sm text-foreground/70">

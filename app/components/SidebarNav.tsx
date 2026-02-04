@@ -336,9 +336,8 @@ export function SidebarNav() {
         aria-label="Navigation drawer"
         className={cn(
           "fixed left-0 top-0 z-50 h-dvh w-[min(85vw,320px)] overflow-hidden",
-          // In light mode keep the drawer more opaque/solid.
-          // In dark mode allow subtle translucency + blur.
-          "bg-background mv-glass-drawer-surface-dark mv-backdrop-none shadow-2xl mv-backdrop-blur-xl-dark",
+          // Semi-transparent with blur in both light and dark mode
+          "mv-glass-drawer-surface shadow-2xl mv-backdrop-blur-md",
           "border-r border-border",
           "transform ease-out",
           isDragging ? "transition-none" : "transition-transform duration-300",
@@ -349,6 +348,8 @@ export function SidebarNav() {
           willChange: "transform",
           // Allow vertical scrolling while still letting us detect horizontal swipes.
           touchAction: "pan-y",
+          // Force isolation to prevent iOS compositor bugs with fixed+transform.
+          isolation: "isolate",
         }}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
