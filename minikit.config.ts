@@ -79,7 +79,12 @@ if (ACCOUNT_ASSOCIATION_DOMAIN) {
   if (rootHost !== ACCOUNT_ASSOCIATION_DOMAIN) {
     const message = `[minikit.config] Domain mismatch: ROOT_URL host is "${rootHost}" but accountAssociation payload domain is "${ACCOUNT_ASSOCIATION_DOMAIN}". Set NEXT_PUBLIC_URL to "https://${ACCOUNT_ASSOCIATION_DOMAIN}" or regenerate accountAssociation for the new domain.`;
 
-    if (process.env.NODE_ENV === "production") {
+    // Only hard-fail on actual production deploy builds (e.g. Vercel Production).
+    // Local `next build` and Preview builds should warn so contributors aren't blocked.
+    const isVercelProductionBuild =
+      process.env.VERCEL === "1" && process.env.VERCEL_ENV === "production";
+
+    if (isVercelProductionBuild) {
       throw new Error(message);
     } else {
       console.warn(message);

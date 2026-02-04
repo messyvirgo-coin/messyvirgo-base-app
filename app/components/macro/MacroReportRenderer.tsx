@@ -3,7 +3,7 @@
 import { useMemo, useState, useCallback, type ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Download, Smartphone, ChevronRight } from "lucide-react";
+import { Smartphone, ChevronRight } from "lucide-react";
 import { MacroReportHeaderCard } from "@/app/components/report/MacroReportHeaderCard";
 import {
   extractMacroRegimeDetails,
@@ -122,6 +122,30 @@ export function MacroReportRenderer({
     };
   }, [markdownArtifact, markdownContent]);
 
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  const handleDownload = useCallback(async () => {
+    setIsDownloading(true);
+    try {
+      const url = new URL("/api/macro/download", window.location.origin);
+      const variantToUse =
+        typeof variantCode === "string" && variantCode.trim()
+          ? variantCode.trim()
+          : DEFAULT_VARIANT_CODE;
+      url.searchParams.set("variant", variantToUse);
+      const anchor = document.createElement("a");
+      anchor.href = url.toString();
+      anchor.rel = "noreferrer";
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+    } catch (error) {
+      console.error("Download failed:", error);
+    } finally {
+      window.setTimeout(() => setIsDownloading(false), 600);
+    }
+  }, [variantCode]);
+
   if (!markdownContent || !markdownArtifact) {
     return (
       <div className="w-full max-w-4xl mx-auto rounded-lg border border-input bg-background p-6 text-center text-muted-foreground">
@@ -149,30 +173,6 @@ export function MacroReportRenderer({
     typeof qualitativeAdjustment === "number"
       ? `${qualitativeAdjustment >= 0 ? "+" : ""}${qualitativeAdjustment.toFixed(2)} (QA)`
       : "—";
-
-  const [isDownloading, setIsDownloading] = useState(false);
-
-  const handleDownload = useCallback(async () => {
-    setIsDownloading(true);
-    try {
-      const url = new URL("/api/macro/download", window.location.origin);
-      const variantToUse =
-        typeof variantCode === "string" && variantCode.trim()
-          ? variantCode.trim()
-          : DEFAULT_VARIANT_CODE;
-      url.searchParams.set("variant", variantToUse);
-      const anchor = document.createElement("a");
-      anchor.href = url.toString();
-      anchor.rel = "noreferrer";
-      document.body.appendChild(anchor);
-      anchor.click();
-      anchor.remove();
-    } catch (error) {
-      console.error("Download failed:", error);
-    } finally {
-      window.setTimeout(() => setIsDownloading(false), 600);
-    }
-  }, [variantCode]);
 
   return (
     <div className="w-full max-w-4xl mx-auto space-y-4">
