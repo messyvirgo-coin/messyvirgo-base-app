@@ -41,11 +41,13 @@ function getAccountAssociationDomain(payload: string): string | null {
 // Account association will be generated after initial deployment
 // Set this to null initially, then update with real values from base.dev/preview after deployment
 // Uncomment and fill in after generating account association from base.dev/preview:
-const ACCOUNT_ASSOCIATION: {
-  "header": "eyJmaWQiOjI2NTc3OTQsInR5cGUiOiJhdXRoIiwia2V5IjoiMHhEMTY0NTFDMjgyQkExNzZiZDg3ZmEyMzkzNTMwNDFDQTdmQTgyODRmIn0",
-  "payload": "eyJkb21haW4iOiJtZXNzeXZpcmdvLWJhc2UtbWFjcm9zLnZlcmNlbC5hcHAifQ",
-  "signature": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEGpAkMRLYQN-hD24BBxzA69rIy-fdTayn7n93zOu1wHXDKiU7m4c8FissHViyNCJkG_ha9pXiGy1Mw9pIkoEUVQHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-} | null = null;
+const ACCOUNT_ASSOCIATION = {
+  header:
+    "eyJmaWQiOjI2NTc3OTQsInR5cGUiOiJhdXRoIiwia2V5IjoiMHhEMTY0NTFDMjgyQkExNzZiZDg3ZmEyMzkzNTMwNDFDQTdmQTgyODRmIn0",
+  payload: "eyJkb21haW4iOiJtZXNzeXZpcmdvLWJhc2UtbWFjcm9zLnZlcmNlbC5hcHAifQ",
+  signature:
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEGpAkMRLYQN-hD24BBxzA69rIy-fdTayn7n93zOu1wHXDKiU7m4c8FissHViyNCJkG_ha9pXiGy1Mw9pIkoEUVQHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+} as const;
 
 // After deployment, replace the null above with your generated values:
 // const ACCOUNT_ASSOCIATION = {
