@@ -190,13 +190,13 @@
   }
 
   .mv-glass-menu-surface {
-    background-color: rgba(255, 255, 255, 0.95);
-    background-color: hsl(var(--card) / 0.95);
+    background-color: rgba(255, 255, 255, 0.98);
+    background-color: hsl(var(--card) / 0.98);
   }
 
   .dark .mv-glass-menu-surface {
-    background-color: rgba(0, 0, 0, 0.8);
-    background-color: hsl(var(--card) / 0.8);
+    background-color: rgba(0, 0, 0, 0.92);
+    background-color: hsl(var(--card) / 0.92);
   }
 
   .mv-glass-drawer-surface {

@@ -417,7 +417,8 @@ export function SidebarNav() {
               "text-sm font-medium text-foreground transition-colors hover:bg-accent/70",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
               "touch-manipulation",
-              "disabled:opacity-50 disabled:cursor-not-allowed"
+              "disabled:opacity-50 disabled:cursor-not-allowed",
+              "active:bg-transparent"
             )}
             aria-label={isSharing ? "Opening share composer..." : "Share"}
             title={isSharing ? "Opening..." : "Share"}
@@ -435,7 +436,8 @@ export function SidebarNav() {
             "inline-flex min-h-11 min-w-11 h-11 items-center justify-center gap-2 px-4",
             "text-sm font-medium text-foreground transition-colors hover:bg-accent/70",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-            "touch-manipulation"
+            "touch-manipulation",
+            "active:bg-transparent"
           )}
           aria-label="Open navigation menu"
         >
@@ -453,7 +455,8 @@ export function SidebarNav() {
               "text-sm font-medium text-foreground transition-colors hover:bg-accent/70",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
               "touch-manipulation",
-              "disabled:opacity-50 disabled:cursor-not-allowed"
+              "disabled:opacity-50 disabled:cursor-not-allowed",
+              "active:bg-transparent"
             )}
             aria-label={isDownloading ? "Downloading report..." : "Download report"}
             title={isDownloading ? "Downloading..." : "Download report"}
