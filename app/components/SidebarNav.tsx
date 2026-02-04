@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
+import { useComposeCast } from "@coinbase/onchainkit/minikit";
 import {
   Menu,
   X,
@@ -17,6 +18,8 @@ import {
   Download,
 } from "lucide-react";
 import { cn } from "@/app/lib/utils";
+import type { PublishedMacroReportResponse } from "@/app/lib/report-types";
+import { buildMacroShareContent } from "@/app/lib/share";
 
 const NAV_ITEMS: Array<{ href: string; label: string }> = [
   { href: "/", label: "Dashboard" },
@@ -56,6 +59,9 @@ export function SidebarNav() {
   const [mounted, setMounted] = useState(false);
   const [dragOffsetX, setDragOffsetX] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
+  const isSharingRef = useRef(false);
   const menuButtonRef = useRef<HTMLButtonElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const drawerRef = useRef<HTMLDivElement | null>(null);
@@ -83,11 +89,100 @@ export function SidebarNav() {
   const dragOffsetXRef = useRef(0);
   const dragRafRef = useRef<number | null>(null);
   const { theme, setTheme, resolvedTheme } = useTheme();
+  const { composeCast } = useComposeCast();
 
   const activeTheme = useMemo(() => theme ?? "system", [theme]);
   const isDarkMode = resolvedTheme === "dark";
   const showShare = (pathname || "/") === "/";
   const showDownload = showShare;
+
+  const loadCachedMacroReport = useCallback((): PublishedMacroReportResponse | null => {
+    try {
+      const raw = window.localStorage.getItem("mv_macro_latest_cache_v1");
+      if (!raw) return null;
+      const parsed = JSON.parse(raw) as { report?: unknown };
+      return (parsed?.report as PublishedMacroReportResponse) ?? null;
+    } catch {
+      return null;
+    }
+  }, []);
+
+  const handleShare = useCallback(async () => {
+    // Guard against rapid clicks before React re-renders + disables the button.
+    if (isSharingRef.current) return;
+    isSharingRef.current = true;
+    setIsSharing(true);
+    try {
+      const appUrl = new URL("/", window.location.origin).toString();
+      const cached = loadCachedMacroReport();
+      const { reportDate, snippet } = buildMacroShareContent(cached);
+
+      await composeCast({
+        text: `📊 Market Vibe Daily - ${reportDate}\n\n${snippet}\n\nPowered by @$MESSY - Messy Virgo Coin`,
+        embeds: [appUrl],
+      });
+    } catch (error) {
+      console.error("Share failed:", error);
+    } finally {
+      isSharingRef.current = false;
+      setIsSharing(false);
+    }
+  }, [composeCast, loadCachedMacroReport]);
+
+  const handleDownload = useCallback(async () => {
+    setIsDownloading(true);
+    let downloadUrl: string | null = null;
+    let anchor: HTMLAnchorElement | null = null;
+    let didTriggerDownload = false;
+    try {
+      const url = new URL("/api/macro/download", window.location.origin);
+      const response = await fetch(url.toString());
+
+      if (!response.ok) {
+        throw new Error("Failed to download report");
+      }
+
+      const blob = await response.blob();
+      downloadUrl = window.URL.createObjectURL(blob);
+      anchor = document.createElement("a");
+      anchor.href = downloadUrl;
+      anchor.download =
+        response.headers
+          .get("Content-Disposition")
+          ?.match(/filename="(.+)"/)?.[1] ?? "messy-market-vibe-daily.md";
+      document.body.appendChild(anchor);
+
+      anchor.click();
+      didTriggerDownload = true;
+    } catch (error) {
+      console.error("Download failed:", error);
+      // You could add a toast notification here if desired
+    } finally {
+      // Ensure DOM + blob URL cleanup even if an error happens mid-flow.
+      try {
+        anchor?.remove();
+      } catch {
+        // No-op
+      }
+
+      if (downloadUrl) {
+        if (didTriggerDownload) {
+          // Don't revoke immediately after click—downloads are processed async in many browsers.
+          // Use a time-based cleanup so it runs even if programmatic clicks don't invoke handlers
+          // in a given embedded browser/webview.
+          const urlToRevoke = downloadUrl;
+          window.setTimeout(() => {
+            window.URL.revokeObjectURL(urlToRevoke);
+          }, 10_000);
+        } else {
+          // If we never triggered the download, revoke immediately to avoid leaking.
+          window.URL.revokeObjectURL(downloadUrl);
+        }
+      }
+
+      setIsDownloading(false);
+    }
+  }, []);
 
   useEffect(() => {
     setMounted(true);
@@ -270,15 +365,17 @@ export function SidebarNav() {
         {showShare ? (
           <button
             type="button"
-            onClick={() => undefined}
+            onClick={handleShare}
+            disabled={isSharing}
             className={cn(
               "inline-flex min-h-11 min-w-11 h-11 items-center justify-center gap-2 px-4",
               "text-sm font-medium text-foreground transition-colors hover:bg-accent/70",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-              "touch-manipulation"
+              "touch-manipulation",
+              "disabled:opacity-50 disabled:cursor-not-allowed"
             )}
-            aria-label="Share (coming soon)"
-            title="Share (coming soon)"
+            aria-label={isSharing ? "Opening share composer..." : "Share"}
+            title={isSharing ? "Opening..." : "Share"}
           >
             <Share2 className="h-5 w-5" />
             <span>Share</span>
@@ -304,18 +401,20 @@ export function SidebarNav() {
         {showDownload ? (
           <button
             type="button"
-            onClick={() => undefined}
+            onClick={handleDownload}
+            disabled={isDownloading}
             className={cn(
               "inline-flex min-h-11 min-w-11 h-11 items-center justify-center gap-2 px-4",
               "text-sm font-medium text-foreground transition-colors hover:bg-accent/70",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-              "touch-manipulation"
+              "touch-manipulation",
+              "disabled:opacity-50 disabled:cursor-not-allowed"
             )}
-            aria-label="Save (coming soon)"
-            title="Save (coming soon)"
+            aria-label={isDownloading ? "Downloading report..." : "Download report"}
+            title={isDownloading ? "Downloading..." : "Download report"}
           >
             <Download className="h-5 w-5" />
-            <span>Save</span>
+            <span>{isDownloading ? "Downloading..." : "Download"}</span>
           </button>
         ) : null}
       </div>
