@@ -208,15 +208,15 @@ export default function Home() {
                 </div>
 
                 <div className="min-w-0">
-                  <div className="text-xl font-semibold font-serif text-gradient leading-tight sm:text-2xl">
-                    Welcome to Market Vibe Daily
+                  <div className="text-3xl font-semibold font-serif text-gradient leading-tight sm:text-4xl md:text-5xl lg:text-6xl">
+                    Market Vibe Daily
                   </div>
                   <div className="mt-1 text-sm text-foreground/70">
                     by Messy Virgo / $MESSY
                   </div>
 
                   <p className="mt-3 text-sm text-foreground/80">
-                    Daily crypto market intel. Get today&apos;s regime and risk
+                    Welcome to your Daily crypto market intel. Get today&apos;s regime and risk
                     context, plus what traders typically do, summarized in 2 minutes.
                     Full report included. No advice, education only.
                   </p>
@@ -230,10 +230,10 @@ export default function Home() {
               </div>
 
               <div className="space-y-4">
-                <label className="flex cursor-pointer items-start gap-4 p-2 -m-2 rounded-md touch-manipulation active:bg-accent/50 transition-colors">
+                <label className="flex cursor-pointer items-center gap-4 p-2 -m-2 rounded-md touch-manipulation active:bg-accent/50 transition-colors">
                   <input
                     type="checkbox"
-                    className="mt-0.5 h-6 w-6 shrink-0 accent-primary touch-none"
+                    className="h-6 w-6 shrink-0 accent-primary touch-none"
                     checked={termsChecked}
                     onChange={(e) => setTermsChecked(e.target.checked)}
                   />
@@ -252,10 +252,10 @@ export default function Home() {
                   </span>
                 </label>
 
-                <label className="flex cursor-pointer items-start gap-4 p-2 -m-2 rounded-md touch-manipulation active:bg-accent/50 transition-colors">
+                <label className="flex cursor-pointer items-center gap-4 p-2 -m-2 rounded-md touch-manipulation active:bg-accent/50 transition-colors">
                   <input
                     type="checkbox"
-                    className="mt-0.5 h-6 w-6 shrink-0 accent-primary touch-none"
+                    className="h-6 w-6 shrink-0 accent-primary touch-none"
                     checked={privacyChecked}
                     onChange={(e) => setPrivacyChecked(e.target.checked)}
                   />
