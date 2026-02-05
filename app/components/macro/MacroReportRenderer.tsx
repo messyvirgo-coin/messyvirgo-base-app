@@ -29,9 +29,7 @@ const MARKDOWN_COMPONENTS = {
       <table className="min-w-full border-collapse">{children}</table>
     </div>
   ),
-  hr: () => (
-    <hr className="my-8 border-t border-border dark:border-white/20" />
-  ),
+  hr: () => <hr className="my-8 border-t border-border dark:border-white/20" />,
 };
 
 const FOOTER_PROSE_CLASSNAME = `${PROSE_CLASSNAME} text-xs text-muted-foreground`;
@@ -181,42 +179,46 @@ export function MacroReportRenderer({
           <>
             <div className="-mt-4 md:mt-8">
               <MacroReportHeaderCard
-              variantCode={variantCode}
-              executedAt={executedAt}
-              regimeLabel={regimeLabel}
-              regimeImgSrc={regimeImgSrc}
-              effectiveScore={
-                typeof effectiveScore === "number" ? effectiveScore : null
-              }
-              baseScore={typeof baseScore === "number" ? baseScore : null}
-              qualitativeAdjustment={
-                typeof qualitativeAdjustment === "number"
-                  ? qualitativeAdjustment
-                  : null
-              }
-              baseNote={baseNote}
-              adjNote={adjNote}
-              verdictTitle={verdictTitle}
-              macroCadence={macroCadence}
-              onMacroCadenceChange={onMacroCadenceChange}
-              macroCadenceDisabled={macroCadenceDisabled}
-              macroProfileShortLabel={macroProfileShortLabel ?? null}
-            />
+                variantCode={variantCode}
+                executedAt={executedAt}
+                regimeLabel={regimeLabel}
+                regimeImgSrc={regimeImgSrc}
+                effectiveScore={
+                  typeof effectiveScore === "number" ? effectiveScore : null
+                }
+                baseScore={typeof baseScore === "number" ? baseScore : null}
+                qualitativeAdjustment={
+                  typeof qualitativeAdjustment === "number"
+                    ? qualitativeAdjustment
+                    : null
+                }
+                baseNote={baseNote}
+                adjNote={adjNote}
+                verdictTitle={verdictTitle}
+                macroCadence={macroCadence}
+                onMacroCadenceChange={onMacroCadenceChange}
+                macroCadenceDisabled={macroCadenceDisabled}
+                macroProfileShortLabel={macroProfileShortLabel ?? null}
+              />
             </div>
 
             {/* Mobile alert: encourage download for better viewing */}
             <div className="md:hidden">
               <Alert className="border-primary/20 bg-primary/5 px-5 py-4 [&>svg]:left-5 [&>svg]:top-5 [&>svg~*]:pl-8">
-                <Smartphone aria-hidden="true" size={18} className="text-primary" />
+                <Smartphone
+                  aria-hidden="true"
+                  size={18}
+                  className="text-primary"
+                />
                 <div>
                   <AlertTitle className="text-sm font-semibold">
                     Better on larger screens
                   </AlertTitle>
                   <AlertDescription className="mt-2 text-sm">
                     <p className="mb-3">
-                      This report contains detailed tables and data that are best viewed
-                      on a desktop or tablet. For the best reading experience, we
-                      recommend downloading the report.
+                      This report contains detailed tables and data that are
+                      best viewed on a desktop or tablet. For the best reading
+                      experience, we recommend downloading the report.
                     </p>
                     <button
                       type="button"
@@ -224,7 +226,9 @@ export function MacroReportRenderer({
                       disabled={isDownloading}
                       className="relative inline-flex h-11 w-full items-center justify-center rounded-md bg-gradient-to-r from-pink-500 to-fuchsia-500 px-6 text-sm font-semibold text-white shadow-sm transition-all hover:from-pink-600 hover:to-fuchsia-600 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:from-pink-500 disabled:hover:to-fuchsia-500"
                     >
-                      <span>{isDownloading ? "Downloading..." : "Download Report"}</span>
+                      <span>
+                        {isDownloading ? "Downloading..." : "Download Report"}
+                      </span>
                       <ChevronRight
                         aria-hidden="true"
                         size={20}

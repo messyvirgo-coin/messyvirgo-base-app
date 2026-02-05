@@ -11,7 +11,13 @@ export function extractMacroRegimeLabel(
   const meta = artifact.meta;
   if (meta && typeof meta === "object" && !Array.isArray(meta)) {
     const eff = (meta as Record<string, unknown>).macro_effective_regime_label;
-    if (eff === "R++" || eff === "R+" || eff === "N" || eff === "R-" || eff === "D")
+    if (
+      eff === "R++" ||
+      eff === "R+" ||
+      eff === "N" ||
+      eff === "R-" ||
+      eff === "D"
+    )
       return eff;
   }
 

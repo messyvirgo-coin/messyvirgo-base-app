@@ -1,7 +1,4 @@
-import type {
-  LensOutputArtifact,
-  MarkdownContent,
-} from "./report-types";
+import type { LensOutputArtifact, MarkdownContent } from "./report-types";
 
 export function getReportMarkdownArtifact(
   outputs: LensOutputArtifact[]

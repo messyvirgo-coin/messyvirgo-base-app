@@ -19,4 +19,3 @@ export function MiniKitAutoReady() {
 
   return null;
 }
-

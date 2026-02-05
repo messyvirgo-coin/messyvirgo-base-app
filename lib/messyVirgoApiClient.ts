@@ -1,5 +1,8 @@
 import "server-only";
 
+import type { PublishedMacroReportResponse } from "@/app/lib/report-types";
+import { isPublishedMacroReportResponse } from "@/app/lib/report-guards";
+
 type ClientOptions = {
   signal?: AbortSignal;
   timeoutMs?: number;
@@ -38,7 +41,7 @@ function buildAuthHeaders(): Record<string, string> {
 export async function getLatestDailyMacroReport(
   variantCode: string = DEFAULT_DAILY_MACRO_REPORT_VARIANT_CODE,
   options?: ClientOptions
-): Promise<unknown> {
+): Promise<PublishedMacroReportResponse> {
   const url = new URL(resolveDailyMacroPath(variantCode), API_BASE_URL);
 
   const timeoutMs = options?.timeoutMs ?? 12_000;
@@ -69,12 +72,16 @@ export async function getLatestDailyMacroReport(
       const errorBody = await response.text();
       throw new Error(
         `MessyVirgo API error (${response.status}): ${
-          errorBody || "Unknown error"
+          errorBody ? errorBody.slice(0, 500) : "Unknown error"
         }`
       );
     }
 
-    return await response.json();
+    const json = (await response.json()) as unknown;
+    if (!isPublishedMacroReportResponse(json)) {
+      throw new Error("MessyVirgo API returned an unexpected report shape.");
+    }
+    return json;
   } finally {
     clearTimeout(timeoutId);
     if (options?.signal && upstreamAbortListener) {

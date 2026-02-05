@@ -57,7 +57,9 @@ const ACCOUNT_ASSOCIATION = {
 // } as const;
 
 const ACCOUNT_ASSOCIATION_DOMAIN = ACCOUNT_ASSOCIATION
-  ? getAccountAssociationDomain((ACCOUNT_ASSOCIATION as { payload: string }).payload)
+  ? getAccountAssociationDomain(
+      (ACCOUNT_ASSOCIATION as { payload: string }).payload
+    )
   : null;
 
 const ROOT_URL = (() => {
@@ -118,28 +120,25 @@ export const minikitConfig = {
     version: "1",
     name: "Market Vibe Daily",
     subtitle: "by Messy Virgo / MESSY",
-    description: 
+    description:
       "Daily crypto market intel. Get todays regime and risk context, plus what traders typically do, summarized in 2 minutes. Full report included. No advice, education only.",
-    screenshotUrls: [`${ROOT_URL}/screenshot-1.png`, `${ROOT_URL}/screenshot-2.png`, `${ROOT_URL}/screenshot-3.png`],
+    screenshotUrls: [
+      `${ROOT_URL}/screenshot-1.png`,
+      `${ROOT_URL}/screenshot-2.png`,
+      `${ROOT_URL}/screenshot-3.png`,
+    ],
     iconUrl: `${ROOT_URL}/messy-icon.png`,
     splashImageUrl: `${ROOT_URL}/messy-splash.png`,
     splashBackgroundColor: "#000000",
     homeUrl: ROOT_URL,
     webhookUrl: `${ROOT_URL}/api/webhook`,
     primaryCategory: "finance",
-    tags: [
-      "vibe",
-      "intel",
-      "signals",
-      "daily",
-      "regime"
-    ],
+    tags: ["vibe", "intel", "signals", "daily", "regime"],
     heroImageUrl: `${ROOT_URL}/messy-hero.png`,
     tagline: "Know the vibe. Trade smarter.",
     ogTitle: "Market Vibe Daily",
-    ogDescription: 
+    ogDescription:
       "Daily crypto market intel. Check the vibe, see the risk, and get the 2-minute summary.",
     ogImageUrl: `${ROOT_URL}/messy-hero.png`,
   },
 } as const;
-

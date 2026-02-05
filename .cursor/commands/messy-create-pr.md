@@ -1,6 +1,7 @@
 # Create GitHub Pull Request Workflow
 
 ## Prerequisites Check
+
 1. Verify all changes are committed:
    - Run `git status --short` - should show no modified/untracked files (except temporary PR files)
    - If uncommitted changes exist, prompt user to commit first
@@ -10,13 +11,16 @@
    - If not pushed, prompt user to push first
 
 ## Extract Information from Branch Name
+
 - Branch format: `{linear-issue}-story-{story-number}-{description}` or similar
 - Extract Linear issue ID (e.g., "MES-47" from "feature/mes-47-story-13-create-messy-shared-package")
 - Extract story number (e.g., "1.3" from "story-13" or "story-1-3")
 - Extract description from branch name for title (can be feature or fix)
 
 ## Create PR Title
+
 Format: `{prefix}: {Description} ({Linear-Issue-ID}, Story {Story-Number})`
+
 - Determine prefix from branch name/title:
   - Use `fix:` if branch/title contains keywords like "fix", "bug", "error", "issue", "repair", "resolve"
   - Use `feat:` for new features or enhancements
@@ -29,6 +33,7 @@ Format: `{prefix}: {Description} ({Linear-Issue-ID}, Story {Story-Number})`
 - Keep title concise and descriptive
 
 ## Create PR Description
+
 1. Use template from `.github/PULL_REQUEST_TEMPLATE.md`
 2. Fill in sections with concise, factual information:
    - Keep responses brief - no verbose text needed
@@ -38,6 +43,7 @@ Format: `{prefix}: {Description} ({Linear-Issue-ID}, Story {Story-Number})`
 4. Use this file when creating the PR via GitHub CLI or API
 
 ## Post Story Content to Linear Issue (Optional Enhancement)
+
 **Note**: This step enhances the Linear issue with full story context. If it fails, continue with PR creation.
 
 1. **Resolve Linear Issue ID**:
@@ -67,6 +73,7 @@ Format: `{prefix}: {Description} ({Linear-Issue-ID}, Story {Story-Number})`
    - If posting fails, log error but continue with PR creation (non-blocking)
 
 ## Run Tests and Verify All Pass
+
 **Note**: This step is mandatory. PR creation will be blocked if tests fail.
 
 1. **Run All Tests**:
@@ -88,14 +95,17 @@ Format: `{prefix}: {Description} ({Linear-Issue-ID}, Story {Story-Number})`
    - Continue to PR creation step
 
 ## Create Pull Request
+
 - Target branch: `main`
 - Use the generated title and description
 - If using GitHub CLI: `gh pr create --base main --title "{title}" --body-file PR_DESCRIPTION.md`
 - If using API or web interface, use the same title and body content
 
 ## Cleanup
+
 - After PR is successfully created, delete the temporary `PR_DESCRIPTION.md` file
 - Verify deletion: `rm PR_DESCRIPTION.md` (if it exists)
 
 ## Completion
+
 - Answer: "done"

@@ -24,7 +24,8 @@ export function SignedRangeBar({
       ? { left: "50%", width: `${halfWidthPct}%` }
       : { left: `${50 - halfWidthPct}%`, width: `${halfWidthPct}%` };
 
-  const showLabelRow = label !== undefined && label !== null && label.trim() !== "";
+  const showLabelRow =
+    label !== undefined && label !== null && label.trim() !== "";
 
   return (
     <div className={cn("space-y-1", className)}>

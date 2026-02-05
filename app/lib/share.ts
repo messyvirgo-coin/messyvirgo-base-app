@@ -1,5 +1,8 @@
 import type { PublishedMacroReportResponse } from "@/app/lib/report-types";
-import { getMarkdownReportText, getReportMarkdownArtifact } from "./lens-outputs";
+import {
+  getMarkdownReportText,
+  getReportMarkdownArtifact,
+} from "./lens-outputs";
 import {
   extractMacroRegimeDetails,
   extractMacroRegimeLabel,
@@ -84,7 +87,8 @@ export function buildMacroShareContent(
   if (!report) {
     return {
       reportDate: "today",
-      snippet: "Daily crypto market intel in ~2 minutes. Tap to see the full report.",
+      snippet:
+        "Daily crypto market intel in ~2 minutes. Tap to see the full report.",
     };
   }
 
@@ -97,7 +101,9 @@ export function buildMacroShareContent(
 
   const headlineParts = [
     `Regime: ${label ?? "—"}${verdict?.title ? ` ${verdict.title}` : ""}`,
-    typeof effectiveScore === "number" ? `${effectiveScore.toFixed(2)} ES` : null,
+    typeof effectiveScore === "number"
+      ? `${effectiveScore.toFixed(2)} ES`
+      : null,
   ].filter(Boolean);
 
   const excerpt = pickFirstMeaningfulParagraph(markdownText);
@@ -108,9 +114,14 @@ export function buildMacroShareContent(
     320
   );
 
-  const publishedAt = typeof report.meta?.published_at === "string" ? report.meta.published_at : null;
+  const publishedAt =
+    typeof report.meta?.published_at === "string"
+      ? report.meta.published_at
+      : null;
   const executedAt =
-    artifact?.meta && typeof artifact.meta === "object" && !Array.isArray(artifact.meta)
+    artifact?.meta &&
+    typeof artifact.meta === "object" &&
+    !Array.isArray(artifact.meta)
       ? (artifact.meta as Record<string, unknown>).executed_at
       : null;
 
@@ -123,4 +134,3 @@ export function buildMacroShareContent(
     snippet,
   };
 }
-

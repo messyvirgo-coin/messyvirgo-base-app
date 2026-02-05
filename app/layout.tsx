@@ -8,17 +8,18 @@ import { PageTransitionLoader } from "./components/PageTransitionLoader";
 import "./globals.css";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const baseAppId = process.env.NEXT_PUBLIC_BASE_APP_ID || "698347b104e71c950acb8a5e";
+  const baseAppId =
+    process.env.NEXT_PUBLIC_BASE_APP_ID || "698347b104e71c950acb8a5e";
 
   // Web / SEO title (can be longer than the MiniApp name)
   const titleLong = "Market Vibe Daily by Messy Virgo";
   const titleShort = "Market Vibe Daily — Messy Virgo";
-  
+
   // Debug logging (visible in server console)
   if (process.env.NODE_ENV === "development") {
     console.log("[Base Build Debug] App ID:", baseAppId);
   }
-  
+
   return {
     metadataBase: new URL(minikitConfig.miniapp.homeUrl),
     title: {
@@ -32,8 +33,16 @@ export async function generateMetadata(): Promise<Metadata> {
       icon: [
         { url: "/favicon.ico", type: "image/x-icon" },
         { url: "/favicons/favicon.svg", type: "image/svg+xml" },
-        { url: "/favicons/favicon-16x16.png", sizes: "16x16", type: "image/png" },
-        { url: "/favicons/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+        {
+          url: "/favicons/favicon-16x16.png",
+          sizes: "16x16",
+          type: "image/png",
+        },
+        {
+          url: "/favicons/favicon-32x32.png",
+          sizes: "32x32",
+          type: "image/png",
+        },
       ],
       apple: [
         { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
@@ -107,9 +116,7 @@ export default function RootLayout({
         <RootProvider>
           <ThemeProvider>
             <PageTransitionLoader />
-            <SafeArea>
-              {children}
-            </SafeArea>
+            <SafeArea>{children}</SafeArea>
           </ThemeProvider>
         </RootProvider>
       </body>
