@@ -21,10 +21,12 @@ export function MarkdownProse({ markdown }: { markdown: string }) {
 
   return (
     <div className={PROSE_CLASSNAME}>
-      <ReactMarkdown remarkPlugins={[remarkGfm]} components={MARKDOWN_COMPONENTS}>
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        components={MARKDOWN_COMPONENTS}
+      >
         {content}
       </ReactMarkdown>
     </div>
   );
 }
-

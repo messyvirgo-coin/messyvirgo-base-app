@@ -14,7 +14,7 @@ export function PageTransitionLoader() {
     const handleClick = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
       const link = target.closest("a[href]");
-      
+
       if (link && link.getAttribute("href")?.startsWith("/")) {
         // Internal navigation detected - show loading immediately
         setIsLoading(true);

@@ -1,163 +1,135 @@
-# Crypto Macro & Liquidity Daily Mini App Quickstart
+# Market Vibe Daily
 
-## Name & Description
+**Market Vibe Daily** is a Farcaster Mini App that publishes **daily crypto market intel**: today’s regime + risk context and what traders typically do next, summarized in ~2 minutes (with a full report link). **Educational only — not financial advice.**
 
-- **Name (long)**: Crypto Macro & Liquidity Daily (by Messy Virgo)
-- **Name (short)**: Crypto Macro Daily — Messy Virgo
-- **Description**: Daily crypto macro + liquidity dashboard and shareable summary. We track 13 indicators, score the current market regime (risk-on → defensive), and translate it into clear positioning guidance across stables, BTC/ETH, high-beta alts, and long-tail—plus a link to the full report. Powered by Messy Virgo / $MESSY on Base. Educational research, not financial advice.
+- **Name**: Market Vibe Daily
+- **Subtitle**: by Messy Virgo / MESSY
+- **Tagline**: Know the vibe. Trade smarter.
+- **Primary category**: Finance
 
-## Prerequisites
+## Live / Hosting
 
-Before getting started, make sure you have:
+- **Hosting**: Vercel (currently under a personal profile; this is temporary)
+- **Vercel project (temporary dashboard link)**: `https://vercel.com/michaels-projects-4f272b86/messyvirgo-base-app`
 
-* Base app account
-* A [Farcaster](https://farcaster.xyz/) account
-* [Vercel](https://vercel.com/) account for hosting the application
-* [Coinbase Developer Platform](https://portal.cdp.coinbase.com/) Client API Key
+## Tech stack
 
-## Getting Started
+- **Framework**: Next.js (App Router)
+- **UI**: Tailwind CSS
+- **Mini App**: Farcaster Mini App manifest + MiniKit
+- **Onchain**: OnchainKit, wagmi, viem (as needed)
 
-### 1. Clone this repository 
+## Repo layout (high level)
+
+- **Mini App manifest**: served from `/.well-known/farcaster.json` via `app/.well-known/farcaster.json/route.ts`
+- **Mini App metadata/config**: `minikit.config.ts`
+- **API routes**: `app/api/*` (including `app/api/webhook/route.ts`)
+- **Legal content**: `content/legal/*` and pages under `app/privacy`, `app/terms`
+
+## Getting started (local dev)
+
+### Prerequisites
+
+- Node.js 20+ recommended
+- npm
+
+### Clone
 
 ```bash
-git clone https://github.com/base/demos.git
+git clone <YOUR_REPO_URL>
+cd messyvirgo-base-app
 ```
 
-### 2. Install dependencies:
+### Install
 
 ```bash
-cd demos/minikit/waitlist-mini-app-qs
 npm install
 ```
 
-### 3. Configure environment variables
+### Environment variables
 
-Create a `.env.local` file and add your environment variables:
+Create `.env.local` (recommended: copy from `.example.env`):
 
 ```bash
-NEXT_PUBLIC_PROJECT_NAME="Your App Name"
-NEXT_PUBLIC_ONCHAINKIT_API_KEY=<Replace-WITH-YOUR-CDP-API-KEY>
-NEXT_PUBLIC_URL=
+cp .example.env .env.local
 ```
-> [!IMPORTANT]
-> Set `NEXT_PUBLIC_URL` to your **canonical production URL**. Best practice for Mini Apps is to set the same value in **both Vercel Production and Preview** environments so your manifest remains domain-consistent with `accountAssociation` (this avoids Base preview "Ready call" failures caused by domain mismatches).
 
-### 4. Run locally:
+Then set the required values:
+
+- **`NEXT_PUBLIC_URL`**: **required** canonical production URL (e.g. `https://your-domain.com`)
+- **`NEXT_PUBLIC_BASE_APP_ID`**: required for Base app metadata
+- **`NEXT_PUBLIC_ONCHAINKIT_API_KEY`**: required for OnchainKit provider
+
+Optional:
+
+- **`MESSY_VIRGO_API_BASE_URL`**: defaults to `https://api.messyvirgo.com`
+- **`MESSY_VIRGO_API_KEY`**, **`MESSY_VIRGO_API_TOKEN`**: reserved for future auth
+
+> [!IMPORTANT]
+> For Mini Apps, best practice is to set `NEXT_PUBLIC_URL` to the **same canonical production URL** in **both Vercel Production and Preview** environments. This keeps your manifest domain-consistent with `accountAssociation` and avoids preview “Ready” failures caused by domain mismatches.
+
+### Run
 
 ```bash
 npm run dev
 ```
 
-## Customization
+Open `http://localhost:3000`.
 
-### Update Manifest Configuration
+## Useful scripts
 
-The `minikit.config.ts` file configures your manifest located at `app/.well-known/farcaster.json`.
+```bash
+npm run dev
+npm run build
+npm run start
+npm run lint
+npm run typecheck
+```
 
-**Skip the `accountAssociation` object for now.**
+## Deployment (Vercel)
 
-To personalize your app, change the `name`, `subtitle`, and `description` fields and add images to your `/public` folder. Then update their URLs in the file.
-
-## Deployment
-
-### 1. Deploy to Vercel
+1. **Deploy**
 
 ```bash
 vercel --prod
 ```
 
-You should have a URL deployed to a domain similar to: `https://your-vercel-project-name.vercel.app/`
+2. **Set environment variables** in Vercel (Production, and also Preview where noted):
 
-### 2. Update environment variables
+- `NEXT_PUBLIC_URL` (**set the canonical prod URL in both Production + Preview**)
+- `NEXT_PUBLIC_BASE_APP_ID`
+- `NEXT_PUBLIC_ONCHAINKIT_API_KEY`
 
-Add your production URL to your local `.env` file:
+## Farcaster account association (Mini App publishing)
 
-```bash
-NEXT_PUBLIC_PROJECT_NAME="Your App Name"
-NEXT_PUBLIC_ONCHAINKIT_API_KEY=<Replace-WITH-YOUR-CDP-API-KEY>
-NEXT_PUBLIC_URL=https://your-vercel-project-name.vercel.app/
-```
+The manifest is domain-bound. After you have a stable domain:
 
-### 3. Upload environment variables to Vercel
+1. Generate/sign `accountAssociation` using the [Farcaster manifest tool](https://farcaster.xyz/~/developers/mini-apps/manifest)
+2. Paste the generated `accountAssociation` into `minikit.config.ts`
+3. Redeploy
 
-Add environment variables to your production environment:
+You can validate embeds/manifest readiness at [base.dev/preview](https://base.dev/preview).
 
-```bash
-vercel env add NEXT_PUBLIC_PROJECT_NAME production
-vercel env add NEXT_PUBLIC_ONCHAINKIT_API_KEY production
-vercel env add NEXT_PUBLIC_URL production
-```
-If you use Vercel Preview deployments, also set `NEXT_PUBLIC_URL` for the preview environment to the same canonical production URL.
+`minikit.config.ts` includes guardrails to warn/error on domain mismatches between `NEXT_PUBLIC_URL` and the signed `accountAssociation` payload domain.
 
-## Account Association
+## Updating the Mini App metadata
 
-### 1. Sign Your Manifest
+Edit `minikit.config.ts` (fields like `miniapp.name`, `miniapp.description`, images, tags). The manifest is served from `/.well-known/farcaster.json` and reflects this config.
 
-1. Navigate to [Farcaster Manifest tool](https://farcaster.xyz/~/developers/mini-apps/manifest)
-2. Paste your domain in the form field (ex: your-vercel-project-name.vercel.app)
-3. Click the `Generate account association` button and follow the on-screen instructions for signing with your Farcaster wallet
-4. Copy the `accountAssociation` object
+## Base app registration notes
 
-### 2. Update Configuration
+- This app is registered with the **Base team account**: **team@messyvirgo**
 
-Update your `minikit.config.ts` file to include the `accountAssociation` object:
+## Contributing
 
-```ts
-export const minikitConfig = {
-    accountAssociation: {
-        "header": "your-header-here",
-        "payload": "your-payload-here",
-        "signature": "your-signature-here"
-    },
-    frame: {
-        // ... rest of your frame configuration
-    },
-}
-```
+- Please open an issue or PR with a clear description and screenshots where relevant.
+- Do not commit secrets. Keep local values in `.env.local` (this repo ships `.example.env` as a template).
 
-### 3. Deploy Updates
+## License
 
-```bash
-vercel --prod
-```
+- **Code**: Apache-2.0 (see [LICENSE](./LICENSE))
+- **Brand assets & trademarks**: reserved (see [NOTICE](./NOTICE.md) and [TRADEMARK](./TRADEMARK.md))
 
-## Testing and Publishing
+## Disclaimer
 
-### 1. Preview Your App
-
-Go to [base.dev/preview](https://base.dev/preview) to validate your app:
-
-1. Add your app URL to view the embeds and click the launch button to verify the app launches as expected
-2. Use the "Account association" tab to verify the association credentials were created correctly
-3. Use the "Metadata" tab to see the metadata added from the manifest and identify any missing fields
-
-### 2. Publish to Base App
-
-To publish your app, create a post in the Base app with your app's URL.
-
-## Learn More
-
-For detailed step-by-step instructions, see the [Create a Mini App tutorial](https://docs.base.org/docs/mini-apps/quickstart/create-new-miniapp/) in the Base documentation.
-
-
----
-
-## Disclaimer  
-
-This project is a **demo application** created by the **Base / Coinbase Developer Relations team** for **educational and demonstration purposes only**.  
-
-**There is no token, cryptocurrency, or investment product associated with Cubey, Base, or Coinbase.**  
-
-Any social media pages, tokens, or applications claiming to be affiliated with, endorsed by, or officially connected to Cubey, Base, or Coinbase are **unauthorized and fraudulent**.  
-
-We do **not** endorse or support any third-party tokens, apps, or projects using the Cubey name or branding.  
-
-> [!WARNING]
-> Do **not** purchase, trade, or interact with any tokens or applications claiming affiliation with Coinbase, Base, or Cubey.  
-> Coinbase and Base will never issue a token or ask you to connect your wallet for this demo.  
-
-For official Base developer resources, please visit:  
-- [https://base.org](https://base.org)  
-- [https://docs.base.org](https://docs.base.org)  
-
----
+This repository and app are provided **as-is** for informational/educational purposes. Nothing here constitutes financial, investment, legal, or tax advice.

@@ -1,8 +1,5 @@
 import { NextResponse } from "next/server";
-import {
-  DEFAULT_DAILY_MACRO_REPORT_VARIANT_CODE,
-  getLatestDailyMacroReport,
-} from "@/lib/messyVirgoApiClient";
+import { getLatestDailyMacroReport } from "@/lib/messyVirgoApiClient";
 import {
   getReportMarkdownArtifact,
   getMarkdownReportText,
@@ -11,69 +8,14 @@ import type {
   PublishedMacroReportResponse,
   MarkdownContent,
 } from "@/app/lib/report-types";
+import {
+  getCachedMacroReport,
+  parseVariant,
+  sanitizeDownloadFilename,
+} from "@/app/api/macro/_shared";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
-
-const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
-const VARIANT_RE = /^[a-zA-Z0-9_-]{1,64}$/;
-
-type CachedValue = {
-  report: PublishedMacroReportResponse;
-  cachedAtMs: number;
-};
-
-const cachedByVariant = new Map<string, CachedValue>();
-const inFlightByVariant = new Map<string, Promise<CachedValue>>();
-
-function parseVariant(request: Request):
-  | { ok: true; variant: string }
-  | { ok: false; error: string } {
-  const url = new URL(request.url);
-  const raw = url.searchParams.get("variant");
-  const trimmed = raw?.trim() ?? "";
-
-  if (!trimmed) {
-    return { ok: true, variant: DEFAULT_DAILY_MACRO_REPORT_VARIANT_CODE };
-  }
-
-  if (!VARIANT_RE.test(trimmed)) {
-    return {
-      ok: false,
-      error: "Invalid variant. Expected 1-64 characters: letters, numbers, '_' or '-'.",
-    };
-  }
-
-  return { ok: true, variant: trimmed };
-}
-
-function getReportFromCache(variant: string): Promise<PublishedMacroReportResponse> {
-  const now = Date.now();
-  const cachedValue = cachedByVariant.get(variant) ?? null;
-  if (cachedValue && now - cachedValue.cachedAtMs < CACHE_TTL_MS) {
-    return Promise.resolve(cachedValue.report);
-  }
-
-  let inFlight = inFlightByVariant.get(variant) ?? null;
-  if (!inFlight) {
-    inFlight = getLatestDailyMacroReport(variant)
-      .then((report) => {
-        const cachedAtMs = Date.now();
-        const cached: CachedValue = {
-          report: report as PublishedMacroReportResponse,
-          cachedAtMs,
-        };
-        cachedByVariant.set(variant, cached);
-        return cached;
-      })
-      .finally(() => {
-        inFlightByVariant.delete(variant);
-      });
-    inFlightByVariant.set(variant, inFlight);
-  }
-
-  return inFlight.then((cached) => cached.report);
-}
 
 function formatDateForFilename(date: Date): string {
   const year = date.getFullYear();
@@ -96,12 +38,12 @@ function generateFilename(
   }
 
   const dateStr = formatDateForFilename(date);
-  
+
   // Use different filename patterns based on variant
   if (variant === "default") {
     return `messy-macros-report-${dateStr}.md`;
   }
-  
+
   // Default to market vibe daily for "base_app" and other variants
   return `messy-market-vibe-daily-${dateStr}.md`;
 }
@@ -148,10 +90,7 @@ function extractMarkdownContent(
       parts.push(structured.body.trim());
     }
 
-    if (
-      typeof structured.annexes === "string" &&
-      structured.annexes.trim()
-    ) {
+    if (typeof structured.annexes === "string" && structured.annexes.trim()) {
       parts.push(structured.annexes.trim());
     }
 
@@ -179,9 +118,13 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
 
-    const report = await getReportFromCache(parsed.variant);
+    const report = await getCachedMacroReport(parsed.variant, (variant) =>
+      getLatestDailyMacroReport(variant)
+    );
     const markdownContent = extractMarkdownContent(report, parsed.variant);
-    const filename = generateFilename(report, parsed.variant);
+    const filename = sanitizeDownloadFilename(
+      generateFilename(report, parsed.variant)
+    );
 
     return new NextResponse(markdownContent, {
       headers: {
@@ -191,8 +134,7 @@ export async function GET(request: Request) {
       },
     });
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Unknown error";
+    const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
       {
         error: "Failed to generate download file.",

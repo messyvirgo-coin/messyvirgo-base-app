@@ -38,7 +38,9 @@ export function ErrorDisplay({ error }: ErrorDisplayProps) {
   const [showDetails, setShowDetails] = useState(false);
   const detailsText = useMemo(() => {
     if (!error || typeof error === "string") return null;
-    return error.message ? JSON.stringify({ message: error.message }, null, 2) : null;
+    return error.message
+      ? JSON.stringify({ message: error.message }, null, 2)
+      : null;
   }, [error]);
 
   if (!error) {
@@ -57,7 +59,9 @@ export function ErrorDisplay({ error }: ErrorDisplayProps) {
           <button
             onClick={() => setShowDetails((v) => !v)}
             className="ml-2 underline text-sm"
-            aria-label={showDetails ? "Hide error details" : "Show error details"}
+            aria-label={
+              showDetails ? "Hide error details" : "Show error details"
+            }
             type="button"
           >
             {showDetails ? "Hide details" : "Show details"}

@@ -9,7 +9,8 @@ function OckThemeSync() {
 
   useEffect(() => {
     const html = document.documentElement;
-    const ockTheme = resolvedTheme === "dark" ? "default-dark" : "default-light";
+    const ockTheme =
+      resolvedTheme === "dark" ? "default-dark" : "default-light";
     html.setAttribute("data-ock-theme", ockTheme);
   }, [resolvedTheme]);
 

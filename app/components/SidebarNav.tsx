@@ -128,25 +128,25 @@ export function SidebarNav() {
 
   const loadCachedMacroReport = useCallback(
     (cacheKey: string | null): PublishedMacroReportResponse | null => {
-    try {
-      if (!cacheKey) return null;
-      const raw = window.localStorage.getItem(cacheKey);
-      if (!raw) return null;
-      const parsed = JSON.parse(raw) as {
-        cachedAtMs?: unknown;
-        report?: unknown;
-      };
+      try {
+        if (!cacheKey) return null;
+        const raw = window.localStorage.getItem(cacheKey);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw) as {
+          cachedAtMs?: unknown;
+          report?: unknown;
+        };
 
-      if (typeof parsed?.cachedAtMs !== "number") return null;
-      if (!parsed.report) return null;
+        if (typeof parsed?.cachedAtMs !== "number") return null;
+        if (!parsed.report) return null;
 
-      const ageMs = Date.now() - parsed.cachedAtMs;
-      if (ageMs < 0 || ageMs > MACRO_REPORT_CACHE_TTL_MS) return null;
+        const ageMs = Date.now() - parsed.cachedAtMs;
+        if (ageMs < 0 || ageMs > MACRO_REPORT_CACHE_TTL_MS) return null;
 
-      return parsed.report as PublishedMacroReportResponse;
-    } catch {
-      return null;
-    }
+        return parsed.report as PublishedMacroReportResponse;
+      } catch {
+        return null;
+      }
     },
     []
   );
@@ -165,7 +165,10 @@ export function SidebarNav() {
             REPORT_CONTEXT_BY_PATH[normalizedPath] ??
             REPORT_CONTEXT_BY_PATH["/"]!;
 
-          const appUrl = new URL(context.path, window.location.origin).toString();
+          const appUrl = new URL(
+            context.path,
+            window.location.origin
+          ).toString();
           const cached = loadCachedMacroReport(context.cacheKey);
           const { reportDate, snippet } = buildMacroShareContent(cached);
 
@@ -458,7 +461,9 @@ export function SidebarNav() {
               "disabled:opacity-50 disabled:cursor-not-allowed",
               "active:bg-transparent"
             )}
-            aria-label={isDownloading ? "Downloading report..." : "Download report"}
+            aria-label={
+              isDownloading ? "Downloading report..." : "Download report"
+            }
             title={isDownloading ? "Downloading..." : "Download report"}
           >
             <Download className="h-5 w-5" />
@@ -491,7 +496,9 @@ export function SidebarNav() {
           isOpen ? "pointer-events-auto" : "pointer-events-none"
         )}
         style={{
-          transform: isOpen ? `translateX(${Math.min(0, dragOffsetX)}px)` : "translateX(-100%)",
+          transform: isOpen
+            ? `translateX(${Math.min(0, dragOffsetX)}px)`
+            : "translateX(-100%)",
           willChange: "transform",
           // Allow vertical scrolling while still letting us detect horizontal swipes.
           touchAction: "pan-y",
@@ -564,8 +571,8 @@ export function SidebarNav() {
                       isActive && !isDarkMode
                         ? { color: "rgb(0, 0, 0)" }
                         : isActive && isDarkMode
-                        ? { color: "rgb(255, 255, 255)" }
-                        : undefined
+                          ? { color: "rgb(255, 255, 255)" }
+                          : undefined
                     }
                   >
                     {item.label}

@@ -51,9 +51,10 @@ export function LegalAcknowledgementOverlay({
               </div>
 
               <p className="mt-3 text-sm text-foreground/80">
-                Welcome to your Daily crypto market intel. Get today&apos;s regime and risk
-                context, plus what traders typically do, summarized in 2 minutes.
-                Full report included. No advice, education only.
+                Welcome to your Daily crypto market intel. Get today&apos;s
+                regime and risk context, plus what traders typically do,
+                summarized in 2 minutes. Full report included. No advice,
+                education only.
               </p>
             </div>
           </div>
@@ -113,4 +114,3 @@ export function LegalAcknowledgementOverlay({
     </div>
   );
 }
-

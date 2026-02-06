@@ -11,10 +11,7 @@ export default async function PrivacyPage() {
 
   return (
     <PageShell mainClassName="gap-8">
-      <PageHeader
-        title="Privacy Policy"
-        subtitle="What we collect and why"
-      />
+      <PageHeader title="Privacy Policy" subtitle="What we collect and why" />
 
       <div className="w-full max-w-4xl space-y-4">
         <Card className="mv-card rounded-lg">

@@ -41,6 +41,7 @@ git diff --name-status HEAD
 ```
 
 Then list changes grouped as:
+
 - Modified
 - Added
 - Deleted
@@ -48,6 +49,7 @@ Then list changes grouped as:
 ### Step A2: Intent + user-facing behavior
 
 Before nitpicking, answer (from diffs + code):
+
 - What user-visible behavior changed? (Dashboard / profile flow / macro report rendering / navigation)
 - Does the change impact the **Mini App manifest**, **frame metadata**, or **Base app integration**?
 - Is the change client-only, server-only, or cross-cutting?
@@ -57,7 +59,8 @@ Before nitpicking, answer (from diffs + code):
 Review every changed file with these **Next.js-specific** checks:
 
 #### Client vs server boundaries (HIGH)
-- **Client components** must have `"use client"` at the top *only when needed* (hooks, browser APIs).
+
+- **Client components** must have `"use client"` at the top _only when needed_ (hooks, browser APIs).
 - **Never import server-only modules into client code.**
   - `lib/messyVirgoApiClient.ts` is `server-only` by design; importing it into `app/**` client components should fail the build (or worse, leak secrets).
 - **Environment variables:**
@@ -65,6 +68,7 @@ Review every changed file with these **Next.js-specific** checks:
   - Secrets (e.g., `MESSY_VIRGO_API_KEY`, `MESSY_VIRGO_API_TOKEN`) must stay on the server (route handlers / server-only modules).
 
 #### Route handlers (`app/api/**/route.ts`) (HIGH/MED)
+
 - Validate inputs (query params, body) and return **consistent JSON error shapes**.
 - Don’t accidentally enable caching for “latest” endpoints.
   - Prefer `cache: "no-store"` upstream + `Cache-Control: no-store` downstream.
@@ -72,15 +76,17 @@ Review every changed file with these **Next.js-specific** checks:
 - Ensure `runtime` is correct (`nodejs` when using node-only deps or secrets).
 
 #### Metadata / frames (MED)
+
 - `generateMetadata()` should not log secrets; debug logging must be dev-only.
 - Ensure `fc:frame` metadata stays valid JSON and matches the app’s UX (button title/action).
 
 ### Step A4: MiniKit / OnchainKit specifics
 
 Check these integration points carefully:
+
 - **`RootProvider`** (`app/rootProvider.tsx`):
   - `OnchainKitProvider` is configured with `NEXT_PUBLIC_ONCHAINKIT_API_KEY` and `miniKit.enabled`.
-  - Missing env values should fail *predictably* (clear error, not blank screen loops).
+  - Missing env values should fail _predictably_ (clear error, not blank screen loops).
 - **Safe area + mobile UX**:
   - UI should respect `SafeArea` and `env(safe-area-inset-bottom)` usage (especially nav overlays).
 - **Manifest:** `app/.well-known/farcaster.json/route.ts` should serve `withValidManifest(minikitConfig)` and the config should reference valid assets under `public/`.
@@ -102,6 +108,7 @@ This app’s core behaviors to protect in review:
 ### Step A6: Reliability, security, and performance (prioritize impact)
 
 Flag as HIGH/MED when you see:
+
 - **Security:** secrets in client bundles, unsafe dynamic HTML, leaking stack traces in production, overly-verbose error details in prod responses.
 - **Reliability:** missing error handling, inconsistent error JSON, unbounded retries/loops, flaky UI state, missing null checks for MiniKit context.
 - **Performance:** unnecessary `"use client"` on large trees, heavy computations on every render without memoization, avoidable re-renders, oversized images without `next/image` where appropriate.
@@ -138,6 +145,7 @@ git ls-files
 ```
 
 Then summarize (high level):
+
 - Routes/pages in `app/**`
 - Route handlers in `app/api/**`
 - Shared utilities/types in `app/lib/**`
@@ -148,6 +156,7 @@ Then summarize (high level):
 ### Step B2: Build a “system map” (how data flows)
 
 Describe the main runtime paths (as they exist today):
+
 - **Mini App manifest**: `minikit.config.ts` → `app/.well-known/farcaster.json/route.ts`
 - **Dashboard**: `app/page.tsx` → `GET /api/macro/latest` → `lib/messyVirgoApiClient.ts` → upstream API
 - **Profile**: MiniKit FID → profile storage (`app/lib/profile.ts`) → onboarding gate and UI
@@ -164,6 +173,7 @@ If these fail, treat it as HIGH priority unless it’s clearly a known/accepted 
 ### Step B4: Security + env var audit (HIGH)
 
 Verify:
+
 - No secrets are ever read in `"use client"` components (only `NEXT_PUBLIC_*` on client).
 - `lib/messyVirgoApiClient.ts` (server-only) is only imported from server contexts (route handlers, server components).
 - Error responses do not leak sensitive details in production (guard on `NODE_ENV`).
@@ -179,6 +189,7 @@ rg "\"use client\""
 ### Step B5: Route handler audit (`app/api/**/route.ts`)
 
 For each handler:
+
 - Input validation and clear error messages (consistent JSON shape)
 - Caching behavior is explicit (especially “latest” endpoints)
 - Runtime is appropriate (`nodejs` when using server-only/secrets)
@@ -187,6 +198,7 @@ For each handler:
 ### Step B6: UI/UX audit for Mini App constraints
 
 Check:
+
 - Safe area correctness (`SafeArea`, `env(safe-area-inset-bottom)`)
 - Overlay/drawer accessibility (Escape close, focus/scroll locking, ARIA)
 - Loading/empty/error states are present and readable on small screens
@@ -195,6 +207,7 @@ Check:
 ### Step B7: “Domain behavior” audit (macro reports + profiles)
 
 Check:
+
 - Profile selection is resilient (FID missing, anonymous fallback, migration)
 - Macro report rendering is robust to partial artifacts (missing header/body/meta)
 - Markdown rendering is safe (no raw HTML unless intentionally allowed)
@@ -202,6 +215,7 @@ Check:
 ### Step B8: Recommend follow-ups (MED)
 
 If there is no test suite, propose a minimal path:
+
 - A short manual test checklist (fast to run before release)
 - Optional: add a lightweight unit/e2e framework later (only if the app’s risk warrants it)
 
@@ -215,37 +229,48 @@ Write your review using exactly this structure:
 ## Code Review Report
 
 ### Review mode
+
 - Mode: A (Change/PR) | B (Full app audit)
 
 ### Repo/system overview (Mode B only)
+
 - Purpose: ...
 - Key flows: ...
 
 ### Changed files
+
 - Modified: [...]
 - Added: [...]
 - Deleted: [...]
 
 ### High priority issues
+
 #### [Title]
+
 **Location:** `path/to/file.tsx:line-range`
 **Impact:** ...
 **Why it’s a problem:** ...
 **Fix (explicit steps):**
+
 1. ...
 2. ...
 
 ### Medium priority issues
+
 #### [Title]
+
 ...same format...
 
 ### Good calls (keep these)
+
 - ...
 
 ### Suggested test plan (only if needed)
+
 - ...
 
 ### Summary
+
 - Total issues: X (Y high, Z medium)
 - Must-fix before merge: [...]
 ```
@@ -257,4 +282,3 @@ Write your review using exactly this structure:
 - [ ] Route handlers reviewed (validation, caching, runtime, errors)
 - [ ] MiniKit/manifest impacts checked (`minikit.config.ts`, `.well-known` route)
 - [ ] Only HIGH/MED issues reported with explicit fixes
-
