@@ -193,13 +193,13 @@
 
   .mv-glass-drawer-surface {
     /* Light mode: semi-transparent white with RGBA fallback for iOS Safari */
-    background-color: rgba(250, 250, 252, 0.55);
-    background-color: hsl(var(--background) / 0.55);
+    background-color: rgba(250, 250, 252, 0.82);
+    background-color: hsl(var(--background) / 0.82);
   }
 
   .dark .mv-glass-drawer-surface {
-    background-color: rgba(17, 24, 39, 0.6);
-    background-color: hsl(var(--background) / 0.6);
+    background-color: rgba(17, 24, 39, 0.78);
+    background-color: hsl(var(--background) / 0.78);
   }
 
   .mv-glass-modal-surface {
