@@ -7,6 +7,7 @@ export type MacroReportStatus = "idle" | "loading" | "success" | "error";
 
 type CachedMacroReportEnvelope = {
   cachedAtMs?: unknown;
+  variantCode?: unknown;
   report?: unknown;
 };
 
@@ -24,7 +25,11 @@ type UseMacroReportResult = {
   refetch: () => Promise<void>;
 };
 
-function loadCachedReport(cacheKey: string, ttlMs: number) {
+function loadCachedReport(
+  cacheKey: string,
+  variantCode: string,
+  ttlMs: number
+) {
   if (typeof window === "undefined") return null;
 
   try {
@@ -34,6 +39,9 @@ function loadCachedReport(cacheKey: string, ttlMs: number) {
     const parsed = JSON.parse(raw) as CachedMacroReportEnvelope;
     if (typeof parsed?.cachedAtMs !== "number") return null;
     if (!parsed.report) return null;
+
+    // Validate that cached variant matches current variant
+    if (parsed.variantCode !== variantCode) return null;
 
     const ageMs = Date.now() - parsed.cachedAtMs;
     if (ageMs < 0 || ageMs > ttlMs) return null;
@@ -46,6 +54,7 @@ function loadCachedReport(cacheKey: string, ttlMs: number) {
 
 function persistCachedReport(
   cacheKey: string,
+  variantCode: string,
   report: PublishedMacroReportResponse
 ) {
   if (typeof window === "undefined") return;
@@ -53,7 +62,11 @@ function persistCachedReport(
   try {
     window.localStorage.setItem(
       cacheKey,
-      JSON.stringify({ cachedAtMs: Date.now(), report })
+      JSON.stringify({
+        cachedAtMs: Date.now(),
+        variantCode,
+        report,
+      })
     );
   } catch {
     // Best-effort only (storage may be unavailable / full).
@@ -109,7 +122,7 @@ export function useMacroReport({
 
       setReport(nextReport);
       setStatus("success");
-      persistCachedReport(cacheKey, nextReport);
+      persistCachedReport(cacheKey, variantCode, nextReport);
     } catch (fetchError) {
       if (
         fetchError instanceof DOMException &&
@@ -134,7 +147,8 @@ export function useMacroReport({
     if (!enabled) return;
 
     // Prefer cache to avoid re-fetching the same daily payload.
-    const cached = loadCachedReport(cacheKey, ttlMs);
+    // Validate variantCode matches to prevent returning stale data for wrong variant.
+    const cached = loadCachedReport(cacheKey, variantCode, ttlMs);
     if (cached) {
       setError(null);
       setReport(cached);
@@ -148,7 +162,7 @@ export function useMacroReport({
     return () => {
       abortRef.current?.abort();
     };
-  }, [cacheKey, enabled, refetch, ttlMs]);
+  }, [cacheKey, enabled, refetch, ttlMs, variantCode]);
 
   return { status, error, report, refetch };
 }
