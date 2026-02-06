@@ -121,6 +121,7 @@ export function MacroReportRenderer({
   }, [markdownArtifact, markdownContent]);
 
   const [isDownloading, setIsDownloading] = useState(false);
+  const showMobileDownloadAlert = variantCode?.trim() === "default";
 
   const handleDownload = useCallback(async () => {
     setIsDownloading(true);
@@ -203,42 +204,44 @@ export function MacroReportRenderer({
             </div>
 
             {/* Mobile alert: encourage download for better viewing */}
-            <div className="md:hidden">
-              <Alert className="border-primary/20 bg-primary/5 px-5 py-4 [&>svg]:left-5 [&>svg]:top-5 [&>svg~*]:pl-8">
-                <Smartphone
-                  aria-hidden="true"
-                  size={18}
-                  className="text-primary"
-                />
-                <div>
-                  <AlertTitle className="text-sm font-semibold">
-                    Better on larger screens
-                  </AlertTitle>
-                  <AlertDescription className="mt-2 text-sm">
-                    <p className="mb-3">
-                      This report contains detailed tables and data that are
-                      best viewed on a desktop or tablet. For the best reading
-                      experience, we recommend downloading the report.
-                    </p>
-                    <button
-                      type="button"
-                      onClick={handleDownload}
-                      disabled={isDownloading}
-                      className="relative inline-flex h-11 w-full items-center justify-center rounded-md bg-gradient-to-r from-pink-500 to-fuchsia-500 px-6 text-sm font-semibold text-white shadow-sm transition-all hover:from-pink-600 hover:to-fuchsia-600 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:from-pink-500 disabled:hover:to-fuchsia-500"
-                    >
-                      <span>
-                        {isDownloading ? "Downloading..." : "Download Report"}
-                      </span>
-                      <ChevronRight
-                        aria-hidden="true"
-                        size={20}
-                        className="absolute right-5 top-1/2 -translate-y-1/2"
-                      />
-                    </button>
-                  </AlertDescription>
-                </div>
-              </Alert>
-            </div>
+            {showMobileDownloadAlert ? (
+              <div className="md:hidden">
+                <Alert className="border-primary/20 bg-primary/5 px-5 py-4 [&>svg]:left-5 [&>svg]:top-5 [&>svg~*]:pl-8">
+                  <Smartphone
+                    aria-hidden="true"
+                    size={18}
+                    className="text-primary"
+                  />
+                  <div>
+                    <AlertTitle className="text-sm font-semibold">
+                      Better on larger screens
+                    </AlertTitle>
+                    <AlertDescription className="mt-2 text-sm">
+                      <p className="mb-3">
+                        This report contains detailed tables and data that are
+                        best viewed on a desktop or tablet. For the best reading
+                        experience, we recommend downloading the report.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={handleDownload}
+                        disabled={isDownloading}
+                        className="relative inline-flex h-11 w-full items-center justify-center rounded-md bg-linear-to-r from-pink-500 to-fuchsia-500 px-6 text-sm font-semibold text-white shadow-sm transition-all hover:from-pink-600 hover:to-fuchsia-600 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:from-pink-500 disabled:hover:to-fuchsia-500"
+                      >
+                        <span>
+                          {isDownloading ? "Downloading..." : "Download Report"}
+                        </span>
+                        <ChevronRight
+                          aria-hidden="true"
+                          size={20}
+                          className="absolute right-5 top-1/2 -translate-y-1/2"
+                        />
+                      </button>
+                    </AlertDescription>
+                  </div>
+                </Alert>
+              </div>
+            ) : null}
 
             <div>
               <div className={PROSE_CLASSNAME}>
