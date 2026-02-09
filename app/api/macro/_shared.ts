@@ -119,6 +119,41 @@ export async function getCachedMacroReport<V>(
   return (await inFlight) as V;
 }
 
+const twitterPostTextCache = createBoundedTtlCache<string, unknown>({
+  ttlMs: CACHE_TTL_MS,
+  maxEntries: MAX_ENTRIES,
+});
+const inFlightTwitterPostByVariant = new Map<string, Promise<unknown>>();
+
+export async function getCachedMacroTwitterPostText<V>(
+  variant: string,
+  fetcher: (variant: string) => Promise<V>
+): Promise<V> {
+  const fresh = twitterPostTextCache.getFresh(variant) as V | null;
+  if (fresh) return fresh;
+
+  let inFlight = inFlightTwitterPostByVariant.get(variant) ?? null;
+  if (!inFlight) {
+    inFlight = fetcher(variant)
+      .then((text) => {
+        twitterPostTextCache.set(variant, text);
+        return text;
+      })
+      .finally(() => {
+        inFlightTwitterPostByVariant.delete(variant);
+      });
+    inFlightTwitterPostByVariant.set(variant, inFlight);
+  }
+
+  return (await inFlight) as V;
+}
+
+export function sanitizeTwitterPostText(input: string) {
+  // Prevent absurd payloads from overloading share compositors / storage.
+  const trimmed = input.trim();
+  return trimmed.length > 10_000 ? trimmed.slice(0, 10_000) : trimmed;
+}
+
 export function sanitizeDownloadFilename(filename: string) {
   // RFC 6266 header injection hardening.
   const cleaned = filename.replace(/[\r\n"]/g, "").trim();

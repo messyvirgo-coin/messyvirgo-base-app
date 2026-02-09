@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/app/lib/utils";
 import type { PublishedMacroReportResponse } from "@/app/lib/report-types";
-import { buildMacroShareContent } from "@/app/lib/share";
+import { useMacroTwitterPost } from "@/app/lib/useMacroTwitterPost";
 
 const NAV_ITEMS: Array<{ href: string; label: string }> = [
   { href: "/", label: "Dashboard" },
@@ -56,6 +56,27 @@ const THEME_OPTIONS = [
 ];
 
 const MACRO_REPORT_CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
+const TWITTER_POST_CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
+const TWITTER_POST_CACHE_KEY = "mv_macro_twitter_post_base_app_cache_v1";
+
+function formatReportDate(input: string | null): string {
+  if (!input) return "today";
+  const date = new Date(input);
+  if (Number.isNaN(date.getTime())) return "today";
+  return date.toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
+
+function getPublishedAtFromCachedReport(
+  report: PublishedMacroReportResponse | null
+): string | null {
+  const publishedAt =
+    typeof report?.meta?.published_at === "string" ? report.meta.published_at : null;
+  return publishedAt && publishedAt.trim() ? publishedAt : null;
+}
 
 type ReportContext = {
   path: string;
@@ -126,6 +147,20 @@ export function SidebarNav() {
   const showDownload = showShare;
   const reportVariant = reportContext?.variant ?? null;
 
+  // Always pull the published share text from the upstream macro twitter_post endpoint.
+  // We keep the API variant configurable, but currently always use base_app.
+  const { text: twitterPostText } = useMacroTwitterPost({
+    enabled: mounted,
+    variantCode: "base_app",
+    cacheKey: TWITTER_POST_CACHE_KEY,
+    ttlMs: TWITTER_POST_CACHE_TTL_MS,
+  });
+
+  // Read via ref so startShareForPath doesn't recreate when the text loads,
+  // which would re-trigger the pathname effect and interrupt an active composer.
+  const twitterPostTextRef = useRef(twitterPostText);
+  twitterPostTextRef.current = twitterPostText;
+
   const loadCachedMacroReport = useCallback(
     (cacheKey: string | null): PublishedMacroReportResponse | null => {
       try {
@@ -170,10 +205,17 @@ export function SidebarNav() {
             window.location.origin
           ).toString();
           const cached = loadCachedMacroReport(context.cacheKey);
-          const { reportDate, snippet } = buildMacroShareContent(cached);
+          const reportDate = formatReportDate(getPublishedAtFromCachedReport(cached));
+          const fallbackBody =
+            "Daily crypto market intel in ~2 minutes. Tap to see the full report.";
+          const currentText = twitterPostTextRef.current;
+          const body =
+            typeof currentText === "string" && currentText.trim()
+              ? currentText.trim()
+              : fallbackBody;
 
           await composeCastAsync({
-            text: `📊 ${context.shareTitle} - ${reportDate}\n\n${snippet}\n\nPowered by @$MESSY - Messy Virgo Coin`,
+            text: `📊 ${context.shareTitle} - ${reportDate}\n\n${body}`,
             embeds: [appUrl],
           });
         } catch (error) {
