@@ -55,6 +55,16 @@ function extractTextFromUpstreamJson(value: unknown): string | null {
   if (typeof value === "string") return value.trim() || null;
   if (!isRecord(value)) return null;
 
+  // The twitter_post endpoint wraps its payload in the same { outputs, meta }
+  // envelope used by the report endpoint.  Drill into outputs[0].content.text.
+  if (Array.isArray(value.outputs) && value.outputs.length > 0) {
+    const first: unknown = value.outputs[0];
+    if (isRecord(first) && isRecord(first.content)) {
+      const t = first.content.text;
+      if (typeof t === "string" && t.trim()) return t.trim();
+    }
+  }
+
   const directCandidates: Array<unknown> = [
     value.text,
     value.content,
@@ -180,6 +190,7 @@ export async function getLatestDailyMacroTwitterPostText(
     const contentType = response.headers.get("content-type") ?? "";
     if (contentType.includes("application/json")) {
       const json = (await response.json()) as unknown;
+
       const extracted = extractTextFromUpstreamJson(json);
       if (extracted) return extracted;
       throw new Error(
