@@ -152,7 +152,10 @@ export async function getLatestDailyMacroTwitterPostText(
   variantCode: string = DEFAULT_DAILY_MACRO_REPORT_VARIANT_CODE,
   options?: ClientOptions
 ): Promise<string> {
-  const url = new URL(resolveDailyMacroTwitterPostPath(variantCode), API_BASE_URL);
+  const url = new URL(
+    resolveDailyMacroTwitterPostPath(variantCode),
+    API_BASE_URL
+  );
 
   const timeoutMs = options?.timeoutMs ?? 12_000;
   const controller = new AbortController();

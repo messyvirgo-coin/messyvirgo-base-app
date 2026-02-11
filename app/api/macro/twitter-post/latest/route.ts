@@ -16,8 +16,9 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
 
-    const text = await getCachedMacroTwitterPostText(parsed.variant, (variant) =>
-      getLatestDailyMacroTwitterPostText(variant)
+    const text = await getCachedMacroTwitterPostText(
+      parsed.variant,
+      (variant) => getLatestDailyMacroTwitterPostText(variant)
     );
 
     return NextResponse.json(

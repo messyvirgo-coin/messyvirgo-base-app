@@ -25,4 +25,3 @@ This repository includes Messy Virgo brand assets (logos, icons, screenshots, an
 If you need permission to use Messy Virgo marks or brand assets, contact:
 
 - `contact@messyvirgo.com`
-

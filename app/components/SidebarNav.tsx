@@ -74,7 +74,9 @@ function getPublishedAtFromCachedReport(
   report: PublishedMacroReportResponse | null
 ): string | null {
   const publishedAt =
-    typeof report?.meta?.published_at === "string" ? report.meta.published_at : null;
+    typeof report?.meta?.published_at === "string"
+      ? report.meta.published_at
+      : null;
   return publishedAt && publishedAt.trim() ? publishedAt : null;
 }
 
@@ -205,7 +207,9 @@ export function SidebarNav() {
             window.location.origin
           ).toString();
           const cached = loadCachedMacroReport(context.cacheKey);
-          const reportDate = formatReportDate(getPublishedAtFromCachedReport(cached));
+          const reportDate = formatReportDate(
+            getPublishedAtFromCachedReport(cached)
+          );
           const fallbackBody =
             "Daily crypto market intel in ~2 minutes. Tap to see the full report.";
           const currentText = twitterPostTextRef.current;
