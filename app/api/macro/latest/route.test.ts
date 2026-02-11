@@ -1,10 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/messyVirgoApiClient", async () => {
-  const actual =
-    await vi.importActual<typeof import("@/lib/messyVirgoApiClient")>(
-      "@/lib/messyVirgoApiClient"
-    );
+  const actual = await vi.importActual<
+    typeof import("@/lib/messyVirgoApiClient")
+  >("@/lib/messyVirgoApiClient");
   return { ...actual, getLatestDailyMacroReport: vi.fn() };
 });
 
@@ -18,10 +17,9 @@ describe("GET /api/macro/latest", () => {
   it("returns 400 when variant is invalid", async () => {
     const { GET } = await import("./route");
     const res = await GET(
-      new Request(
-        "https://example.com/api/macro/latest?variant=bad%0Avalue",
-        { method: "GET" }
-      )
+      new Request("https://example.com/api/macro/latest?variant=bad%0Avalue", {
+        method: "GET",
+      })
     );
 
     expect(res.status).toBe(400);
@@ -62,4 +60,3 @@ describe("GET /api/macro/latest", () => {
     );
   });
 });
-

@@ -2,10 +2,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { PublishedMacroReportResponse } from "@/app/lib/report-types";
 
 vi.mock("@/lib/messyVirgoApiClient", async () => {
-  const actual =
-    await vi.importActual<typeof import("@/lib/messyVirgoApiClient")>(
-      "@/lib/messyVirgoApiClient"
-    );
+  const actual = await vi.importActual<
+    typeof import("@/lib/messyVirgoApiClient")
+  >("@/lib/messyVirgoApiClient");
   return { ...actual, getLatestDailyMacroReport: vi.fn() };
 });
 
@@ -55,4 +54,3 @@ describe("GET /api/macro/download", () => {
     expect(text).toContain("Footer");
   });
 });
-

@@ -6,10 +6,10 @@ By using messyvirgo.com or app.messyvirgo.com, you agree to these Terms.
 
 **Analytical Tools:**
 
-- **$MESSY Token** \- Base-native token (trade on DEXes at your risk)  
-- **Due Diligence Engine** \- AI analysis of tokens via social, news, and on-chain data  
-- **Portfolio Tools** \- Optimization algorithms suggesting allocations  
-- **Token Screener** \- Discover and filter tokens by metrics  
+- **$MESSY Token** \- Base-native token (trade on DEXes at your risk)
+- **Due Diligence Engine** \- AI analysis of tokens via social, news, and on-chain data
+- **Portfolio Tools** \- Optimization algorithms suggesting allocations
+- **Token Screener** \- Discover and filter tokens by metrics
 - **Performance Dashboard** \- Track portfolios and our AI agent's Guru.fund performance
 
 **Platform Status:** Under active development. Features may change or be unavailable without notice.
@@ -18,8 +18,8 @@ By using messyvirgo.com or app.messyvirgo.com, you agree to these Terms.
 
 We provide **information and analytical tools only**. We are NOT:
 
-- An investment platform (no custody, no trade execution)  
-- An investment advisor (no personalized advice)  
+- An investment platform (no custody, no trade execution)
+- An investment advisor (no personalized advice)
 - A broker or financial service provider
 
 **You make all investment decisions independently.**
@@ -32,11 +32,11 @@ We provide **information and analytical tools only**. We are NOT:
 
 ## Your Responsibilities
 
-- **No Advice:** Our tools provide data, not recommendations  
-- **Your Decisions:** You decide all investments independently; DYOR  
-- **Your Risk:** You bear full responsibility for outcomes  
-- **Wallet Security:** You control private keys; we have NO access  
-- **No Custody:** We never hold your assets  
+- **No Advice:** Our tools provide data, not recommendations
+- **Your Decisions:** You decide all investments independently; DYOR
+- **Your Risk:** You bear full responsibility for outcomes
+- **Wallet Security:** You control private keys; we have NO access
+- **No Custody:** We never hold your assets
 - **Compliance:** You follow your local laws
 
 ## Account & Termination
@@ -103,4 +103,4 @@ No illegal use, hacking, data scraping, impersonation, bots, or abuse. We may te
 ---
 
 **BY USING OUR PLATFORM, YOU AGREE TO THESE TERMS.**  
-**WE PROVIDE TOOLS, NOT ADVICE. CRYPTO IS HIGH-RISK. YOU DECIDE. YOU RISK.**  
+**WE PROVIDE TOOLS, NOT ADVICE. CRYPTO IS HIGH-RISK. YOU DECIDE. YOU RISK.**

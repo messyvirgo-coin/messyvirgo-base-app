@@ -21,12 +21,12 @@ Market Vibe Daily is a Base Mini App built with Next.js (App Router). It serves 
 
 ## High-level data flow
 
-1) User opens the Base Mini App (Base App webview).
-2) Legal acknowledgement gate opens on first visit.
-3) Client calls `GET /api/macro/latest?variant=base_app`.
-4) Server fetches the latest report from the Messy Virgo API and caches it.
-5) Client renders a daily briefing and header scores from markdown artifacts.
-6) Optional: user downloads the report via `GET /api/macro/download`.
+1. User opens the Base Mini App (Base App webview).
+2. Legal acknowledgement gate opens on first visit.
+3. Client calls `GET /api/macro/latest?variant=base_app`.
+4. Server fetches the latest report from the Messy Virgo API and caches it.
+5. Client renders a daily briefing and header scores from markdown artifacts.
+6. Optional: user downloads the report via `GET /api/macro/download`.
 
 ## Entry points
 

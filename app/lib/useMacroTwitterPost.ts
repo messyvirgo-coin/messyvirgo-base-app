@@ -45,7 +45,11 @@ function loadCachedText(cacheKey: string, variantCode: string, ttlMs: number) {
   }
 }
 
-function persistCachedText(cacheKey: string, variantCode: string, text: string) {
+function persistCachedText(
+  cacheKey: string,
+  variantCode: string,
+  text: string
+) {
   if (typeof window === "undefined") return;
   const trimmed = text.trim();
   if (!trimmed) return;
@@ -88,7 +92,10 @@ export function useMacroTwitterPost({
     setText(null);
 
     try {
-      const url = new URL("/api/macro/twitter-post/latest", window.location.origin);
+      const url = new URL(
+        "/api/macro/twitter-post/latest",
+        window.location.origin
+      );
       url.searchParams.set("variant", variantCode);
 
       const response = await fetch(url.toString(), {
@@ -131,7 +138,9 @@ export function useMacroTwitterPost({
       }
       if (abortRef.current !== controller) return;
 
-      setError(fetchError instanceof Error ? fetchError : new Error("Unknown error"));
+      setError(
+        fetchError instanceof Error ? fetchError : new Error("Unknown error")
+      );
       setStatus("error");
     } finally {
       if (abortRef.current === controller) {
@@ -161,4 +170,3 @@ export function useMacroTwitterPost({
 
   return { status, error, text, refetch };
 }
-

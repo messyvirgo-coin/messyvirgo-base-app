@@ -21,10 +21,10 @@ It is powered by our existing **Crypto Macro Economics Report** API. See the und
 
 Open Base Mini App ->
 
-1) Acknowledge Terms and Privacy to unlock the report.
-2) Read the daily briefing (regime, scores, summary).
-3) Open the full report for detailed tables and annexes.
-4) Download the report if you want a desktop-friendly view.
+1. Acknowledge Terms and Privacy to unlock the report.
+2. Read the daily briefing (regime, scores, summary).
+3. Open the full report for detailed tables and annexes.
+4. Download the report if you want a desktop-friendly view.
 
 ## What Market Vibe Daily does (high level)
 
