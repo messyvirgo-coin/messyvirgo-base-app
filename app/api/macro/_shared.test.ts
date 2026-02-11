@@ -50,7 +50,7 @@ describe("sanitizeDownloadFilename", () => {
 
 describe("getCachedMacroReport", () => {
   it("dedupes concurrent in-flight fetches per variant", async () => {
-    let resolve: ((value: { ok: true }) => void) | null = null;
+    let resolve!: (value: { ok: true }) => void;
     const fetcher = async () =>
       await new Promise<{ ok: true }>((res) => {
         resolve = res;
@@ -60,7 +60,7 @@ describe("getCachedMacroReport", () => {
     const p2 = getCachedMacroReport("variant-concurrent", fetcher);
 
     expect(resolve).toBeTypeOf("function");
-    resolve?.({ ok: true });
+    resolve({ ok: true });
 
     const [r1, r2] = await Promise.all([p1, p2]);
     expect(r1).toEqual({ ok: true });
@@ -76,7 +76,9 @@ describe("getCachedMacroReport", () => {
       })
     ).rejects.toThrow("boom");
 
-    const next = await getCachedMacroReport(variant, async () => ({ ok: true }));
+    const next = await getCachedMacroReport(variant, async () => ({
+      ok: true,
+    }));
     expect(next).toEqual({ ok: true });
   });
 
