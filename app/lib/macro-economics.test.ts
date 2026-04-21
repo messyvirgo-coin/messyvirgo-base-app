@@ -44,8 +44,7 @@ describe("macro-economics", () => {
         kind: "markdown",
         artifact_type: "report",
         content: {
-          header:
-            "| **Effective Regime** | R+ — Risk On |\n|---|---|",
+          header: "| **Effective Regime** | R+ — Risk On |\n|---|---|",
           body: "",
           footer: "",
         },

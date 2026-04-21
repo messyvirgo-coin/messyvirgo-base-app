@@ -255,12 +255,8 @@ export function MacroReportHeaderCard(props: {
                       Effective Score
                     </div>
                     <div className="text-sm font-semibold text-foreground flex flex-wrap items-center gap-1.5">
-                      {typeof effectiveScore === "number"
-                        ? `${effectiveScore.toFixed(2)} / 100`
-                        : "—"}
-                      {typeof effectiveScore === "number" && (
+                      {typeof effectiveScore === "number" ? (
                         <>
-                          <span className="text-muted-foreground">•</span>
                           <span className="inline-flex items-center rounded-md border border-pink-400/60 bg-pink-400/15 px-2 py-0.5 font-mono text-[11px] text-foreground whitespace-nowrap">
                             {regimeLabel ?? "—"}
                           </span>
@@ -268,14 +264,20 @@ export function MacroReportHeaderCard(props: {
                             {verdictTitle}
                           </span>
                         </>
+                      ) : (
+                        "—"
                       )}
                     </div>
                   </div>
                   <ScoreRangeBar
                     label=""
                     value={effectiveScore}
-                    note={effectiveNote}
-                    className="!space-y-0"
+                    note={
+                      typeof effectiveScore === "number"
+                        ? effectiveNote
+                        : undefined
+                    }
+                    notePlacement="below"
                   />
                 </div>
               </div>

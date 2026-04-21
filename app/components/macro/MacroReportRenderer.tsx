@@ -8,6 +8,7 @@ import { MacroReportHeaderCard } from "@/app/components/report/MacroReportHeader
 import {
   extractMacroRegimeDetails,
   extractMacroRegimeLabel,
+  formatMacroScoreBreakdown,
   getMacroVerdict,
   macroRegimeImageSrc,
 } from "@/app/lib/macro-economics";
@@ -172,10 +173,16 @@ export function MacroReportRenderer({
     typeof qualitativeAdjustment === "number"
       ? `${qualitativeAdjustment >= 0 ? "+" : ""}${qualitativeAdjustment.toFixed(2)} points • cap +/- 25`
       : "—";
+  const scoreBreakdown = formatMacroScoreBreakdown({
+    baseScore,
+    qualitativeAdjustment,
+    effectiveScore,
+  });
   const effectiveNote =
-    typeof effectiveScore === "number"
+    scoreBreakdown ??
+    (typeof effectiveScore === "number"
       ? `${effectiveScore.toFixed(2)} / 100`
-      : "—";
+      : "—");
 
   return (
     <div className="w-full max-w-4xl mx-auto space-y-4">

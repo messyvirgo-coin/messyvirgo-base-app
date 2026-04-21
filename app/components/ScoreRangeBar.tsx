@@ -6,12 +6,15 @@ export function ScoreRangeBar({
   note,
   max = 100,
   className,
+  /** When there is no label row, place the note above or below the bar. */
+  notePlacement = "above",
 }: {
   label?: string;
   value: number | null | undefined;
   note?: string;
   max?: number;
   className?: string;
+  notePlacement?: "above" | "below";
 }) {
   const upper = Math.max(0.000001, max);
   const v = typeof value === "number" && Number.isFinite(value) ? value : 0;
@@ -33,7 +36,7 @@ export function ScoreRangeBar({
           </div>
         </div>
       )}
-      {!showLabelRow && note && (
+      {!showLabelRow && note && notePlacement === "above" && (
         <div className="text-sm text-foreground whitespace-nowrap text-right">
           {note}
         </div>
@@ -46,6 +49,12 @@ export function ScoreRangeBar({
           aria-hidden="true"
         />
       </div>
+
+      {!showLabelRow && note && notePlacement === "below" && (
+        <div className="text-sm text-foreground whitespace-nowrap text-right">
+          {note}
+        </div>
+      )}
     </div>
   );
 }
