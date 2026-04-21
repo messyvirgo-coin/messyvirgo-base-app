@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { ChevronLeft, ChevronRight, ExternalLink } from "lucide-react";
+import { ScoreRangeBar } from "@/app/components/ScoreRangeBar";
 import { SignedRangeBar } from "@/app/components/SignedRangeBar";
 import { cn, imageUrl } from "@/app/lib/utils";
 import { formatTimestamp } from "@/app/lib/format";
@@ -14,6 +15,8 @@ export function MacroReportHeaderCard(props: {
   qualitativeAdjustment: number | null;
   baseNote: string;
   adjNote: string;
+  /** Shown under the effective score bar (e.g. "60.00 / 100"). */
+  effectiveNote?: string;
   verdictTitle: string;
   macroCadence?: "daily" | "weekly";
   onMacroCadenceChange?: (cadence: "daily" | "weekly") => void;
@@ -34,6 +37,7 @@ export function MacroReportHeaderCard(props: {
     qualitativeAdjustment,
     adjNote,
     effectiveScore,
+    effectiveNote,
     verdictTitle,
     executedAt,
     variantCode,
@@ -234,26 +238,25 @@ export function MacroReportHeaderCard(props: {
               </div>
 
               <div className="space-y-4">
-                <SignedRangeBar
+                <ScoreRangeBar
                   label="Base Score"
                   value={baseScore}
                   note={baseNote}
-                  maxAbs={1}
                 />
                 <SignedRangeBar
                   label="Qualitative Adjustment"
                   value={qualitativeAdjustment}
                   note={adjNote}
-                  maxAbs={1}
+                  maxAbs={25}
                 />
                 <div className="rounded-lg border border-pink-400/30 bg-pink-400/5 p-3 space-y-2 mb-3 md:mb-0">
-                  <div className="flex items-baseline justify-between gap-3">
+                  <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1 sm:gap-3">
                     <div className="text-sm font-semibold text-foreground whitespace-nowrap">
                       Effective Score
                     </div>
                     <div className="text-sm font-semibold text-foreground flex flex-wrap items-center gap-1.5">
                       {typeof effectiveScore === "number"
-                        ? `${effectiveScore.toFixed(2)} (ES)`
+                        ? `${effectiveScore.toFixed(2)} / 100`
                         : "—"}
                       {typeof effectiveScore === "number" && (
                         <>
@@ -268,10 +271,10 @@ export function MacroReportHeaderCard(props: {
                       )}
                     </div>
                   </div>
-                  <SignedRangeBar
+                  <ScoreRangeBar
                     label=""
                     value={effectiveScore}
-                    maxAbs={1}
+                    note={effectiveNote}
                     className="!space-y-0"
                   />
                 </div>

@@ -166,11 +166,15 @@ export function MacroReportRenderer({
   const verdictTitle = verdict?.title ?? "—";
   const baseNote =
     typeof baseScore === "number"
-      ? `${baseScore >= 0 ? "+" : ""}${baseScore.toFixed(2)} (BS) • ${verdictTitle}`
+      ? `${baseScore.toFixed(2)} / 100 • ${verdictTitle}`
       : "—";
   const adjNote =
     typeof qualitativeAdjustment === "number"
-      ? `${qualitativeAdjustment >= 0 ? "+" : ""}${qualitativeAdjustment.toFixed(2)} (QA)`
+      ? `${qualitativeAdjustment >= 0 ? "+" : ""}${qualitativeAdjustment.toFixed(2)} points • cap +/- 25`
+      : "—";
+  const effectiveNote =
+    typeof effectiveScore === "number"
+      ? `${effectiveScore.toFixed(2)} / 100`
       : "—";
 
   return (
@@ -195,6 +199,7 @@ export function MacroReportRenderer({
                 }
                 baseNote={baseNote}
                 adjNote={adjNote}
+                effectiveNote={effectiveNote}
                 verdictTitle={verdictTitle}
                 macroCadence={macroCadence}
                 onMacroCadenceChange={onMacroCadenceChange}
