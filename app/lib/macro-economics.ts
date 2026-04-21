@@ -3,6 +3,24 @@ import { imageUrl } from "./utils";
 
 export type MacroRegimeLabel = "R++" | "R+" | "N" | "R-" | "D";
 
+export function formatMacroScoreBreakdown(args: {
+  baseScore: number | null | undefined;
+  qualitativeAdjustment: number | null | undefined;
+  effectiveScore: number | null | undefined;
+}): string | null {
+  const { baseScore, qualitativeAdjustment, effectiveScore } = args;
+  if (
+    typeof baseScore !== "number" ||
+    typeof qualitativeAdjustment !== "number" ||
+    typeof effectiveScore !== "number"
+  )
+    return null;
+
+  const op = qualitativeAdjustment >= 0 ? "+" : "-";
+  const absAdj = Math.abs(qualitativeAdjustment);
+  return `${baseScore.toFixed(2)} (BS) ${op} ${absAdj.toFixed(2)} (QA) = ${effectiveScore.toFixed(2)} (ES)`;
+}
+
 export function extractMacroRegimeLabel(
   artifact: LensOutputArtifact | null | undefined
 ): MacroRegimeLabel | null {
@@ -30,7 +48,9 @@ export function extractMacroRegimeLabel(
   ) {
     const header = (content as { header?: unknown }).header;
     if (typeof header === "string" && header) {
-      const m = header.match(/\|\s*\*\*Regime\*\*\s*\|\s*([^|]+)\|/i);
+      const m = header.match(
+        /\|\s*\*\*(?:Effective\s+)?Regime\*\*\s*\|\s*([^|]+)\|/i
+      );
       const raw = (m?.[1] || "").trim();
       const label = raw.split(/\s+/)[0]?.trim() || "";
       if (label === "R+" || label === "N" || label === "R-") return label;
@@ -85,6 +105,7 @@ export function extractMacroRegimeDetails(
   ) {
     const header = (content as { header?: unknown }).header;
     if (typeof header === "string" && header) {
+      // e.g. 72.00 (BS) - 12.00 (QA) = 60.00 (ES) on the 0–100 scale
       const scoreRow = header.match(/\|\s*\*\*Score\*\*\s*\|\s*([^|]+)\|/i);
       const scoreText = (scoreRow?.[1] || "").trim();
       const m = scoreText.match(

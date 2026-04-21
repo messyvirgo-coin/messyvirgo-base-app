@@ -8,6 +8,7 @@ import { MacroReportHeaderCard } from "@/app/components/report/MacroReportHeader
 import {
   extractMacroRegimeDetails,
   extractMacroRegimeLabel,
+  formatMacroScoreBreakdown,
   getMacroVerdict,
   macroRegimeImageSrc,
 } from "@/app/lib/macro-economics";
@@ -166,12 +167,22 @@ export function MacroReportRenderer({
   const verdictTitle = verdict?.title ?? "—";
   const baseNote =
     typeof baseScore === "number"
-      ? `${baseScore >= 0 ? "+" : ""}${baseScore.toFixed(2)} (BS) • ${verdictTitle}`
+      ? `${baseScore.toFixed(2)} / 100 • ${verdictTitle}`
       : "—";
   const adjNote =
     typeof qualitativeAdjustment === "number"
-      ? `${qualitativeAdjustment >= 0 ? "+" : ""}${qualitativeAdjustment.toFixed(2)} (QA)`
+      ? `${qualitativeAdjustment >= 0 ? "+" : ""}${qualitativeAdjustment.toFixed(2)} points • cap +/- 25`
       : "—";
+  const scoreBreakdown = formatMacroScoreBreakdown({
+    baseScore,
+    qualitativeAdjustment,
+    effectiveScore,
+  });
+  const effectiveNote =
+    scoreBreakdown ??
+    (typeof effectiveScore === "number"
+      ? `${effectiveScore.toFixed(2)} / 100`
+      : "—");
 
   return (
     <div className="w-full max-w-4xl mx-auto space-y-4">
@@ -195,6 +206,7 @@ export function MacroReportRenderer({
                 }
                 baseNote={baseNote}
                 adjNote={adjNote}
+                effectiveNote={effectiveNote}
                 verdictTitle={verdictTitle}
                 macroCadence={macroCadence}
                 onMacroCadenceChange={onMacroCadenceChange}

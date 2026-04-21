@@ -3,6 +3,7 @@ import type { LensOutputArtifact } from "@/app/lib/report-types";
 import {
   extractMacroRegimeDetails,
   extractMacroRegimeLabel,
+  formatMacroScoreBreakdown,
   getMacroVerdict,
 } from "@/app/lib/macro-economics";
 
@@ -37,6 +38,20 @@ describe("macro-economics", () => {
       };
       expect(extractMacroRegimeLabel(artifact)).toBe("R-");
     });
+
+    it("parses **Effective Regime** row", () => {
+      const artifact: LensOutputArtifact = {
+        kind: "markdown",
+        artifact_type: "report",
+        content: {
+          header: "| **Effective Regime** | R+ — Risk On |\n|---|---|",
+          body: "",
+          footer: "",
+        },
+        content_type: "text/markdown",
+      };
+      expect(extractMacroRegimeLabel(artifact)).toBe("R+");
+    });
   });
 
   describe("extractMacroRegimeDetails", () => {
@@ -47,17 +62,17 @@ describe("macro-economics", () => {
         content: {},
         content_type: "application/json",
         meta: {
-          macro_effective_score: 8,
-          macro_base_score: 10,
-          macro_qualitative_adjustment: -2,
+          macro_effective_score: 60,
+          macro_base_score: 72,
+          macro_qualitative_adjustment: -12,
         },
       };
       expect(extractMacroRegimeDetails(artifact)).toEqual({
-        score: 8,
+        score: 60,
         coveragePct: null,
-        effectiveScore: 8,
-        baseScore: 10,
-        qualitativeAdjustment: -2,
+        effectiveScore: 60,
+        baseScore: 72,
+        qualitativeAdjustment: -12,
       });
     });
 
@@ -69,7 +84,7 @@ describe("macro-economics", () => {
           header: [
             "# Some Title",
             "",
-            "| **Score** | 10 (BS) - 2 (QA) = 8 (ES) |",
+            "| **Score** | 72.00 (BS) - 12.00 (QA) = 60.00 (ES) |",
             "|---|---|",
           ].join("\n"),
           body: "",
@@ -79,10 +94,22 @@ describe("macro-economics", () => {
       };
 
       const details = extractMacroRegimeDetails(artifact);
-      expect(details.score).toBe(8);
-      expect(details.baseScore).toBe(10);
-      expect(details.qualitativeAdjustment).toBe(-2);
-      expect(details.effectiveScore).toBe(8);
+      expect(details.score).toBe(60);
+      expect(details.baseScore).toBe(72);
+      expect(details.qualitativeAdjustment).toBe(-12);
+      expect(details.effectiveScore).toBe(60);
+    });
+  });
+
+  describe("formatMacroScoreBreakdown", () => {
+    it("formats the macro score breakdown on the 0-100 scale", () => {
+      expect(
+        formatMacroScoreBreakdown({
+          baseScore: 72,
+          qualitativeAdjustment: -12,
+          effectiveScore: 60,
+        })
+      ).toBe("72.00 (BS) - 12.00 (QA) = 60.00 (ES)");
     });
   });
 
