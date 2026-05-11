@@ -23,7 +23,7 @@ function resolveDailyMacroPath(variantCode: string): string {
       ? variantCode.trim()
       : DEFAULT_DAILY_MACRO_REPORT_VARIANT_CODE;
   // Variant codes are a single path segment in the upstream API.
-  return `/api/v1/published/macro/report/${encodeURIComponent(normalized)}`;
+  return `/api/v1/public/reports/macro/report/${encodeURIComponent(normalized)}`;
 }
 
 function resolveDailyMacroTwitterPostPath(variantCode: string): string {
@@ -32,7 +32,7 @@ function resolveDailyMacroTwitterPostPath(variantCode: string): string {
       ? variantCode.trim()
       : DEFAULT_DAILY_MACRO_REPORT_VARIANT_CODE;
   // Variant codes are a single path segment in the upstream API.
-  return `/api/v1/published/macro/twitter_post/${encodeURIComponent(normalized)}`;
+  return `/api/v1/public/reports/macro/twitter_post/${encodeURIComponent(normalized)}`;
 }
 
 function buildAuthHeaders(): Record<string, string> {
