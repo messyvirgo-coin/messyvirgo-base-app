@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo } from "react";
 import { PageShell } from "@/app/components/PageShell";
 import { ErrorDisplay } from "@/app/components/ErrorDisplay";
 import { MacroReportRenderer } from "@/app/components/macro/MacroReportRenderer";
@@ -15,7 +14,7 @@ import {
 
 const MACRO_REPORT_CACHE_KEY = "mv_macro_default_cache_v1";
 const MACRO_REPORT_CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
-const REPORT_VARIANT_CODE = "default";
+const REPORT_KIND = "default";
 
 export default function FullReportPage() {
   const {
@@ -27,14 +26,13 @@ export default function FullReportPage() {
     acknowledge,
   } = useLegalAcknowledgement();
 
-  const reportVariantCode = useMemo(() => REPORT_VARIANT_CODE, []);
   const {
     status: macroStatus,
     error: macroError,
     report: macroReport,
   } = useMacroReport({
     enabled: mounted,
-    variantCode: reportVariantCode,
+    reportKind: REPORT_KIND,
     cacheKey: MACRO_REPORT_CACHE_KEY,
     ttlMs: MACRO_REPORT_CACHE_TTL_MS,
   });
@@ -64,10 +62,7 @@ export default function FullReportPage() {
       {isGateOpen && macroStatus === "success" && macroReport?.outputs && (
         <MacroReportRenderer
           outputs={macroReport.outputs}
-          variantCode={reportVariantCode}
-          macroProfileShortLabel={null}
-          macroCadence="daily"
-          macroCadenceDisabled={true}
+          reportKind={REPORT_KIND}
         />
       )}
 

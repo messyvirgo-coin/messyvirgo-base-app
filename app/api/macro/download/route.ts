@@ -10,9 +10,10 @@ import type {
 } from "@/app/lib/report-types";
 import {
   getCachedMacroReport,
-  parseVariant,
+  parseReportKind,
   sanitizeDownloadFilename,
 } from "@/app/api/macro/_shared";
+import type { MacroReportKind } from "@/app/lib/macro-report-kind";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -26,7 +27,7 @@ function formatDateForFilename(date: Date): string {
 
 function generateFilename(
   report: PublishedMacroReportResponse,
-  variant: string
+  reportKind: MacroReportKind
 ): string {
   // Try to get date from published_at in meta
   let date = new Date();
@@ -39,18 +40,19 @@ function generateFilename(
 
   const dateStr = formatDateForFilename(date);
 
-  // Use different filename patterns based on variant
-  if (variant === "default") {
+  if (reportKind === "default") {
     return `messy-macros-report-${dateStr}.md`;
   }
 
-  // Default to market vibe daily for "base_app" and other variants
   return `messy-market-vibe-daily-${dateStr}.md`;
 }
 
-function replaceH1InHeader(header: string, variant: string): string {
+function replaceH1InHeader(
+  header: string,
+  reportKind: MacroReportKind
+): string {
   const replacementTitle =
-    variant === "default"
+    reportKind === "default"
       ? "Macros Report by $MESSY"
       : "Market Vibes Daily by $MESSY";
 
@@ -60,7 +62,7 @@ function replaceH1InHeader(header: string, variant: string): string {
 
 function extractMarkdownContent(
   report: PublishedMacroReportResponse,
-  variant: string
+  reportKind: MacroReportKind
 ): string {
   const markdownArtifact = getReportMarkdownArtifact(report.outputs);
   if (!markdownArtifact) {
@@ -81,7 +83,7 @@ function extractMarkdownContent(
     if (typeof structured.header === "string" && structured.header.trim()) {
       const processedHeader = replaceH1InHeader(
         structured.header.trim(),
-        variant
+        reportKind
       );
       parts.push(processedHeader);
     }
@@ -105,7 +107,7 @@ function extractMarkdownContent(
   const markdownText = getMarkdownReportText(report.outputs);
   if (markdownText) {
     // For unstructured content, replace H1 in the entire text
-    return replaceH1InHeader(markdownText, variant);
+    return replaceH1InHeader(markdownText, reportKind);
   }
 
   throw new Error("No markdown content found in report");
@@ -113,17 +115,17 @@ function extractMarkdownContent(
 
 export async function GET(request: Request) {
   try {
-    const parsed = parseVariant(request);
+    const parsed = parseReportKind(request);
     if (!parsed.ok) {
       return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
 
-    const report = await getCachedMacroReport(parsed.variant, (variant) =>
-      getLatestDailyMacroReport(variant)
+    const report = await getCachedMacroReport(parsed.reportKind, (reportKind) =>
+      getLatestDailyMacroReport(reportKind)
     );
-    const markdownContent = extractMarkdownContent(report, parsed.variant);
+    const markdownContent = extractMarkdownContent(report, parsed.reportKind);
     const filename = sanitizeDownloadFilename(
-      generateFilename(report, parsed.variant)
+      generateFilename(report, parsed.reportKind)
     );
 
     return new NextResponse(markdownContent, {

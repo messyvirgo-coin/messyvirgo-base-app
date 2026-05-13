@@ -14,15 +14,28 @@ describe("Messy Virgo upstream API client", () => {
     vi.restoreAllMocks();
   });
 
-  it("fetches macro reports from the canonical public route", async () => {
-    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
-      Response.json(reportResponse)
-    );
+  it("fetches the daily dashboard report from the canonical public route", async () => {
+    const fetchMock = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce(Response.json(reportResponse));
 
-    await getLatestDailyMacroReport("base_app");
+    await getLatestDailyMacroReport("daily");
 
     expect(fetchMock).toHaveBeenCalledWith(
-      "https://api.messyvirgo.com/api/v1/public/reports/macro/report/base_app",
+      "https://api.messyvirgo.com/api/v1/public/reports/macro/report/daily",
+      expect.objectContaining({ method: "GET" })
+    );
+  });
+
+  it("fetches the full report from the canonical public route", async () => {
+    const fetchMock = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce(Response.json(reportResponse));
+
+    await getLatestDailyMacroReport("default");
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://api.messyvirgo.com/api/v1/public/reports/macro/report/default",
       expect.objectContaining({ method: "GET" })
     );
   });
@@ -39,10 +52,10 @@ describe("Messy Virgo upstream API client", () => {
       })
     );
 
-    await getLatestDailyMacroTwitterPostText("base_app");
+    await getLatestDailyMacroTwitterPostText("daily");
 
     expect(fetchMock).toHaveBeenCalledWith(
-      "https://api.messyvirgo.com/api/v1/public/reports/macro/twitter_post/base_app",
+      "https://api.messyvirgo.com/api/v1/public/reports/macro/twitter_post/daily",
       expect.objectContaining({ method: "GET" })
     );
   });

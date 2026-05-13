@@ -2,25 +2,44 @@ import { describe, expect, it, vi } from "vitest";
 import {
   createBoundedTtlCache,
   getCachedMacroReport,
-  parseVariant,
+  parseReportKind,
   sanitizeDownloadFilename,
 } from "@/app/api/macro/_shared";
 
-describe("parseVariant", () => {
-  it("defaults when missing", () => {
+describe("parseReportKind", () => {
+  it("defaults to the daily dashboard when missing", () => {
     const request = new Request("https://example.com/api/macro/latest");
-    const parsed = parseVariant(request);
+    const parsed = parseReportKind(request);
     expect(parsed.ok).toBe(true);
     if (parsed.ok) {
-      expect(parsed.variant).toBeTruthy();
+      expect(parsed.reportKind).toBe("daily");
     }
   });
 
-  it("rejects invalid variant", () => {
+  it("accepts the full report", () => {
     const request = new Request(
-      "https://example.com/api/macro/latest?variant=bad%0Avalue"
+      "https://example.com/api/macro/latest?report=default"
     );
-    const parsed = parseVariant(request);
+    const parsed = parseReportKind(request);
+    expect(parsed.ok).toBe(true);
+    if (parsed.ok) {
+      expect(parsed.reportKind).toBe("default");
+    }
+  });
+
+  it("rejects unsupported report kinds", () => {
+    const request = new Request(
+      "https://example.com/api/macro/latest?report=base_app"
+    );
+    const parsed = parseReportKind(request);
+    expect(parsed.ok).toBe(false);
+  });
+
+  it("rejects stale variant query parameters", () => {
+    const request = new Request(
+      "https://example.com/api/macro/latest?variant=default"
+    );
+    const parsed = parseReportKind(request);
     expect(parsed.ok).toBe(false);
   });
 });
@@ -49,15 +68,15 @@ describe("sanitizeDownloadFilename", () => {
 });
 
 describe("getCachedMacroReport", () => {
-  it("dedupes concurrent in-flight fetches per variant", async () => {
+  it("dedupes concurrent in-flight fetches per report kind", async () => {
     let resolve!: (value: { ok: true }) => void;
     const fetcher = async () =>
       await new Promise<{ ok: true }>((res) => {
         resolve = res;
       });
 
-    const p1 = getCachedMacroReport("variant-concurrent", fetcher);
-    const p2 = getCachedMacroReport("variant-concurrent", fetcher);
+    const p1 = getCachedMacroReport("report-concurrent", fetcher);
+    const p2 = getCachedMacroReport("report-concurrent", fetcher);
 
     expect(resolve).toBeTypeOf("function");
     resolve({ ok: true });
@@ -68,15 +87,15 @@ describe("getCachedMacroReport", () => {
   });
 
   it("retries after a failed in-flight fetch", async () => {
-    const variant = "variant-failure-then-success";
+    const reportKind = "report-failure-then-success";
 
     await expect(
-      getCachedMacroReport(variant, async () => {
+      getCachedMacroReport(reportKind, async () => {
         throw new Error("boom");
       })
     ).rejects.toThrow("boom");
 
-    const next = await getCachedMacroReport(variant, async () => ({
+    const next = await getCachedMacroReport(reportKind, async () => ({
       ok: true,
     }));
     expect(next).toEqual({ ok: true });
@@ -86,25 +105,25 @@ describe("getCachedMacroReport", () => {
     vi.useFakeTimers();
 
     try {
-      const variant = "variant-ttl";
+      const reportKind = "report-ttl";
 
       vi.setSystemTime(new Date("2026-02-05T00:00:00.000Z"));
       const fetcher1 = vi.fn(async () => ({ n: 1 }));
-      const v1 = await getCachedMacroReport(variant, fetcher1);
+      const v1 = await getCachedMacroReport(reportKind, fetcher1);
       expect(v1).toEqual({ n: 1 });
       expect(fetcher1).toHaveBeenCalledTimes(1);
 
       // Within the 1-hour TTL in `_shared.ts`, should be served from cache.
       vi.setSystemTime(new Date("2026-02-05T00:30:00.000Z"));
       const fetcher2 = vi.fn(async () => ({ n: 2 }));
-      const v2 = await getCachedMacroReport(variant, fetcher2);
+      const v2 = await getCachedMacroReport(reportKind, fetcher2);
       expect(v2).toEqual({ n: 1 });
       expect(fetcher2).toHaveBeenCalledTimes(0);
 
       // Beyond TTL, should refetch.
       vi.setSystemTime(new Date("2026-02-05T02:00:00.000Z"));
       const fetcher3 = vi.fn(async () => ({ n: 3 }));
-      const v3 = await getCachedMacroReport(variant, fetcher3);
+      const v3 = await getCachedMacroReport(reportKind, fetcher3);
       expect(v3).toEqual({ n: 3 });
       expect(fetcher3).toHaveBeenCalledTimes(1);
     } finally {

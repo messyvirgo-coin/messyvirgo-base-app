@@ -1,27 +1,36 @@
-import { DEFAULT_DAILY_MACRO_REPORT_VARIANT_CODE } from "@/lib/messyVirgoApiClient";
+import {
+  DEFAULT_MACRO_REPORT_KIND,
+  isMacroReportKind,
+  type MacroReportKind,
+} from "@/app/lib/macro-report-kind";
 
-const VARIANT_RE = /^[a-zA-Z0-9_-]{1,64}$/;
-
-export function parseVariant(
+export function parseReportKind(
   request: Request
-): { ok: true; variant: string } | { ok: false; error: string } {
+): { ok: true; reportKind: MacroReportKind } | { ok: false; error: string } {
   const url = new URL(request.url);
-  const raw = url.searchParams.get("variant");
-  const trimmed = raw?.trim() ?? "";
-
-  if (!trimmed) {
-    return { ok: true, variant: DEFAULT_DAILY_MACRO_REPORT_VARIANT_CODE };
-  }
-
-  if (!VARIANT_RE.test(trimmed)) {
+  const legacyVariant = url.searchParams.get("variant");
+  if (legacyVariant !== null) {
     return {
       ok: false,
-      error:
-        "Invalid variant. Expected 1-64 characters: letters, numbers, '_' or '-'.",
+      error: "Invalid query parameter. Use 'report' instead of 'variant'.",
     };
   }
 
-  return { ok: true, variant: trimmed };
+  const raw = url.searchParams.get("report");
+  const trimmed = raw?.trim() ?? "";
+
+  if (!trimmed) {
+    return { ok: true, reportKind: DEFAULT_MACRO_REPORT_KIND };
+  }
+
+  if (isMacroReportKind(trimmed)) {
+    return { ok: true, reportKind: trimmed };
+  }
+
+  return {
+    ok: false,
+    error: "Invalid report. Expected 'daily' or 'default'.",
+  };
 }
 
 type CacheEntry<V> = { value: V; cachedAtMs: number };
@@ -94,26 +103,26 @@ const reportCache = createBoundedTtlCache<string, unknown>({
   ttlMs: CACHE_TTL_MS,
   maxEntries: MAX_ENTRIES,
 });
-const inFlightByVariant = new Map<string, Promise<unknown>>();
+const inFlightByReportKind = new Map<string, Promise<unknown>>();
 
-export async function getCachedMacroReport<V>(
-  variant: string,
-  fetcher: (variant: string) => Promise<V>
+export async function getCachedMacroReport<K extends string, V>(
+  reportKind: K,
+  fetcher: (reportKind: K) => Promise<V>
 ): Promise<V> {
-  const fresh = reportCache.getFresh(variant) as V | null;
+  const fresh = reportCache.getFresh(reportKind) as V | null;
   if (fresh) return fresh;
 
-  let inFlight = inFlightByVariant.get(variant) ?? null;
+  let inFlight = inFlightByReportKind.get(reportKind) ?? null;
   if (!inFlight) {
-    inFlight = fetcher(variant)
+    inFlight = fetcher(reportKind)
       .then((report) => {
-        reportCache.set(variant, report);
+        reportCache.set(reportKind, report);
         return report;
       })
       .finally(() => {
-        inFlightByVariant.delete(variant);
+        inFlightByReportKind.delete(reportKind);
       });
-    inFlightByVariant.set(variant, inFlight);
+    inFlightByReportKind.set(reportKind, inFlight);
   }
 
   return (await inFlight) as V;
@@ -123,26 +132,26 @@ const twitterPostTextCache = createBoundedTtlCache<string, unknown>({
   ttlMs: CACHE_TTL_MS,
   maxEntries: MAX_ENTRIES,
 });
-const inFlightTwitterPostByVariant = new Map<string, Promise<unknown>>();
+const inFlightTwitterPostByReportKind = new Map<string, Promise<unknown>>();
 
-export async function getCachedMacroTwitterPostText<V>(
-  variant: string,
-  fetcher: (variant: string) => Promise<V>
+export async function getCachedMacroTwitterPostText<K extends string, V>(
+  reportKind: K,
+  fetcher: (reportKind: K) => Promise<V>
 ): Promise<V> {
-  const fresh = twitterPostTextCache.getFresh(variant) as V | null;
+  const fresh = twitterPostTextCache.getFresh(reportKind) as V | null;
   if (fresh) return fresh;
 
-  let inFlight = inFlightTwitterPostByVariant.get(variant) ?? null;
+  let inFlight = inFlightTwitterPostByReportKind.get(reportKind) ?? null;
   if (!inFlight) {
-    inFlight = fetcher(variant)
+    inFlight = fetcher(reportKind)
       .then((text) => {
-        twitterPostTextCache.set(variant, text);
+        twitterPostTextCache.set(reportKind, text);
         return text;
       })
       .finally(() => {
-        inFlightTwitterPostByVariant.delete(variant);
+        inFlightTwitterPostByReportKind.delete(reportKind);
       });
-    inFlightTwitterPostByVariant.set(variant, inFlight);
+    inFlightTwitterPostByReportKind.set(reportKind, inFlight);
   }
 
   return (await inFlight) as V;

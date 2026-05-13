@@ -1,12 +1,10 @@
 import Image from "next/image";
-import { ChevronLeft, ChevronRight, ExternalLink } from "lucide-react";
 import { ScoreRangeBar } from "@/app/components/ScoreRangeBar";
 import { SignedRangeBar } from "@/app/components/SignedRangeBar";
-import { cn, imageUrl } from "@/app/lib/utils";
+import { cn } from "@/app/lib/utils";
 import { formatTimestamp } from "@/app/lib/format";
 
 export function MacroReportHeaderCard(props: {
-  variantCode: string | null;
   executedAt: string | null;
   regimeLabel: string | null;
   regimeImgSrc: string;
@@ -18,18 +16,8 @@ export function MacroReportHeaderCard(props: {
   /** Shown under the effective score bar (e.g. "60.00 / 100"). */
   effectiveNote?: string;
   verdictTitle: string;
-  macroCadence?: "daily" | "weekly";
-  onMacroCadenceChange?: (cadence: "daily" | "weekly") => void;
-  macroCadenceDisabled?: boolean;
-  macroProfileShortLabel?: string | null;
-  fullReportHref?: string | null;
-  onOpenFullReport?: () => void;
-  onBackToBriefing?: () => void;
 }) {
   const {
-    macroCadence,
-    onMacroCadenceChange,
-    macroCadenceDisabled = false,
     regimeLabel,
     regimeImgSrc,
     baseScore,
@@ -40,135 +28,17 @@ export function MacroReportHeaderCard(props: {
     effectiveNote,
     verdictTitle,
     executedAt,
-    variantCode,
-    macroProfileShortLabel: _macroProfileShortLabel,
-    fullReportHref,
-    onOpenFullReport,
-    onBackToBriefing,
   } = props;
-
-  const showCadenceToggle =
-    typeof macroCadence === "string" &&
-    typeof onMacroCadenceChange === "function";
-  const isLandingPage = showCadenceToggle;
-
-  const inferredCadence =
-    macroCadence ??
-    ((variantCode ?? "").toLowerCase().includes("weekly") ? "weekly" : "daily");
 
   const dateSubtitle = (() => {
     if (!executedAt) return "";
-    if (!isLandingPage) return `as of ${formatTimestamp(executedAt)}`;
-
-    const date = new Date(executedAt);
-    if (inferredCadence === "daily") {
-      return `for ${date.toLocaleDateString(undefined, {
-        weekday: "long",
-        month: "long",
-        day: "numeric",
-        year: "numeric",
-      })}`;
-    }
-
-    const base = new Date(date);
-    const dayOfWeek = base.getDay();
-    const diff = base.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
-    const mondayDate = new Date(base);
-    mondayDate.setDate(diff);
-    const sundayDate = new Date(mondayDate);
-    sundayDate.setDate(sundayDate.getDate() + 6);
-    const startStr = mondayDate.toLocaleDateString(undefined, {
-      month: "long",
-      day: "numeric",
-    });
-    const endStr = sundayDate.toLocaleDateString(undefined, {
-      month: "long",
-      day: "numeric",
-      year: "numeric",
-    });
-    return `${startStr} - ${endStr}`;
+    return `as of ${formatTimestamp(executedAt)}`;
   })();
 
   return (
     <div>
       <div className="pb-9">
         <div className="space-y-8 -mt-6">
-          {showCadenceToggle && (
-            <div className="flex items-center justify-center gap-2 sm:gap-4 -mt-2">
-              <button
-                type="button"
-                onClick={() => onMacroCadenceChange?.("daily")}
-                disabled={macroCadenceDisabled}
-                className={cn(
-                  "inline-flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full border border-white/20 text-muted-foreground hover:text-foreground hover:border-pink-400 hover:bg-pink-400/10 transition-all duration-200 flex-shrink-0",
-                  macroCadenceDisabled && "opacity-50 pointer-events-none"
-                )}
-                aria-label="Daily report"
-              >
-                <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
-              </button>
-
-              <button
-                type="button"
-                onClick={() => onMacroCadenceChange?.("daily")}
-                disabled={macroCadenceDisabled}
-                className={cn(
-                  "relative w-12 h-12 sm:w-14 sm:h-14 rounded-full overflow-hidden border-2 transition-all duration-200 flex-shrink-0",
-                  macroCadence === "daily"
-                    ? "border-pink-400 ring-2 ring-pink-400/50 shadow-lg shadow-pink-400/20 scale-105"
-                    : "border-white/20 hover:border-pink-300 opacity-70 hover:opacity-100",
-                  macroCadenceDisabled && "opacity-50 pointer-events-none"
-                )}
-                aria-label="Daily report"
-                aria-pressed={macroCadence === "daily"}
-              >
-                <Image
-                  src={imageUrl("/icons/daily-icon.png")}
-                  alt="Daily"
-                  fill
-                  sizes="56px"
-                  className="object-cover"
-                />
-              </button>
-
-              <button
-                type="button"
-                onClick={() => onMacroCadenceChange?.("weekly")}
-                disabled={macroCadenceDisabled}
-                className={cn(
-                  "relative w-12 h-12 sm:w-14 sm:h-14 rounded-full overflow-hidden border-2 transition-all duration-200 flex-shrink-0",
-                  macroCadence === "weekly"
-                    ? "border-pink-400 ring-2 ring-pink-400/50 shadow-lg shadow-pink-400/20 scale-105"
-                    : "border-white/20 hover:border-pink-300 opacity-70 hover:opacity-100",
-                  macroCadenceDisabled && "opacity-50 pointer-events-none"
-                )}
-                aria-label="Weekly report"
-                aria-pressed={macroCadence === "weekly"}
-              >
-                <Image
-                  src={imageUrl("/icons/weekly-icon.png")}
-                  alt="Weekly"
-                  fill
-                  sizes="56px"
-                  className="object-cover"
-                />
-              </button>
-
-              <button
-                type="button"
-                onClick={() => onMacroCadenceChange?.("weekly")}
-                disabled={macroCadenceDisabled}
-                className={cn(
-                  "inline-flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full border border-white/20 text-muted-foreground hover:text-foreground hover:border-pink-400 hover:bg-pink-400/10 transition-all duration-200 flex-shrink-0",
-                  macroCadenceDisabled && "opacity-50 pointer-events-none"
-                )}
-                aria-label="Weekly report"
-              >
-                <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
-              </button>
-            </div>
-          )}
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-12 items-stretch">
             <div className="flex justify-center order-1 md:order-0">
               <div
@@ -199,40 +69,6 @@ export function MacroReportHeaderCard(props: {
                 {dateSubtitle && (
                   <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
                     {dateSubtitle}
-                    {isLandingPage && fullReportHref && onOpenFullReport && (
-                      <>
-                        {" • "}
-                        <button
-                          type="button"
-                          className={cn(
-                            "inline-flex items-center gap-1 text-sm md:text-base",
-                            "text-pink-300/80 hover:text-pink-200 underline underline-offset-4",
-                            "decoration-pink-400/30 hover:decoration-pink-300/60 transition-colors"
-                          )}
-                          onClick={onOpenFullReport}
-                        >
-                          <ExternalLink className="h-3 w-3" />
-                          Full Report
-                        </button>
-                      </>
-                    )}
-                    {!isLandingPage && onBackToBriefing && (
-                      <>
-                        {" • "}
-                        <button
-                          type="button"
-                          className={cn(
-                            "inline-flex items-center gap-1 text-sm md:text-base",
-                            "text-pink-300/80 hover:text-pink-200 underline underline-offset-4",
-                            "decoration-pink-400/30 hover:decoration-pink-300/60 transition-colors"
-                          )}
-                          onClick={onBackToBriefing}
-                        >
-                          <ExternalLink className="h-3 w-3" />
-                          Back to briefing
-                        </button>
-                      </>
-                    )}
                   </p>
                 )}
               </div>

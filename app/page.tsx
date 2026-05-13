@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo } from "react";
 import { PageShell } from "@/app/components/PageShell";
 import { ErrorDisplay } from "@/app/components/ErrorDisplay";
 import { MacroReportRenderer } from "@/app/components/macro/MacroReportRenderer";
@@ -15,6 +14,7 @@ import {
 
 const MACRO_REPORT_CACHE_KEY = "mv_macro_latest_cache_v1";
 const MACRO_REPORT_CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
+const REPORT_KIND = "daily";
 
 export default function Home() {
   const {
@@ -26,32 +26,24 @@ export default function Home() {
     acknowledge,
   } = useLegalAcknowledgement();
 
-  const reportVariantCode = useMemo(() => "base_app", []);
   const {
     status: macroStatus,
     error: macroError,
     report: macroReport,
   } = useMacroReport({
     enabled: mounted,
-    variantCode: reportVariantCode,
+    reportKind: REPORT_KIND,
     cacheKey: MACRO_REPORT_CACHE_KEY,
     ttlMs: MACRO_REPORT_CACHE_TTL_MS,
   });
-
-  const dashboardTitle = useMemo(() => {
-    void reportVariantCode;
-    return "Market Vibe Daily";
-  }, [reportVariantCode]);
 
   const isGateOpen = mounted && hasAcknowledgedLegal;
 
   return (
     <PageShell mainClassName="gap-8">
-      {dashboardTitle && (
-        <h1 className="text-5xl font-bold font-serif text-gradient leading-[1.15] text-center -mt-4 md:mt-0">
-          {dashboardTitle}
-        </h1>
-      )}
+      <h1 className="text-5xl font-bold font-serif text-gradient leading-[1.15] text-center -mt-4 md:mt-0">
+        Market Vibe Daily
+      </h1>
 
       {!mounted && <AppBootSplash />}
 
@@ -70,10 +62,7 @@ export default function Home() {
       {isGateOpen && macroStatus === "success" && macroReport?.outputs && (
         <MacroReportRenderer
           outputs={macroReport.outputs}
-          variantCode={reportVariantCode}
-          macroProfileShortLabel={null}
-          macroCadence="daily"
-          macroCadenceDisabled={true}
+          reportKind={REPORT_KIND}
         />
       )}
 
