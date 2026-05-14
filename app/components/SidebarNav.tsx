@@ -20,6 +20,7 @@ import {
 import { cn } from "@/app/lib/utils";
 import type { PublishedMacroReportResponse } from "@/app/lib/report-types";
 import { useMacroTwitterPost } from "@/app/lib/useMacroTwitterPost";
+import type { MacroReportKind } from "@/app/lib/macro-report-kind";
 
 const NAV_ITEMS: Array<{ href: string; label: string }> = [
   { href: "/", label: "Dashboard" },
@@ -57,7 +58,7 @@ const THEME_OPTIONS = [
 
 const MACRO_REPORT_CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
 const TWITTER_POST_CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
-const TWITTER_POST_CACHE_KEY = "mv_macro_twitter_post_base_app_cache_v1";
+const TWITTER_POST_CACHE_KEY = "mv_macro_twitter_post_daily_cache_v1";
 
 function formatReportDate(input: string | null): string {
   if (!input) return "today";
@@ -82,7 +83,7 @@ function getPublishedAtFromCachedReport(
 
 type ReportContext = {
   path: string;
-  variant: string;
+  reportKind: MacroReportKind;
   cacheKey: string;
   shareTitle: string;
 };
@@ -90,13 +91,13 @@ type ReportContext = {
 const REPORT_CONTEXT_BY_PATH: Record<string, ReportContext> = {
   "/": {
     path: "/",
-    variant: "base_app",
+    reportKind: "daily",
     cacheKey: "mv_macro_latest_cache_v1",
     shareTitle: "Market Vibe Daily",
   },
   "/full-report": {
     path: "/full-report",
-    variant: "default",
+    reportKind: "default",
     cacheKey: "mv_macro_default_cache_v1",
     shareTitle: "Full market report",
   },
@@ -147,13 +148,11 @@ export function SidebarNav() {
   const reportContext = REPORT_CONTEXT_BY_PATH[activePath] ?? null;
   const showShare = reportContext !== null;
   const showDownload = showShare;
-  const reportVariant = reportContext?.variant ?? null;
 
-  // Always pull the published share text from the upstream macro twitter_post endpoint.
-  // We keep the API variant configurable, but currently always use base_app.
+  // Always pull the published share text for the daily dashboard.
   const { text: twitterPostText } = useMacroTwitterPost({
     enabled: mounted,
-    variantCode: "base_app",
+    reportKind: "daily",
     cacheKey: TWITTER_POST_CACHE_KEY,
     ttlMs: TWITTER_POST_CACHE_TTL_MS,
   });
@@ -247,12 +246,7 @@ export function SidebarNav() {
     setIsDownloading(true);
     try {
       const url = new URL("/api/macro/download", window.location.origin);
-      // Always pass variant explicitly to ensure correct filename generation
-      const variantToUse =
-        typeof reportVariant === "string" && reportVariant.trim()
-          ? reportVariant.trim()
-          : "base_app"; // fallback to default
-      url.searchParams.set("variant", variantToUse);
+      url.searchParams.set("report", reportContext?.reportKind ?? "daily");
       // Use a direct navigation download so the browser honors Content-Disposition.
       // This is more reliable than blob downloads in embedded webviews.
       const anchor = document.createElement("a");
@@ -268,7 +262,7 @@ export function SidebarNav() {
       // We can't reliably detect when the download finishes; clear UI quickly.
       window.setTimeout(() => setIsDownloading(false), 600);
     }
-  }, [reportVariant]);
+  }, [reportContext?.reportKind]);
 
   useEffect(() => {
     setMounted(true);

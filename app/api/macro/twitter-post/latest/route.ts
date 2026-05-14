@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getLatestDailyMacroTwitterPostText } from "@/lib/messyVirgoApiClient";
 import {
   getCachedMacroTwitterPostText,
-  parseVariant,
+  parseReportKind,
   sanitizeTwitterPostText,
 } from "@/app/api/macro/_shared";
 
@@ -11,14 +11,14 @@ export const runtime = "nodejs";
 
 export async function GET(request: Request) {
   try {
-    const parsed = parseVariant(request);
+    const parsed = parseReportKind(request);
     if (!parsed.ok) {
       return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
 
     const text = await getCachedMacroTwitterPostText(
-      parsed.variant,
-      (variant) => getLatestDailyMacroTwitterPostText(variant)
+      parsed.reportKind,
+      (reportKind) => getLatestDailyMacroTwitterPostText(reportKind)
     );
 
     return NextResponse.json(

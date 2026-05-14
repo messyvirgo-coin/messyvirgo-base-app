@@ -17,9 +17,8 @@ import {
   getReportMarkdownArtifact,
 } from "@/app/lib/lens-outputs";
 import type { LensOutputArtifact } from "@/app/lib/report-types";
+import type { MacroReportKind } from "@/app/lib/macro-report-kind";
 import { Alert, AlertDescription, AlertTitle } from "@/app/components/ui/alert";
-
-const DEFAULT_VARIANT_CODE = "base_app";
 
 const PROSE_CLASSNAME =
   "prose max-w-none text-sm leading-6 dark:prose-invert prose-headings:font-semibold prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-code:text-foreground prose-code:bg-muted prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-muted prose-pre:text-foreground prose-table:border prose-table:border-collapse prose-table:border-white/15 prose-th:border prose-th:border-white/15 prose-th:bg-white/5 prose-th:p-2 prose-th:text-left prose-th:font-semibold prose-td:border prose-td:border-white/15 prose-td:p-2 prose-td:text-left prose-ul:text-foreground prose-ol:text-foreground prose-li:text-foreground";
@@ -62,18 +61,10 @@ function removeHeaderSection(markdown: string): string {
 
 export function MacroReportRenderer({
   outputs,
-  variantCode,
-  macroProfileShortLabel,
-  macroCadence,
-  onMacroCadenceChange,
-  macroCadenceDisabled,
+  reportKind,
 }: {
   outputs: LensOutputArtifact[];
-  variantCode: string | null;
-  macroProfileShortLabel?: string | null;
-  macroCadence?: "daily" | "weekly";
-  onMacroCadenceChange?: (cadence: "daily" | "weekly") => void;
-  macroCadenceDisabled?: boolean;
+  reportKind: MacroReportKind;
 }) {
   const markdownArtifact = getReportMarkdownArtifact(outputs);
   const markdownContent = getMarkdownReportText(outputs);
@@ -122,17 +113,13 @@ export function MacroReportRenderer({
   }, [markdownArtifact, markdownContent]);
 
   const [isDownloading, setIsDownloading] = useState(false);
-  const showMobileDownloadAlert = variantCode?.trim() === "default";
+  const showMobileDownloadAlert = reportKind === "default";
 
   const handleDownload = useCallback(async () => {
     setIsDownloading(true);
     try {
       const url = new URL("/api/macro/download", window.location.origin);
-      const variantToUse =
-        typeof variantCode === "string" && variantCode.trim()
-          ? variantCode.trim()
-          : DEFAULT_VARIANT_CODE;
-      url.searchParams.set("variant", variantToUse);
+      url.searchParams.set("report", reportKind);
       const anchor = document.createElement("a");
       anchor.href = url.toString();
       anchor.rel = "noreferrer";
@@ -144,7 +131,7 @@ export function MacroReportRenderer({
     } finally {
       window.setTimeout(() => setIsDownloading(false), 600);
     }
-  }, [variantCode]);
+  }, [reportKind]);
 
   if (!markdownContent || !markdownArtifact) {
     return (
@@ -191,7 +178,6 @@ export function MacroReportRenderer({
           <>
             <div className="-mt-4 md:mt-8">
               <MacroReportHeaderCard
-                variantCode={variantCode}
                 executedAt={executedAt}
                 regimeLabel={regimeLabel}
                 regimeImgSrc={regimeImgSrc}
@@ -208,10 +194,6 @@ export function MacroReportRenderer({
                 adjNote={adjNote}
                 effectiveNote={effectiveNote}
                 verdictTitle={verdictTitle}
-                macroCadence={macroCadence}
-                onMacroCadenceChange={onMacroCadenceChange}
-                macroCadenceDisabled={macroCadenceDisabled}
-                macroProfileShortLabel={macroProfileShortLabel ?? null}
               />
             </div>
 

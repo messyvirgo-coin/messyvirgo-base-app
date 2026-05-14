@@ -2,6 +2,11 @@ import "server-only";
 
 import type { PublishedMacroReportResponse } from "@/app/lib/report-types";
 import { isPublishedMacroReportResponse } from "@/app/lib/report-guards";
+import {
+  DEFAULT_MACRO_REPORT_KIND,
+  isMacroReportKind,
+  type MacroReportKind,
+} from "@/app/lib/macro-report-kind";
 
 type ClientOptions = {
   signal?: AbortSignal;
@@ -11,28 +16,30 @@ type ClientOptions = {
 const API_BASE_URL =
   process.env.MESSY_VIRGO_API_BASE_URL ?? "https://api.messyvirgo.com";
 
-export const DEFAULT_DAILY_MACRO_REPORT_VARIANT_CODE = "base_app";
+export { DEFAULT_MACRO_REPORT_KIND };
+export type { MacroReportKind };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return !!value && typeof value === "object" && !Array.isArray(value);
 }
 
-function resolveDailyMacroPath(variantCode: string): string {
+function normalizeMacroReportKind(reportKind: string): MacroReportKind {
   const normalized =
-    typeof variantCode === "string" && variantCode.trim()
-      ? variantCode.trim()
-      : DEFAULT_DAILY_MACRO_REPORT_VARIANT_CODE;
-  // Variant codes are a single path segment in the upstream API.
-  return `/api/v1/public/reports/macro/report/${encodeURIComponent(normalized)}`;
+    typeof reportKind === "string" && reportKind.trim()
+      ? reportKind.trim()
+      : DEFAULT_MACRO_REPORT_KIND;
+  if (isMacroReportKind(normalized)) return normalized;
+  return DEFAULT_MACRO_REPORT_KIND;
 }
 
-function resolveDailyMacroTwitterPostPath(variantCode: string): string {
-  const normalized =
-    typeof variantCode === "string" && variantCode.trim()
-      ? variantCode.trim()
-      : DEFAULT_DAILY_MACRO_REPORT_VARIANT_CODE;
-  // Variant codes are a single path segment in the upstream API.
-  return `/api/v1/public/reports/macro/twitter_post/${encodeURIComponent(normalized)}`;
+function resolveDailyMacroPath(reportKind: string): string {
+  const normalized = normalizeMacroReportKind(reportKind);
+  return `/api/v1/public/reports/macro/report/${normalized}`;
+}
+
+function resolveDailyMacroTwitterPostPath(reportKind: string): string {
+  const normalized = normalizeMacroReportKind(reportKind);
+  return `/api/v1/public/reports/macro/twitter_post/${normalized}`;
 }
 
 function buildAuthHeaders(): Record<string, string> {
@@ -97,10 +104,10 @@ function extractTextFromUpstreamJson(value: unknown): string | null {
 }
 
 export async function getLatestDailyMacroReport(
-  variantCode: string = DEFAULT_DAILY_MACRO_REPORT_VARIANT_CODE,
+  reportKind: MacroReportKind = DEFAULT_MACRO_REPORT_KIND,
   options?: ClientOptions
 ): Promise<PublishedMacroReportResponse> {
-  const url = new URL(resolveDailyMacroPath(variantCode), API_BASE_URL);
+  const url = new URL(resolveDailyMacroPath(reportKind), API_BASE_URL);
 
   const timeoutMs = options?.timeoutMs ?? 12_000;
   const controller = new AbortController();
@@ -149,11 +156,11 @@ export async function getLatestDailyMacroReport(
 }
 
 export async function getLatestDailyMacroTwitterPostText(
-  variantCode: string = DEFAULT_DAILY_MACRO_REPORT_VARIANT_CODE,
+  reportKind: MacroReportKind = DEFAULT_MACRO_REPORT_KIND,
   options?: ClientOptions
 ): Promise<string> {
   const url = new URL(
-    resolveDailyMacroTwitterPostPath(variantCode),
+    resolveDailyMacroTwitterPostPath(reportKind),
     API_BASE_URL
   );
 

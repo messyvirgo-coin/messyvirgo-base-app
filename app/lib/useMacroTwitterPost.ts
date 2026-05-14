@@ -1,18 +1,19 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import type { MacroReportKind } from "@/app/lib/macro-report-kind";
 
 export type MacroTwitterPostStatus = "idle" | "loading" | "success" | "error";
 
 type CachedTwitterPostEnvelope = {
   cachedAtMs?: unknown;
-  variantCode?: unknown;
+  reportKind?: unknown;
   text?: unknown;
 };
 
 type UseMacroTwitterPostOptions = {
   enabled: boolean;
-  variantCode: string;
+  reportKind: MacroReportKind;
   cacheKey: string;
   ttlMs: number;
 };
@@ -24,7 +25,11 @@ type UseMacroTwitterPostResult = {
   refetch: () => Promise<void>;
 };
 
-function loadCachedText(cacheKey: string, variantCode: string, ttlMs: number) {
+function loadCachedText(
+  cacheKey: string,
+  reportKind: MacroReportKind,
+  ttlMs: number
+) {
   if (typeof window === "undefined") return null;
 
   try {
@@ -33,7 +38,7 @@ function loadCachedText(cacheKey: string, variantCode: string, ttlMs: number) {
 
     const parsed = JSON.parse(raw) as CachedTwitterPostEnvelope;
     if (typeof parsed?.cachedAtMs !== "number") return null;
-    if (parsed.variantCode !== variantCode) return null;
+    if (parsed.reportKind !== reportKind) return null;
     if (typeof parsed.text !== "string" || !parsed.text.trim()) return null;
 
     const ageMs = Date.now() - parsed.cachedAtMs;
@@ -47,7 +52,7 @@ function loadCachedText(cacheKey: string, variantCode: string, ttlMs: number) {
 
 function persistCachedText(
   cacheKey: string,
-  variantCode: string,
+  reportKind: MacroReportKind,
   text: string
 ) {
   if (typeof window === "undefined") return;
@@ -59,7 +64,7 @@ function persistCachedText(
       cacheKey,
       JSON.stringify({
         cachedAtMs: Date.now(),
-        variantCode,
+        reportKind,
         text: trimmed,
       })
     );
@@ -70,7 +75,7 @@ function persistCachedText(
 
 export function useMacroTwitterPost({
   enabled,
-  variantCode,
+  reportKind,
   cacheKey,
   ttlMs,
 }: UseMacroTwitterPostOptions): UseMacroTwitterPostResult {
@@ -96,7 +101,7 @@ export function useMacroTwitterPost({
         "/api/macro/twitter-post/latest",
         window.location.origin
       );
-      url.searchParams.set("variant", variantCode);
+      url.searchParams.set("report", reportKind);
 
       const response = await fetch(url.toString(), {
         signal: controller.signal,
@@ -128,7 +133,7 @@ export function useMacroTwitterPost({
 
       setText(nextText);
       setStatus("success");
-      persistCachedText(cacheKey, variantCode, nextText);
+      persistCachedText(cacheKey, reportKind, nextText);
     } catch (fetchError) {
       if (
         fetchError instanceof DOMException &&
@@ -147,12 +152,12 @@ export function useMacroTwitterPost({
         abortRef.current = null;
       }
     }
-  }, [cacheKey, variantCode]);
+  }, [cacheKey, reportKind]);
 
   useEffect(() => {
     if (!enabled) return;
 
-    const cached = loadCachedText(cacheKey, variantCode, ttlMs);
+    const cached = loadCachedText(cacheKey, reportKind, ttlMs);
     if (cached) {
       setError(null);
       setText(cached);
@@ -166,7 +171,7 @@ export function useMacroTwitterPost({
     return () => {
       abortRef.current?.abort();
     };
-  }, [cacheKey, enabled, refetch, ttlMs, variantCode]);
+  }, [cacheKey, enabled, refetch, ttlMs, reportKind]);
 
   return { status, error, text, refetch };
 }

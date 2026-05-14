@@ -14,10 +14,10 @@ describe("GET /api/macro/latest", () => {
     vi.clearAllMocks();
   });
 
-  it("returns 400 when variant is invalid", async () => {
+  it("returns 400 when report kind is unsupported", async () => {
     const { GET } = await import("./route");
     const res = await GET(
-      new Request("https://example.com/api/macro/latest?variant=bad%0Avalue", {
+      new Request("https://example.com/api/macro/latest?report=base_app", {
         method: "GET",
       })
     );
@@ -33,6 +33,26 @@ describe("GET /api/macro/latest", () => {
     );
   });
 
+  it("fetches the requested full report kind", async () => {
+    vi.mocked(getLatestDailyMacroReport).mockResolvedValueOnce({
+      outputs: [],
+      meta: {
+        published_at: "2026-02-05T12:34:56.000Z",
+        is_stale: false,
+      },
+    });
+
+    const { GET } = await import("./route");
+    const res = await GET(
+      new Request("https://example.com/api/macro/latest?report=default", {
+        method: "GET",
+      })
+    );
+
+    expect(res.status).toBe(200);
+    expect(getLatestDailyMacroReport).toHaveBeenCalledWith("default");
+  });
+
   it("returns 502 when upstream fetch fails", async () => {
     vi.mocked(getLatestDailyMacroReport).mockRejectedValueOnce(
       new Error("upstream down")
@@ -40,7 +60,7 @@ describe("GET /api/macro/latest", () => {
 
     const { GET } = await import("./route");
     const res = await GET(
-      new Request("https://example.com/api/macro/latest?variant=base_app", {
+      new Request("https://example.com/api/macro/latest?report=daily", {
         method: "GET",
       })
     );

@@ -23,16 +23,16 @@ Market Vibe Daily is a Base Mini App built with Next.js (App Router). It serves 
 
 1. User opens the Base Mini App (Base App webview).
 2. Legal acknowledgement gate opens on first visit.
-3. Client calls `GET /api/macro/latest?variant=base_app`.
-4. Server fetches the latest report from the Messy Virgo API and caches it.
+3. Client calls `GET /api/macro/latest?report=daily`.
+4. Server fetches the daily report from the Messy Virgo API and caches it.
 5. Client renders a daily briefing and header scores from markdown artifacts.
-6. Optional: user downloads the report via `GET /api/macro/download`.
+6. Optional: user downloads the report via `GET /api/macro/download?report=daily`.
 
 ## Entry points
 
 - **Base App URL**: `https://base.app/app/messyvirgo-base-macros.vercel.app/`
-- **Daily briefing**: `/` (variant `base_app`)
-- **Full report**: `/full-report` (variant `default`)
+- **Daily briefing**: `/` (`report=daily`)
+- **Full report**: `/full-report` (`report=default`)
 - **Manifest**: `/.well-known/farcaster.json`
 
 ## Key flows
@@ -45,17 +45,22 @@ Market Vibe Daily is a Base Mini App built with Next.js (App Router). It serves 
 
 `/api/macro/latest`:
 
-- Validates `variant` via `parseVariant(...)`.
+- Validates `report` via `parseReportKind(...)`; only `daily` and `default` are supported.
 - Fetches data from the upstream API using `getLatestDailyMacroReport(...)`.
 - Caches the response in an in-memory TTL cache (1 hour).
 - Returns `PublishedMacroReportResponse` JSON.
+
+Upstream report endpoints:
+
+- Dashboard: `GET /api/v1/public/reports/macro/report/daily`
+- Full report: `GET /api/v1/public/reports/macro/report/default`
 
 ### 3) Client caching + render
 
 `useMacroReport(...)`:
 
 - Loads cached report from `localStorage` when fresh.
-- Otherwise fetches `/api/macro/latest`.
+- Otherwise fetches `/api/macro/latest?report=<daily|default>`.
 - Passes outputs to `MacroReportRenderer`, which extracts markdown and scores.
 
 ### 4) Report download (Markdown)
@@ -64,7 +69,7 @@ Market Vibe Daily is a Base Mini App built with Next.js (App Router). It serves 
 
 - Fetches the same cached report as above.
 - Extracts markdown artifacts and assembles a single markdown file.
-- Returns a file download with a variant-specific filename.
+- Returns a file download with a report-specific filename.
 
 ### 5) Webhook receiver
 
@@ -85,7 +90,7 @@ Market Vibe Daily is a Base Mini App built with Next.js (App Router). It serves 
 
 ## Caching strategy
 
-- **Server**: bounded in-memory TTL cache (1 hour, max 50 variants).
+- **Server**: bounded in-memory TTL cache (1 hour, max 50 report entries).
 - **Client**: `localStorage` TTL cache (1 hour) to avoid repeat fetches.
 
 ## External dependencies

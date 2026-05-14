@@ -1,19 +1,19 @@
 import { NextResponse } from "next/server";
 import { getLatestDailyMacroReport } from "@/lib/messyVirgoApiClient";
-import { getCachedMacroReport, parseVariant } from "@/app/api/macro/_shared";
+import { getCachedMacroReport, parseReportKind } from "@/app/api/macro/_shared";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 export async function GET(request: Request) {
   try {
-    const parsed = parseVariant(request);
+    const parsed = parseReportKind(request);
     if (!parsed.ok) {
       return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
 
-    const report = await getCachedMacroReport(parsed.variant, (variant) =>
-      getLatestDailyMacroReport(variant)
+    const report = await getCachedMacroReport(parsed.reportKind, (reportKind) =>
+      getLatestDailyMacroReport(reportKind)
     );
     return NextResponse.json(report, {
       headers: {

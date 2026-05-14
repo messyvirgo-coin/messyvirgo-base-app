@@ -2,18 +2,19 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { PublishedMacroReportResponse } from "@/app/lib/report-types";
+import type { MacroReportKind } from "@/app/lib/macro-report-kind";
 
 export type MacroReportStatus = "idle" | "loading" | "success" | "error";
 
 type CachedMacroReportEnvelope = {
   cachedAtMs?: unknown;
-  variantCode?: unknown;
+  reportKind?: unknown;
   report?: unknown;
 };
 
 type UseMacroReportOptions = {
   enabled: boolean;
-  variantCode: string;
+  reportKind: MacroReportKind;
   cacheKey: string;
   ttlMs: number;
 };
@@ -27,7 +28,7 @@ type UseMacroReportResult = {
 
 function loadCachedReport(
   cacheKey: string,
-  variantCode: string,
+  reportKind: MacroReportKind,
   ttlMs: number
 ) {
   if (typeof window === "undefined") return null;
@@ -40,8 +41,7 @@ function loadCachedReport(
     if (typeof parsed?.cachedAtMs !== "number") return null;
     if (!parsed.report) return null;
 
-    // Validate that cached variant matches current variant
-    if (parsed.variantCode !== variantCode) return null;
+    if (parsed.reportKind !== reportKind) return null;
 
     const ageMs = Date.now() - parsed.cachedAtMs;
     if (ageMs < 0 || ageMs > ttlMs) return null;
@@ -54,7 +54,7 @@ function loadCachedReport(
 
 function persistCachedReport(
   cacheKey: string,
-  variantCode: string,
+  reportKind: MacroReportKind,
   report: PublishedMacroReportResponse
 ) {
   if (typeof window === "undefined") return;
@@ -64,7 +64,7 @@ function persistCachedReport(
       cacheKey,
       JSON.stringify({
         cachedAtMs: Date.now(),
-        variantCode,
+        reportKind,
         report,
       })
     );
@@ -75,7 +75,7 @@ function persistCachedReport(
 
 export function useMacroReport({
   enabled,
-  variantCode,
+  reportKind,
   cacheKey,
   ttlMs,
 }: UseMacroReportOptions): UseMacroReportResult {
@@ -100,7 +100,7 @@ export function useMacroReport({
 
     try {
       const url = new URL("/api/macro/latest", window.location.origin);
-      url.searchParams.set("variant", variantCode);
+      url.searchParams.set("report", reportKind);
 
       const response = await fetch(url.toString(), {
         signal: controller.signal,
@@ -122,7 +122,7 @@ export function useMacroReport({
 
       setReport(nextReport);
       setStatus("success");
-      persistCachedReport(cacheKey, variantCode, nextReport);
+      persistCachedReport(cacheKey, reportKind, nextReport);
     } catch (fetchError) {
       if (
         fetchError instanceof DOMException &&
@@ -141,14 +141,13 @@ export function useMacroReport({
         abortRef.current = null;
       }
     }
-  }, [cacheKey, variantCode]);
+  }, [cacheKey, reportKind]);
 
   useEffect(() => {
     if (!enabled) return;
 
     // Prefer cache to avoid re-fetching the same daily payload.
-    // Validate variantCode matches to prevent returning stale data for wrong variant.
-    const cached = loadCachedReport(cacheKey, variantCode, ttlMs);
+    const cached = loadCachedReport(cacheKey, reportKind, ttlMs);
     if (cached) {
       setError(null);
       setReport(cached);
@@ -162,7 +161,7 @@ export function useMacroReport({
     return () => {
       abortRef.current?.abort();
     };
-  }, [cacheKey, enabled, refetch, ttlMs, variantCode]);
+  }, [cacheKey, enabled, refetch, ttlMs, reportKind]);
 
   return { status, error, report, refetch };
 }

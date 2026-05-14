@@ -36,7 +36,7 @@ describe("GET /api/macro/download", () => {
 
     const { GET } = await import("./route");
     const res = await GET(
-      new Request("https://example.com/api/macro/download?variant=base_app", {
+      new Request("https://example.com/api/macro/download?report=daily", {
         method: "GET",
       })
     );
